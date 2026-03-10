@@ -11,14 +11,7 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
-        <Route
-          index
-          element={
-            <ProtectedRoute>
-              <VoiceInputPage />
-            </ProtectedRoute>
-          }
-        />
+        <Route index element={<VoiceInputPage />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="register" element={<RegisterPage />} />
         <Route

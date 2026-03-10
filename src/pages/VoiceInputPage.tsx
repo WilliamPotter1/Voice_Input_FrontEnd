@@ -44,7 +44,7 @@ export function VoiceInputPage() {
 
   const navigate = useNavigate();
   const { transcribedText, setTranscribedText, selectedLanguage, setSelectedLanguage } = useVoiceStore();
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated());
 
   const extractMutation = useMutation({
     mutationFn: () => extractQuoteItems(transcribedText!, { language: selectedLanguage }),
@@ -166,7 +166,7 @@ export function VoiceInputPage() {
           <button
             type="button"
             onClick={recording ? stopRecording : startRecording}
-            disabled={isBusy}
+            disabled={isBusy || !isAuthenticated}
             className={`relative flex flex-1 items-center justify-center gap-3 rounded-xl px-6 py-5 font-medium text-white transition disabled:opacity-50 ${
               recording
                 ? 'bg-red-500 shadow-lg shadow-red-500/30 hover:bg-red-600'
@@ -189,13 +189,18 @@ export function VoiceInputPage() {
               accept={ALLOWED_ACCEPT}
               onChange={handleFileSelect}
               className="sr-only"
-              disabled={isBusy}
+              disabled={isBusy || !isAuthenticated}
             />
           </label>
         </div>
         <p className="mt-3 text-xs text-slate-500">
           {t('fileHint', { max: MAX_FILE_MB })}
         </p>
+        {!isAuthenticated && (
+          <p className="mt-3 text-xs text-amber-600">
+            {t('signInToCreate')}
+          </p>
+        )}
       </section>
 
       {isBusy && (
@@ -217,7 +222,7 @@ export function VoiceInputPage() {
               className="min-h-[160px] w-full resize-y whitespace-pre-wrap rounded-xl bg-slate-50/80 p-4 text-sm text-slate-700 outline-none ring-0 focus:bg-white focus:ring-2 focus:ring-emerald-500/40"
             />
           </div>
-          {isAuthenticated() ? (
+          {isAuthenticated ? (
             <button
               type="button"
               onClick={() => extractMutation.mutate()}

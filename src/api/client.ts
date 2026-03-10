@@ -30,7 +30,10 @@ export async function transcribeAudio(
   form.append('file', file);
   const url = new URL(apiUrl('/transcribe'));
   if (options?.language) url.searchParams.set('language', options.language);
-  const res = await fetchApi(url.toString(), { method: 'POST', body: form });
+  const token = useAuthStore.getState().token;
+  const headers: HeadersInit = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const res = await fetchApi(url.toString(), { method: 'POST', body: form, headers });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: res.statusText }));
     throw new Error((err as { error?: string }).error ?? 'Transcription failed');
