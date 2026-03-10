@@ -19,6 +19,11 @@ const VAT_OPTIONS = [
   { value: 0.22, label: '22%' },
 ];
 
+function getUnitFromItemName(name: string): string {
+  const match = name.match(/\(([^)]+)\)\s*$/);
+  return match ? match[1].trim() : '';
+}
+
 function formatMoney(n: number): string {
   return new Intl.NumberFormat(undefined, {
     minimumFractionDigits: 2,
@@ -221,13 +226,16 @@ export function QuoteEditorPage() {
               <tr className="border-b border-slate-200 bg-slate-50/80">
                 <th className="px-4 py-3.5 font-semibold text-slate-700">{t('item')}</th>
                 <th className="w-24 px-4 py-3.5 font-semibold text-slate-700">{t('qty')}</th>
+                <th className="w-28 px-4 py-3.5 font-semibold text-slate-700">{t('unit')}</th>
                 <th className="w-32 px-4 py-3.5 font-semibold text-slate-700">{t('unitPrice')}</th>
                 <th className="w-32 px-4 py-3.5 font-semibold text-slate-700">{t('total')}</th>
                 <th className="w-14 px-4 py-3.5" />
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {items.map((item) => (
+              {items.map((item) => {
+                const unit = getUnitFromItemName(item.itemName);
+                return (
                 <tr key={item.id} className="transition hover:bg-slate-50/50">
                   <td className="px-4 py-3">
                     <input
@@ -237,6 +245,15 @@ export function QuoteEditorPage() {
                       placeholder={t('description')}
                       className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                     />
+                  </td>
+                  <td className="px-4 py-3">
+                    {unit ? (
+                      <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">
+                        {unit}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-slate-400">-</span>
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     <input
@@ -274,7 +291,7 @@ export function QuoteEditorPage() {
                     </button>
                   </td>
                 </tr>
-              ))}
+              )})}
             </tbody>
           </table>
         </div>
@@ -304,7 +321,14 @@ export function QuoteEditorPage() {
               />
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-slate-500">{t('qty')}</label>
+                  <label className="mb-1 block text-xs font-medium text-slate-500">
+                    {t('qty')}
+                    {getUnitFromItemName(item.itemName) && (
+                      <span className="ml-1 text-[11px] text-slate-500">
+                        ({getUnitFromItemName(item.itemName)})
+                      </span>
+                    )}
+                  </label>
                   <input
                     type="number"
                     min={1}
