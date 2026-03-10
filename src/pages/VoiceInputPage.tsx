@@ -211,9 +211,11 @@ export function VoiceInputPage() {
             <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-500">
               {t('transcription')}
             </h3>
-            <p className="whitespace-pre-wrap rounded-xl bg-slate-50/80 p-4 text-slate-700">
-              {transcribedText}
-            </p>
+            <textarea
+              value={transcribedText ?? ''}
+              onChange={(e) => setTranscribedText(e.target.value)}
+              className="min-h-[160px] w-full resize-y whitespace-pre-wrap rounded-xl bg-slate-50/80 p-4 text-sm text-slate-700 outline-none ring-0 focus:bg-white focus:ring-2 focus:ring-emerald-500/40"
+            />
           </div>
           {isAuthenticated() ? (
             <button

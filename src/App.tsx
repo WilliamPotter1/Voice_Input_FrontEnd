@@ -11,7 +11,14 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
-        <Route index element={<VoiceInputPage />} />
+        <Route
+          index
+          element={
+            <ProtectedRoute>
+              <VoiceInputPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="login" element={<LoginPage />} />
         <Route path="register" element={<RegisterPage />} />
         <Route
