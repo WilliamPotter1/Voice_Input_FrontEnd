@@ -1,0 +1,43 @@
+name: Deploy Frontend to Hostinger VPS
+
+on:
+  push:
+    branches:
+      - main  # Trigger deployment when pushing to the main branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest  # GitHub-hosted runner (Ubuntu)
+
+    steps:
+      # Step 1: Checkout the code from GitHub
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Node.js (choose your Node.js version, here using v18)
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: v20.x
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run Linting
+        run: npm run lint
+
+      - name: Build Project
+        run: npm run build
+
+      - name: Deploy to Hostinger VPS
+        uses: appleboy/ssh-action@v0.1.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: 22  # Default SSH port
+          script: |
+            cd ${{ secrets.VPS_PROJECT_PATH }}
+            rm -rf dist/*
+            cp -r /tmp/dist/* ./dist/
+            sudo systemctl restart nginx
