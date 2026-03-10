@@ -225,8 +225,8 @@ export function QuoteEditorPage() {
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50/80">
                 <th className="px-4 py-3.5 font-semibold text-slate-700">{t('item')}</th>
-                <th className="w-24 px-4 py-3.5 font-semibold text-slate-700">{t('qty')}</th>
                 <th className="w-28 px-4 py-3.5 font-semibold text-slate-700">{t('unit')}</th>
+                <th className="w-24 px-4 py-3.5 font-semibold text-slate-700">{t('qty')}</th>
                 <th className="w-32 px-4 py-3.5 font-semibold text-slate-700">{t('unitPrice')}</th>
                 <th className="w-32 px-4 py-3.5 font-semibold text-slate-700">{t('total')}</th>
                 <th className="w-14 px-4 py-3.5" />
