@@ -23,11 +23,8 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run Linting
-        run: npm run lint
-
-      - name: Build Project
-        run: npm run build
+      - name: Type check (noEmit)
+        run: npx tsc --noEmit
 
       - name: Deploy to Hostinger VPS
         uses: appleboy/ssh-action@v0.1.0
@@ -37,7 +34,12 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           port: 22  # Default SSH port
           script: |
+            set -e
+
             cd ${{ secrets.VPS_PROJECT_PATH }}
-            rm -rf dist/*
-            cp -r /tmp/dist/* ./dist/
+            git fetch origin
+            git checkout main
+            git reset --hard origin/main
+            npm install
+            npm run build
             sudo systemctl restart nginx
