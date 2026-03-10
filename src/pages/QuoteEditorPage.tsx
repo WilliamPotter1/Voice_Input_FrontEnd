@@ -24,6 +24,17 @@ function getUnitFromItemName(name: string): string {
   return match ? match[1].trim() : '';
 }
 
+function getBaseNameFromItemName(name: string): string {
+  const match = name.match(/\(([^)]+)\)\s*$/);
+  return match ? name.slice(0, match.index).trim() : name.trim();
+}
+
+function makeItemName(base: string, unit: string): string {
+  const cleanBase = base.trim() || 'Item';
+  const cleanUnit = unit.trim();
+  return cleanUnit ? `${cleanBase} (${cleanUnit})` : cleanBase;
+}
+
 function formatMoney(n: number): string {
   return new Intl.NumberFormat(undefined, {
     minimumFractionDigits: 2,
@@ -235,25 +246,26 @@ export function QuoteEditorPage() {
             <tbody className="divide-y divide-slate-100">
               {items.map((item) => {
                 const unit = getUnitFromItemName(item.itemName);
+                const baseName = getBaseNameFromItemName(item.itemName);
                 return (
                 <tr key={item.id} className="transition hover:bg-slate-50/50">
                   <td className="px-4 py-3">
                     <input
                       type="text"
-                      value={item.itemName}
-                      onChange={(e) => updateItem(item.id, { itemName: e.target.value })}
+                      value={baseName}
+                      onChange={(e) => updateItem(item.id, { itemName: makeItemName(e.target.value, unit) })}
                       placeholder={t('description')}
                       className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                     />
                   </td>
                   <td className="px-4 py-3">
-                    {unit ? (
-                      <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">
-                        {unit}
-                      </span>
-                    ) : (
-                      <span className="text-xs text-slate-400">-</span>
-                    )}
+                    <input
+                      type="text"
+                      value={unit}
+                      onChange={(e) => updateItem(item.id, { itemName: makeItemName(baseName, e.target.value) })}
+                      placeholder={t('unit')}
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                    />
                   </td>
                   <td className="px-4 py-3">
                     <input
