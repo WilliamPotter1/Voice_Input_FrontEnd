@@ -417,7 +417,7 @@ export function QuoteEditorPage() {
                   <label className="mb-1 block text-xs font-medium text-slate-500">
                     {t('qty')}
                     {getUnitFromItemName(item.itemName) && (
-                      <span className="ml-1 text-[11px] text-slate-500">
+                      <span className="block text-[11px] leading-tight text-slate-500">
                         ({getUnitFromItemName(item.itemName)})
                       </span>
                     )}
