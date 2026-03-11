@@ -385,8 +385,8 @@ export function QuoteEditorPage() {
                     <input
                       type="number"
                       min={0}
-                      step={0.01}
-                      value={item.quantity}
+                      step={0.1}
+                      value={item.quantity || 0 || ''}
                       onChange={(e) => {
                         const v = Number(e.target.value);
                         updateItem(item.id, {
@@ -400,8 +400,8 @@ export function QuoteEditorPage() {
                     <input
                       type="number"
                       min={0}
-                      step={0.01}
-                      value={item.unitPrice || ''}
+                      step={0.1}
+                      value={item.unitPrice || 0 || ''}
                       onChange={(e) => {
                         const v = Number(e.target.value);
                         updateItem(item.id, {
@@ -465,8 +465,8 @@ export function QuoteEditorPage() {
                     <input
                       type="number"
                       min={0}
-                      step={0.01}
-                      value={item.quantity}
+                      step={0.1}
+                      value={item.quantity || 0 || ''}
                       onChange={(e) => {
                         const v = Number(e.target.value);
                         updateItem(item.id, {
@@ -497,8 +497,8 @@ export function QuoteEditorPage() {
                     <input
                       type="number"
                       min={0}
-                      step={0.01}
-                      value={item.unitPrice || ''}
+                      step={0.1}
+                      value={item.unitPrice || 0 || ''}
                       onChange={(e) => {
                         const v = Number(e.target.value);
                         updateItem(item.id, {
