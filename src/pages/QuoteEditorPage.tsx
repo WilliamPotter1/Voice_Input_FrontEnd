@@ -400,7 +400,7 @@ export function QuoteEditorPage() {
                       min={0}
                       value={item.unitPrice || ''}
                       onChange={(e) =>
-                        updateItem(item.id, { unitPrice: parseFloat(e.target.value) || 0 })
+                        updateItem(item.id, { quantity: Number(e.target.value) || 0 })
                       }
                       className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                     />
