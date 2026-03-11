@@ -61,6 +61,7 @@ export function VoiceInputPage() {
             state: {
               extractedItems: result.items,
               extractedCustomerName: result.customerName ?? '',
+              extractedCustomerAddress: result.customerAddress ?? '',
               extractedVatRate: result.vatRate ?? undefined,
               transcription: data.text,
             },

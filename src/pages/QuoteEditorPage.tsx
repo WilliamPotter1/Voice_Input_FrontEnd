@@ -45,11 +45,13 @@ export function QuoteEditorPage() {
   const locationState = location.state as {
     extractedItems?: QuoteItemInput[];
     extractedCustomerName?: string;
+    extractedCustomerAddress?: string;
     extractedVatRate?: number;
     transcription?: string;
   } | null;
   const extractedItems = locationState?.extractedItems;
   const extractedCustomerName = locationState?.extractedCustomerName;
+  const extractedCustomerAddress = locationState?.extractedCustomerAddress;
   const extractedVatRate = locationState?.extractedVatRate;
   const transcription = locationState?.transcription ?? '';
   const [showFullTranscription, setShowFullTranscription] = useState(false);
@@ -213,6 +215,11 @@ export function QuoteEditorPage() {
               placeholder={t('clientPlaceholder')}
               className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
             />
+            {!isEdit && extractedCustomerAddress && (
+              <p className="mt-1 text-xs text-slate-500 whitespace-pre-line">
+                {extractedCustomerAddress}
+              </p>
+            )}
           </div>
           <div>
             <label className="mb-2 block text-sm font-medium text-slate-700">{t('vatRate')}</label>
@@ -277,11 +284,21 @@ export function QuoteEditorPage() {
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50/80">
-                <th className="px-4 py-3.5 font-semibold text-slate-700">{t('item')}</th>
-                <th className="w-28 px-4 py-3.5 font-semibold text-slate-700">{t('unit')}</th>
-                <th className="w-24 px-4 py-3.5 font-semibold text-slate-700">{t('qty')}</th>
-                <th className="w-32 px-4 py-3.5 font-semibold text-slate-700">{t('unitPrice')}</th>
-                <th className="w-32 px-4 py-3.5 font-semibold text-slate-700">{t('total')}</th>
+                <th className="px-4 py-3.5 text-xs font-semibold leading-tight text-slate-700 whitespace-normal break-words">
+                  {t('item')}
+                </th>
+                <th className="w-28 px-4 py-3.5 text-xs font-semibold leading-tight text-slate-700 whitespace-normal break-words">
+                  {t('unit')}
+                </th>
+                <th className="w-24 px-4 py-3.5 text-xs font-semibold leading-tight text-slate-700 whitespace-normal break-words">
+                  {t('qty')}
+                </th>
+                <th className="w-32 px-4 py-3.5 text-xs font-semibold leading-tight text-slate-700 whitespace-normal break-words">
+                  {t('unitPrice')}
+                </th>
+                <th className="w-32 px-4 py-3.5 text-xs font-semibold leading-tight text-slate-700 whitespace-normal break-words">
+                  {t('total')}
+                </th>
                 <th className="w-14 px-4 py-3.5" />
               </tr>
             </thead>

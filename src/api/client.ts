@@ -7,9 +7,16 @@ const API_BASE =
 
 function getAuthHeaders(): HeadersInit {
   const token = useAuthStore.getState().token;
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  const headers: Record<string, string> = {};
   if (token) headers['Authorization'] = `Bearer ${token}`;
   return headers;
+}
+
+function getAuthJsonHeaders(): HeadersInit {
+  return {
+    'Content-Type': 'application/json',
+    ...getAuthHeaders(),
+  };
 }
 
 export interface User {
@@ -44,10 +51,10 @@ export async function transcribeAudio(
 export async function extractQuoteItems(
   text: string,
   options?: { language?: string }
-): Promise<{ items: QuoteItemInput[]; customerName?: string | null; vatRate?: number | null }> {
+): Promise<{ items: QuoteItemInput[]; customerName?: string | null; customerAddress?: string | null; vatRate?: number | null }> {
   const res = await fetchApi(apiUrl('/extract-quote-items'), {
     method: 'POST',
-    headers: getAuthHeaders(),
+    headers: getAuthJsonHeaders(),
     body: JSON.stringify({ text, language: options?.language }),
   });
   if (!res.ok) {
@@ -136,7 +143,7 @@ export async function register(
 export async function createQuote(payload: QuotePayload): Promise<QuoteDetail> {
   const res = await fetchApi(apiUrl('/quotes'), {
     method: 'POST',
-    headers: getAuthHeaders(),
+    headers: getAuthJsonHeaders(),
     body: JSON.stringify(payload),
   });
   const data = await res.json().catch(() => ({}));
@@ -166,7 +173,7 @@ export async function getQuote(id: string): Promise<QuoteDetail> {
 export async function updateQuote(id: string, payload: Partial<QuotePayload>): Promise<QuoteDetail> {
   const res = await fetchApi(apiUrl(`/quotes/${id}`), {
     method: 'PATCH',
-    headers: getAuthHeaders(),
+    headers: getAuthJsonHeaders(),
     body: JSON.stringify(payload),
   });
   const data = await res.json().catch(() => ({}));
