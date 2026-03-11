@@ -51,7 +51,7 @@ export async function transcribeAudio(
 export async function extractQuoteItems(
   text: string,
   options?: { language?: string }
-): Promise<{ items: QuoteItemInput[]; customerName?: string | null; customerAddress?: string | null; vatRate?: number | null }> {
+): Promise<{ items: QuoteItemInput[]; customerName?: string | null; customerAddress?: string | null; vatRate?: number | null; currency?: string | null }> {
   const res = await fetchApi(apiUrl('/extract-quote-items'), {
     method: 'POST',
     headers: getAuthJsonHeaders(),
@@ -78,6 +78,7 @@ export interface QuoteItem extends QuoteItemInput {
 export interface QuotePayload {
   clientName?: string;
   customerAddress?: string;
+  currency?: string;
   vatRate?: number;
   items: QuoteItemInput[];
 }
@@ -86,6 +87,7 @@ export interface QuoteSummary {
   id: string;
   clientName: string | null;
   customerAddress: string | null;
+  currency: string | null;
   subtotal: number;
   vat: number;
   total: number;

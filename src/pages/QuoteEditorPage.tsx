@@ -28,8 +28,11 @@ function makeItemName(base: string, unit: string): string {
   return cleanUnit ? `${cleanBase} (${cleanUnit})` : cleanBase;
 }
 
-function formatMoney(n: number): string {
+function formatMoney(n: number, currency: string): string {
+  const safeCurrency = currency && currency.length === 3 ? currency.toUpperCase() : 'EUR';
   return new Intl.NumberFormat(undefined, {
+    style: 'currency',
+    currency: safeCurrency,
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(n);
@@ -47,14 +50,17 @@ export function QuoteEditorPage() {
     extractedCustomerName?: string;
     extractedCustomerAddress?: string;
     extractedVatRate?: number;
+    extractedCurrency?: string;
     transcription?: string;
   } | null;
   const extractedItems = locationState?.extractedItems;
   const extractedCustomerName = locationState?.extractedCustomerName;
   const extractedCustomerAddress = locationState?.extractedCustomerAddress;
   const extractedVatRate = locationState?.extractedVatRate;
+  const extractedCurrency = locationState?.extractedCurrency;
   const transcription = locationState?.transcription ?? '';
   const [showFullTranscription, setShowFullTranscription] = useState(false);
+  const [currency, setCurrency] = useState<string>(extractedCurrency || 'EUR');
 
   const {
     clientName,
@@ -83,6 +89,9 @@ export function QuoteEditorPage() {
     if (id) {
       setQuoteId(id);
     } else if (extractedItems?.length) {
+      if (extractedCurrency) {
+        setCurrency(extractedCurrency);
+      }
       loadQuote(
         extractedCustomerName ?? '',
         extractedCustomerAddress ?? '',
@@ -97,6 +106,9 @@ export function QuoteEditorPage() {
 
   useEffect(() => {
     if (quoteQuery.data) {
+      if ((quoteQuery.data as any).currency) {
+        setCurrency((quoteQuery.data as any).currency);
+      }
       loadQuote(
         quoteQuery.data.clientName,
         quoteQuery.data.customerAddress,
@@ -111,7 +123,7 @@ export function QuoteEditorPage() {
   }, [quoteQuery.data, loadQuote]);
 
   const createMutation = useMutation({
-    mutationFn: (payload: { clientName?: string; customerAddress?: string; vatRate: number; items: QuoteItemInput[] }) =>
+    mutationFn: (payload: { clientName?: string; customerAddress?: string; currency?: string; vatRate: number; items: QuoteItemInput[] }) =>
       createQuote(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quotes'] });
@@ -123,7 +135,7 @@ export function QuoteEditorPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: (payload: { clientName?: string; customerAddress?: string; vatRate: number; items: QuoteItemInput[] }) =>
+    mutationFn: (payload: { clientName?: string; customerAddress?: string; currency?: string; vatRate: number; items: QuoteItemInput[] }) =>
       updateQuote(id!, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quotes'] });
@@ -138,6 +150,7 @@ export function QuoteEditorPage() {
     const payload = {
       clientName: clientName.trim() || undefined,
       customerAddress: customerAddress.trim() || undefined,
+      currency,
       vatRate,
       items: items.map((i) => ({
         itemName: i.itemName.trim() || 'Item',
@@ -214,9 +227,11 @@ export function QuoteEditorPage() {
 
       {/* Client, VAT & Address */}
       <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6">
-        {/* First row: client name + VAT side by side on desktop */}
-        <div className="grid gap-5 sm:grid-cols-2 sm:gap-6">
-          <div>
+        {/* Desktop: client + VAT on first row, address full-width on second row.
+            Mobile: client, then address, then VAT. */}
+        <div className="flex flex-col gap-4 sm:grid sm:grid-cols-2 sm:gap-6">
+          {/* Client name */}
+          <div className="order-1">
             <label className="mb-2 block text-sm font-medium text-slate-700">
               {t('clientName')}
             </label>
@@ -228,7 +243,9 @@ export function QuoteEditorPage() {
               className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
             />
           </div>
-          <div>
+
+          {/* VAT rate */}
+          <div className="order-3 sm:order-2">
             <label className="mb-2 block text-sm font-medium text-slate-700">
               {t('vatRate')}
             </label>
@@ -250,19 +267,19 @@ export function QuoteEditorPage() {
             />
             <p className="mt-1 text-xs text-slate-500">{t('vatRateHint')}</p>
           </div>
-        </div>
 
-        {/* Second row: full-width customer address */}
-        <div className="mt-2">
-          <label className="mb-2 block text-sm font-medium text-slate-700">
-            {t('customerAddress')}
-          </label>
-          <input
-            type="text"
-            value={customerAddress}
-            onChange={(e) => setCustomerAddress(e.target.value)}
-            className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
-          />
+          {/* Customer address */}
+          <div className="order-2 sm:order-3 sm:col-span-2">
+            <label className="mb-2 block text-sm font-medium text-slate-700">
+              {t('customerAddress')}
+            </label>
+            <input
+              type="text"
+              value={customerAddress}
+              onChange={(e) => setCustomerAddress(e.target.value)}
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+            />
+          </div>
         </div>
       </section>
 
@@ -372,7 +389,7 @@ export function QuoteEditorPage() {
                     />
                   </td>
                   <td className="px-4 py-3 font-medium tabular-nums text-slate-700">
-                    {formatMoney(item.quantity * item.unitPrice)}
+                    {formatMoney(item.quantity * item.unitPrice, currency)}
                   </td>
                   <td className="px-4 py-3">
                     <button
@@ -391,64 +408,83 @@ export function QuoteEditorPage() {
 
         {/* Mobile cards */}
         <div className="divide-y divide-slate-100 sm:hidden">
-          {items.map((item, idx) => (
-            <div key={item.id} className="space-y-3 p-4">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                  #{idx + 1}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => removeItem(item.id)}
-                  className="flex size-8 items-center justify-center rounded-lg text-slate-400 transition hover:bg-red-50 hover:text-red-600"
-                >
-                  <Trash2 className="size-4" />
-                </button>
-              </div>
-              <input
-                type="text"
-                value={item.itemName}
-                onChange={(e) => updateItem(item.id, { itemName: e.target.value })}
-                placeholder={t('description')}
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
-              />
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="mb-1 block text-xs font-medium text-slate-500">
-                    {t('qty')}
-                  </label>
-                  <input
-                    type="number"
-                    min={1}
-                    value={item.quantity}
-                    onChange={(e) =>
-                      updateItem(item.id, { quantity: Math.max(1, parseInt(e.target.value, 10) || 1) })
-                    }
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
-                  />
+          {items.map((item, idx) => {
+            const unit = getUnitFromItemName(item.itemName);
+            const baseName = getBaseNameFromItemName(item.itemName);
+            return (
+              <div key={item.id} className="space-y-3 p-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    #{idx + 1}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => removeItem(item.id)}
+                    className="flex size-8 items-center justify-center rounded-lg text-slate-400 transition hover:bg-red-50 hover:text-red-600"
+                  >
+                    <Trash2 className="size-4" />
+                  </button>
                 </div>
-                <div>
-                  <label className="mb-1 block text-xs font-medium text-slate-500">{t('unitPrice')}</label>
-                  <input
-                    type="number"
-                    min={0}
-                    step={0.01}
-                    value={item.unitPrice || ''}
-                    onChange={(e) =>
-                      updateItem(item.id, { unitPrice: parseFloat(e.target.value) || 0 })
-                    }
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-xs font-medium text-slate-500">{t('total')}</label>
-                  <div className="flex h-[38px] items-center rounded-lg bg-slate-50 px-3 text-sm font-semibold tabular-nums text-slate-700">
-                    {formatMoney(item.quantity * item.unitPrice)}
+                <input
+                  type="text"
+                  value={baseName}
+                  onChange={(e) =>
+                    updateItem(item.id, { itemName: makeItemName(e.target.value, unit) })
+                  }
+                  placeholder={t('description')}
+                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                />
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-slate-500">
+                      {t('qty')}
+                    </label>
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="number"
+                        min={1}
+                        value={item.quantity}
+                        onChange={(e) =>
+                          updateItem(item.id, {
+                            quantity: Math.max(1, parseInt(e.target.value, 10) || 1),
+                          })
+                        }
+                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                      />
+                      {unit && (
+                        <span className="whitespace-nowrap text-xs text-slate-500">
+                          {unit}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-slate-500">
+                      {t('unitPrice')}
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      step={0.01}
+                      value={item.unitPrice || ''}
+                      onChange={(e) =>
+                        updateItem(item.id, { unitPrice: parseFloat(e.target.value) || 0 })
+                      }
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-slate-500">
+                      {t('total')}
+                    </label>
+                    <div className="flex h-[38px] items-center rounded-lg bg-slate-50 px-3 text-sm font-semibold tabular-nums text-slate-700">
+                      {formatMoney(item.quantity * item.unitPrice, currency)}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className="border-t border-slate-200 p-3">
@@ -469,15 +505,15 @@ export function QuoteEditorPage() {
           <div className="space-y-2">
             <div className="flex justify-between text-sm text-slate-600">
               <span>{t('subtotal')}</span>
-              <span className="tabular-nums font-medium">{formatMoney(subtotal)}</span>
+              <span className="tabular-nums font-medium">{formatMoney(subtotal, currency)}</span>
             </div>
             <div className="flex justify-between text-sm text-slate-600">
-              <span>{t('vat')} ({(vatRate * 100).toFixed(0)}%)</span>
-              <span className="tabular-nums font-medium">{formatMoney(vat)}</span>
+              <span>{t('vat')}</span>
+              <span className="tabular-nums font-medium">{formatMoney(vat, currency)}</span>
             </div>
             <div className="flex justify-between border-t border-slate-200 pt-3 text-base font-bold text-slate-900">
               <span>{t('total')}</span>
-              <span className="tabular-nums">{formatMoney(total)}</span>
+              <span className="tabular-nums">{formatMoney(total, currency)}</span>
             </div>
           </div>
         </div>

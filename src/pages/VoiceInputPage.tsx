@@ -63,6 +63,7 @@ export function VoiceInputPage() {
               extractedCustomerName: result.customerName ?? '',
               extractedCustomerAddress: result.customerAddress ?? '',
               extractedVatRate: result.vatRate ?? undefined,
+              extractedCurrency: result.currency ?? undefined,
               transcription: data.text,
             },
           });
