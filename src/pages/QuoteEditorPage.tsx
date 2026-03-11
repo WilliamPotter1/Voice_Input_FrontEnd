@@ -378,7 +378,7 @@ export function QuoteEditorPage() {
                       value={unit}
                       onChange={(e) => updateItem(item.id, { itemName: makeItemName(baseName, e.target.value) })}
                       placeholder={t('unit')}
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                     />
                   </td>
                   <td className="px-4 py-3">
@@ -478,12 +478,12 @@ export function QuoteEditorPage() {
                         updateItem(item.id, { itemName: makeItemName(baseName, e.target.value) })
                       }
                       placeholder={t('unit')}
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                     />
                   </div>
                   <div>
                     <label className="mb-1 block text-xs font-medium text-slate-500">
-                      {t('unitPrice')}
+                      {`${t('unitPrice')} (${getCurrencySymbol(currency)})`}
                     </label>
                     <input
                       type="number"
@@ -498,7 +498,7 @@ export function QuoteEditorPage() {
                   </div>
                   <div>
                     <label className="mb-1 block text-xs font-medium text-slate-500">
-                      {t('total')}
+                      {`${t('total')} (${getCurrencySymbol(currency)})`}
                     </label>
                     <div className="flex h-[38px] items-center rounded-lg bg-slate-50 px-3 text-sm font-semibold tabular-nums text-slate-700">
                       {formatMoney(item.quantity * item.unitPrice, currency)}
