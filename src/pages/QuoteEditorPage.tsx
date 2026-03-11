@@ -28,6 +28,22 @@ function makeItemName(base: string, unit: string): string {
   return cleanUnit ? `${cleanBase} (${cleanUnit})` : cleanBase;
 }
 
+function getCurrencySymbol(code: string | null | undefined): string {
+  const c = (code || 'EUR').toUpperCase();
+  switch (c) {
+    case 'EUR':
+      return '€';
+    case 'USD':
+      return '$';
+    case 'CHF':
+      return 'CHF';
+    case 'GBP':
+      return '£';
+    default:
+      return c;
+  }
+}
+
 function formatMoney(n: number, currency: string): string {
   const safeCurrency = currency && currency.length === 3 ? currency.toUpperCase() : 'EUR';
   return new Intl.NumberFormat(undefined, {
@@ -333,10 +349,10 @@ export function QuoteEditorPage() {
                   {t('qty')}
                 </th>
                 <th className="w-32 px-4 py-3.5 text-xs font-semibold leading-tight text-slate-700 whitespace-normal break-words">
-                  {`${t('unitPrice')} (${currency})`}
+                  {`${t('unitPrice')} (${getCurrencySymbol(currency)})`}
                 </th>
                 <th className="w-32 px-4 py-3.5 text-xs font-semibold leading-tight text-slate-700 whitespace-normal break-words">
-                  {`${t('total')} (${currency})`}
+                  {`${t('total')} (${getCurrencySymbol(currency)})`}
                 </th>
                 <th className="w-14 px-4 py-3.5" />
               </tr>
@@ -434,7 +450,7 @@ export function QuoteEditorPage() {
                   placeholder={t('description')}
                   className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                 />
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-4 gap-3">
                   <div>
                     <label className="mb-1 block text-xs font-medium text-slate-500">
                       {t('qty')}
@@ -450,6 +466,11 @@ export function QuoteEditorPage() {
                       }
                       className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                     />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-slate-500">
+                      {t('unit')}
+                    </label>
                     <input
                       type="text"
                       value={unit}
@@ -457,7 +478,7 @@ export function QuoteEditorPage() {
                         updateItem(item.id, { itemName: makeItemName(baseName, e.target.value) })
                       }
                       placeholder={t('unit')}
-                      className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                     />
                   </div>
                   <div>
