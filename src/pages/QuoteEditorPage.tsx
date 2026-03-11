@@ -215,11 +215,13 @@ export function QuoteEditorPage() {
               placeholder={t('clientPlaceholder')}
               className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
             />
-            {!isEdit && extractedCustomerAddress && (
-              <p className="mt-1 text-xs text-slate-500 whitespace-pre-line">
-                {extractedCustomerAddress}
-              </p>
-            )}
+            <label className="mt-4 mb-2 block text-xs font-medium text-slate-600">
+              {t('customerAddress')}
+            </label>
+            <textarea
+              defaultValue={extractedCustomerAddress ?? ''}
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+            />
           </div>
           <div>
             <label className="mb-2 block text-sm font-medium text-slate-700">{t('vatRate')}</label>
