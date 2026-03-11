@@ -411,7 +411,7 @@ export function QuoteEditorPage() {
                       className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                     />
                   </td>
-                  <td className="px-4 py-3 font-medium tabular-nums text-slate-700">
+                  <td className="px-4 py-3 font-medium tabular-nums text-slate-700 text-right text-xs sm:text-sm whitespace-nowrap overflow-hidden text-ellipsis">
                     {formatMoney(item.quantity * item.unitPrice, currency)}
                   </td>
                   <td className="px-4 py-3">
@@ -512,7 +512,7 @@ export function QuoteEditorPage() {
                     <label className="mb-1 block text-[10px] font-medium text-slate-500 whitespace-nowrap">
                       {`${t('total')} (${getCurrencySymbol(currency)})`}
                     </label>
-                    <div className="flex h-[38px] items-center rounded-lg bg-slate-50 px-3 text-sm font-semibold tabular-nums text-slate-700">
+                    <div className="flex h-[38px] items-center rounded-lg bg-slate-50 px-3 text-xs font-semibold sm:text-sm tabular-nums text-slate-700 overflow-hidden text-ellipsis whitespace-nowrap">
                       {formatMoney(item.quantity * item.unitPrice, currency)}
                     </div>
                   </div>
