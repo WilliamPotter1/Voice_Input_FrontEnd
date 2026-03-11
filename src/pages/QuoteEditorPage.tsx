@@ -333,10 +333,10 @@ export function QuoteEditorPage() {
                   {t('qty')}
                 </th>
                 <th className="w-32 px-4 py-3.5 text-xs font-semibold leading-tight text-slate-700 whitespace-normal break-words">
-                  {t('unitPrice')}
+                  {`${t('unitPrice')} (${currency})`}
                 </th>
                 <th className="w-32 px-4 py-3.5 text-xs font-semibold leading-tight text-slate-700 whitespace-normal break-words">
-                  {t('total')}
+                  {`${t('total')} (${currency})`}
                 </th>
                 <th className="w-14 px-4 py-3.5" />
               </tr>
@@ -439,24 +439,26 @@ export function QuoteEditorPage() {
                     <label className="mb-1 block text-xs font-medium text-slate-500">
                       {t('qty')}
                     </label>
-                    <div className="flex items-center gap-1">
-                      <input
-                        type="number"
-                        min={1}
-                        value={item.quantity}
-                        onChange={(e) =>
-                          updateItem(item.id, {
-                            quantity: Math.max(1, parseInt(e.target.value, 10) || 1),
-                          })
-                        }
-                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
-                      />
-                      {unit && (
-                        <span className="whitespace-nowrap text-xs text-slate-500">
-                          {unit}
-                        </span>
-                      )}
-                    </div>
+                    <input
+                      type="number"
+                      min={1}
+                      value={item.quantity}
+                      onChange={(e) =>
+                        updateItem(item.id, {
+                          quantity: Math.max(1, parseInt(e.target.value, 10) || 1),
+                        })
+                      }
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                    />
+                    <input
+                      type="text"
+                      value={unit}
+                      onChange={(e) =>
+                        updateItem(item.id, { itemName: makeItemName(baseName, e.target.value) })
+                      }
+                      placeholder={t('unit')}
+                      className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                    />
                   </div>
                   <div>
                     <label className="mb-1 block text-xs font-medium text-slate-500">
