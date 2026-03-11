@@ -531,7 +531,7 @@ export function QuoteEditorPage() {
               <span className="tabular-nums font-medium">{formatMoney(subtotal, currency)}</span>
             </div>
             <div className="flex justify-between text-sm text-slate-600">
-              <span>{t('vat')}</span>
+              <span>{t('vat')} ({(vatRate * 100).toFixed(0)}%)</span>
               <span className="tabular-nums font-medium">{formatMoney(vat, currency)}</span>
             </div>
             <div className="flex justify-between border-t border-slate-200 pt-3 text-base font-bold text-slate-900">
