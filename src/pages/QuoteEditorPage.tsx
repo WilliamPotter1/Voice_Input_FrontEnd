@@ -207,20 +207,23 @@ export function QuoteEditorPage() {
       <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6">
         <div className="grid gap-5 sm:grid-cols-2 sm:gap-6">
           <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700">{t('clientName')}</label>
+            <label className="mb-2 block text-sm font-medium text-slate-700">
+              {t('clientName')}
+            </label>
             <input
               type="text"
               value={clientName}
               onChange={(e) => setClientName(e.target.value)}
               placeholder={t('clientPlaceholder')}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
             />
-            <label className="mt-4 mb-2 block text-xs font-medium text-slate-600">
+            <label className="mt-4 mb-2 block text-sm font-medium text-slate-700">
               {t('customerAddress')}
             </label>
             <textarea
               defaultValue={extractedCustomerAddress ?? ''}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+              rows={3}
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
             />
           </div>
           <div>
