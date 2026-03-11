@@ -253,7 +253,7 @@ export function QuoteEditorPage() {
         </div>
 
         {/* Second row: full-width customer address */}
-        <div className="mt-5">
+        <div className="mt-2">
           <label className="mb-2 block text-sm font-medium text-slate-700">
             {t('customerAddress')}
           </label>
