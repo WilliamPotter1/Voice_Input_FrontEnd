@@ -384,13 +384,11 @@ export function QuoteEditorPage() {
                   <td className="px-4 py-3">
                     <input
                       type="number"
-                      min={0.01}
-                      step={0.01}
-                      value={item.quantity || ''}
+                      min={0}
+                      value={item.quantity}
                       onChange={(e) => {
-                        const v = Number(e.target.value);
                         updateItem(item.id, {
-                          quantity: Number.isFinite(v) && v > 0 ? v : 0,
+                          quantity: Number(e.target.value),
                         });
                       }}
                       className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
@@ -399,15 +397,11 @@ export function QuoteEditorPage() {
                   <td className="px-4 py-3">
                     <input
                       type="number"
-                      min={0.01}
-                      step={0.01}
+                      min={0}
                       value={item.unitPrice || ''}
-                      onChange={(e) => {
-                        const v = Number(e.target.value);
-                        updateItem(item.id, {
-                          unitPrice: Number.isFinite(v) && v > 0 ? v : 0,
-                        });
-                      }}
+                      onChange={(e) =>
+                        updateItem(item.id, { unitPrice: parseFloat(e.target.value) || 0 })
+                      }
                       className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                     />
                   </td>
@@ -464,13 +458,11 @@ export function QuoteEditorPage() {
                     </label>
                     <input
                       type="number"
-                      min={0.01}
-                      step={0.01}
-                      value={item.quantity || ''}
+                      min={0}
+                      value={item.quantity}
                       onChange={(e) => {
-                        const v = Number(e.target.value);
                         updateItem(item.id, {
-                          quantity: Number.isFinite(v) && v > 0 ? v : 0,
+                          quantity: Number(e.target.value),
                         });
                       }}
                       className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
@@ -496,15 +488,12 @@ export function QuoteEditorPage() {
                     </label>
                     <input
                       type="number"
-                      min={0.01}
+                      min={0}
                       step={0.01}
-                      value={item.quantity || ''}
-                      onChange={(e) => {
-                        const v = Number(e.target.value);
-                        updateItem(item.id, {
-                          quantity: Number.isFinite(v) && v > 0 ? v : 0,
-                        });
-                      }}
+                      value={item.unitPrice || ''}
+                      onChange={(e) =>
+                        updateItem(item.id, { unitPrice: parseFloat(e.target.value) || 0 })
+                      }
                       className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                     />
                   </div>
