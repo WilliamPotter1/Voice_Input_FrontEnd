@@ -44,7 +44,7 @@ export async function transcribeAudio(
 export async function extractQuoteItems(
   text: string,
   options?: { language?: string }
-): Promise<{ items: QuoteItemInput[] }> {
+): Promise<{ items: QuoteItemInput[]; customerName?: string | null; vatRate?: number | null }> {
   const res = await fetchApi(apiUrl('/extract-quote-items'), {
     method: 'POST',
     headers: getAuthHeaders(),

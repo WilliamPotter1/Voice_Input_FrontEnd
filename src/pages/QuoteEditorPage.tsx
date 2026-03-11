@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { Plus, Trash2, Loader2, ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -11,13 +11,6 @@ import {
 } from '../api/client';
 import { useQuoteFormStore, useQuoteTotals } from '../stores/quoteFormStore';
 import { useTranslation } from '../i18n/useTranslation';
-
-const VAT_OPTIONS = [
-  { value: 0, label: '0%' },
-  { value: 0.07, label: '7%' },
-  { value: 0.19, label: '19%' },
-  { value: 0.22, label: '22%' },
-];
 
 function getUnitFromItemName(name: string): string {
   const match = name.match(/\(([^)]+)\)\s*$/);
@@ -49,7 +42,17 @@ export function QuoteEditorPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const isEdit = Boolean(id);
-  const extractedItems = (location.state as { extractedItems?: QuoteItemInput[] } | null)?.extractedItems;
+  const locationState = location.state as {
+    extractedItems?: QuoteItemInput[];
+    extractedCustomerName?: string;
+    extractedVatRate?: number;
+    transcription?: string;
+  } | null;
+  const extractedItems = locationState?.extractedItems;
+  const extractedCustomerName = locationState?.extractedCustomerName;
+  const extractedVatRate = locationState?.extractedVatRate;
+  const transcription = locationState?.transcription ?? '';
+  const [showFullTranscription, setShowFullTranscription] = useState(false);
 
   const {
     clientName,
@@ -76,12 +79,12 @@ export function QuoteEditorPage() {
     if (id) {
       setQuoteId(id);
     } else if (extractedItems?.length) {
-      loadQuote('', 0.19, extractedItems);
+      loadQuote(extractedCustomerName ?? '', extractedVatRate ?? 0.19, extractedItems);
     } else {
       reset();
     }
     return () => { reset(); };
-  }, [id, setQuoteId, reset, loadQuote, extractedItems]);
+  }, [id, setQuoteId, reset, loadQuote, extractedItems, extractedCustomerName, extractedVatRate]);
 
   useEffect(() => {
     if (quoteQuery.data) {
@@ -213,20 +216,59 @@ export function QuoteEditorPage() {
           </div>
           <div>
             <label className="mb-2 block text-sm font-medium text-slate-700">{t('vatRate')}</label>
-            <select
+            <input
+              type="number"
+              min={0}
+              max={1}
+              step={0.01}
               value={vatRate}
-              onChange={(e) => setVatRate(Number(e.target.value))}
+              onChange={(e) => {
+                const v = Number(e.target.value);
+                if (Number.isFinite(v)) {
+                  setVatRate(Math.min(1, Math.max(0, v)));
+                } else {
+                  setVatRate(0);
+                }
+              }}
               className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
-            >
-              {VAT_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+            />
+            <p className="mt-1 text-xs text-slate-500">e.g. 0.19 for 19%</p>
           </div>
         </div>
       </section>
+
+      {/* Transcription preview (from voice input) */}
+      {!isEdit && transcription && (
+        <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6">
+          <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-slate-500">
+            {t('transcription')}
+          </h2>
+          {(() => {
+            const lines = transcription.split(/\r?\n/);
+            const MAX_LINES = 2;
+            const preview =
+              lines.length <= MAX_LINES ? transcription : lines.slice(0, MAX_LINES).join('\n');
+            const hasMore = lines.length > MAX_LINES;
+            return (
+              <>
+                <p className="whitespace-pre-wrap text-sm text-slate-700">
+                  {showFullTranscription ? transcription : preview}
+                  {!showFullTranscription && hasMore && ' …'}
+                </p>
+                {hasMore && (
+                  <button
+                    type="button"
+                    onClick={() => setShowFullTranscription((v) => !v)}
+                    className="mt-2 text-xs font-medium text-emerald-700 hover:text-emerald-800"
+                  >
+                    {showFullTranscription ? 'Show less' : 'Show more'}
+                  </button>
+                )}
+              </>
+            );
+          })()}
+        </section>
+      )}
 
       {/* Line items — Desktop: table, Mobile: cards */}
       <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">

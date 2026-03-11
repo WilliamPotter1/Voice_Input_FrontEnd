@@ -1,4 +1,4 @@
-import { Mic, Upload, Languages, Sparkles, Loader2 } from 'lucide-react';
+import { Mic, Upload, Languages, Loader2 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -30,6 +30,7 @@ export function VoiceInputPage() {
   const [recording, setRecording] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [elapsed, setElapsed] = useState(0);
+  const [extracting, setExtracting] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
 
@@ -43,28 +44,37 @@ export function VoiceInputPage() {
   }, [recording]);
 
   const navigate = useNavigate();
-  const { transcribedText, setTranscribedText, selectedLanguage, setSelectedLanguage } = useVoiceStore();
+  const { setTranscribedText, selectedLanguage, setSelectedLanguage } = useVoiceStore();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated());
-
-  const extractMutation = useMutation({
-    mutationFn: () => extractQuoteItems(transcribedText!, { language: selectedLanguage }),
-    onSuccess: (data) => {
-      if (data.items.length > 0) {
-        navigate('/quotes/new', { state: { extractedItems: data.items } });
-        toast.success(t('itemsExtracted'));
-      } else {
-        toast.error(t('noItemsExtracted'));
-      }
-    },
-    onError: (e: Error) => toast.error(e.message || t('extracting')),
-  });
 
   const transcribeMutation = useMutation({
     mutationFn: ({ file, language }: { file: File; language?: string }) =>
       transcribeAudio(file, { language }),
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       setTranscribedText(data.text);
       toast.success(t('transcriptionComplete'));
+      try {
+        setExtracting(true);
+        const result = await extractQuoteItems(data.text, { language: selectedLanguage });
+        if (result.items.length > 0) {
+          navigate('/quotes/new', {
+            state: {
+              extractedItems: result.items,
+              extractedCustomerName: result.customerName ?? '',
+              extractedVatRate: result.vatRate ?? undefined,
+              transcription: data.text,
+            },
+          });
+          toast.success(t('itemsExtracted'));
+        } else {
+          toast.error(t('noItemsExtracted'));
+        }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err ?? '');
+        toast.error(message || t('extracting'));
+      } finally {
+        setExtracting(false);
+      }
     },
     onError: (err: Error) => {
       toast.error(err.message || t('transcribing'));
@@ -125,7 +135,7 @@ export function VoiceInputPage() {
     [selectedLanguage, transcribeMutation, t]
   );
 
-  const isBusy = transcribeMutation.isPending || uploading;
+  const isBusy = transcribeMutation.isPending || uploading || extracting;
 
   return (
     <div className="space-y-10">
@@ -232,44 +242,7 @@ export function VoiceInputPage() {
         </div>
       )}
 
-      {transcribedText !== null && transcribedText !== '' && !isBusy && (
-        <section className="space-y-5">
-          <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">
-            <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-500">
-              {t('transcription')}
-            </h3>
-            <textarea
-              value={transcribedText ?? ''}
-              onChange={(e) => setTranscribedText(e.target.value)}
-              className="min-h-[160px] w-full resize-y whitespace-pre-wrap rounded-xl bg-slate-50/80 p-4 text-sm text-slate-700 outline-none ring-0 focus:bg-white focus:ring-2 focus:ring-emerald-500/40"
-            />
-          </div>
-          {isAuthenticated ? (
-            <button
-              type="button"
-              onClick={() => extractMutation.mutate()}
-              disabled={extractMutation.isPending}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-3.5 font-medium text-white shadow-sm transition hover:bg-emerald-700 disabled:opacity-60 sm:w-auto"
-            >
-              {extractMutation.isPending ? (
-                <>
-                  <Loader2 className="size-5 animate-spin" />
-                  {t('extracting')}
-                </>
-              ) : (
-                <>
-                  <Sparkles className="size-5" />
-                  {t('extractToQuote')}
-                </>
-              )}
-            </button>
-          ) : (
-            <p className="rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-sm text-slate-600">
-              {t('signInToCreate')}
-            </p>
-          )}
-        </section>
-      )}
+      {/* Transcription is now shown on the quote screen after extraction */}
     </div>
   );
 }
