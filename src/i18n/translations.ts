@@ -87,6 +87,7 @@ export const translations = {
     quoteUpdated: 'Angebot aktualisiert',
     backToQuotes: 'Zurück zu den Angeboten',
     quote: 'Angebot',
+    vatRateHint: 'z.B. 0,19 für 19 %',
   },
 
   en: {
@@ -171,6 +172,7 @@ export const translations = {
     quoteUpdated: 'Quote updated',
     backToQuotes: 'Back to quotes',
     quote: 'Quote',
+    vatRateHint: 'e.g. 0.19 for 19%',
   },
 
   it: {
@@ -255,6 +257,7 @@ export const translations = {
     quoteUpdated: 'Preventivo aggiornato',
     backToQuotes: 'Torna ai preventivi',
     quote: 'Preventivo',
+    vatRateHint: 'es. 0,22 per 22%',
   },
 
   fr: {
@@ -339,6 +342,7 @@ export const translations = {
     quoteUpdated: 'Devis mis à jour',
     backToQuotes: 'Retour aux devis',
     quote: 'Devis',
+    vatRateHint: 'ex. 0,20 pour 20 %',
   },
 
   es: {
@@ -423,6 +427,7 @@ export const translations = {
     quoteUpdated: 'Presupuesto actualizado',
     backToQuotes: 'Volver a presupuestos',
     quote: 'Presupuesto',
+    vatRateHint: 'p. ej. 0,21 para 21 %',
   },
 } as const;
 

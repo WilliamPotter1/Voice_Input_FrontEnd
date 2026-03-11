@@ -232,7 +232,7 @@ export function QuoteEditorPage() {
               }}
               className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
             />
-            <p className="mt-1 text-xs text-slate-500">e.g. 0.19 for 19%</p>
+            <p className="mt-1 text-xs text-slate-500">{t('vatRateHint')}</p>
           </div>
         </div>
       </section>
