@@ -12,16 +12,18 @@ function makeId() {
 interface QuoteFormState {
   quoteId: string | null;
   clientName: string;
+  customerAddress: string;
   vatRate: number;
   items: QuoteFormItem[];
   setQuoteId: (id: string | null) => void;
   setClientName: (name: string) => void;
+  setCustomerAddress: (address: string) => void;
   setVatRate: (rate: number) => void;
   setItems: (items: QuoteFormItem[]) => void;
   addItem: (item?: Partial<QuoteItemInput>) => void;
   updateItem: (id: string, patch: Partial<QuoteItemInput>) => void;
   removeItem: (id: string) => void;
-  loadQuote: (clientName: string | null, vatRate: number, items: QuoteItemInput[]) => void;
+  loadQuote: (clientName: string | null, customerAddress: string | null, vatRate: number, items: QuoteItemInput[]) => void;
   reset: () => void;
 }
 
@@ -35,6 +37,7 @@ const defaultItem = (): QuoteFormItem => ({
 const initialState = {
   quoteId: null,
   clientName: '',
+  customerAddress: '',
   vatRate: 0.19,
   items: [defaultItem()],
 };
@@ -43,6 +46,7 @@ export const useQuoteFormStore = create<QuoteFormState>((set) => ({
   ...initialState,
   setQuoteId: (quoteId) => set({ quoteId }),
   setClientName: (clientName) => set({ clientName }),
+  setCustomerAddress: (customerAddress) => set({ customerAddress }),
   setVatRate: (vatRate) => set({ vatRate }),
   setItems: (items) => set({ items }),
   addItem: (item) =>
@@ -61,9 +65,10 @@ export const useQuoteFormStore = create<QuoteFormState>((set) => ({
         ? state.items.filter((it) => it.id !== id)
         : [defaultItem()],
     })),
-  loadQuote: (clientName, vatRate, items) =>
+  loadQuote: (clientName, customerAddress, vatRate, items) =>
     set({
       clientName: clientName ?? '',
+      customerAddress: customerAddress ?? '',
       vatRate,
       items:
         items.length > 0

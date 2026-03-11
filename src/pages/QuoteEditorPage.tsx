@@ -58,10 +58,12 @@ export function QuoteEditorPage() {
 
   const {
     clientName,
+    customerAddress,
     vatRate,
     items,
     setQuoteId,
     setClientName,
+    setCustomerAddress,
     setVatRate,
     addItem,
     updateItem,
@@ -81,7 +83,12 @@ export function QuoteEditorPage() {
     if (id) {
       setQuoteId(id);
     } else if (extractedItems?.length) {
-      loadQuote(extractedCustomerName ?? '', extractedVatRate ?? 0.19, extractedItems);
+      loadQuote(
+        extractedCustomerName ?? '',
+        extractedCustomerAddress ?? '',
+        extractedVatRate ?? 0.19,
+        extractedItems
+      );
     } else {
       reset();
     }
@@ -92,6 +99,7 @@ export function QuoteEditorPage() {
     if (quoteQuery.data) {
       loadQuote(
         quoteQuery.data.clientName,
+        quoteQuery.data.customerAddress,
         quoteQuery.data.vatRate,
         quoteQuery.data.items.map((i) => ({
           itemName: i.itemName,
@@ -103,7 +111,7 @@ export function QuoteEditorPage() {
   }, [quoteQuery.data, loadQuote]);
 
   const createMutation = useMutation({
-    mutationFn: (payload: { clientName?: string; vatRate: number; items: QuoteItemInput[] }) =>
+    mutationFn: (payload: { clientName?: string; customerAddress?: string; vatRate: number; items: QuoteItemInput[] }) =>
       createQuote(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quotes'] });
@@ -115,7 +123,7 @@ export function QuoteEditorPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: (payload: { clientName?: string; vatRate: number; items: QuoteItemInput[] }) =>
+    mutationFn: (payload: { clientName?: string; customerAddress?: string; vatRate: number; items: QuoteItemInput[] }) =>
       updateQuote(id!, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quotes'] });
@@ -129,6 +137,7 @@ export function QuoteEditorPage() {
   function handleSave() {
     const payload = {
       clientName: clientName.trim() || undefined,
+      customerAddress: customerAddress.trim() || undefined,
       vatRate,
       items: items.map((i) => ({
         itemName: i.itemName.trim() || 'Item',
@@ -203,8 +212,9 @@ export function QuoteEditorPage() {
         </div>
       </div>
 
-      {/* Client & VAT */}
+      {/* Client, VAT & Address */}
       <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6">
+        {/* First row: client name + VAT side by side on desktop */}
         <div className="grid gap-5 sm:grid-cols-2 sm:gap-6">
           <div>
             <label className="mb-2 block text-sm font-medium text-slate-700">
@@ -217,17 +227,11 @@ export function QuoteEditorPage() {
               placeholder={t('clientPlaceholder')}
               className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
             />
-            <label className="mt-4 mb-2 block text-sm font-medium text-slate-700">
-              {t('customerAddress')}
-            </label>
-            <textarea
-              defaultValue={extractedCustomerAddress ?? ''}
-              rows={3}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
-            />
           </div>
           <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700">{t('vatRate')}</label>
+            <label className="mb-2 block text-sm font-medium text-slate-700">
+              {t('vatRate')}
+            </label>
             <input
               type="number"
               min={0}
@@ -246,6 +250,19 @@ export function QuoteEditorPage() {
             />
             <p className="mt-1 text-xs text-slate-500">{t('vatRateHint')}</p>
           </div>
+        </div>
+
+        {/* Second row: full-width customer address */}
+        <div className="mt-5">
+          <label className="mb-2 block text-sm font-medium text-slate-700">
+            {t('customerAddress')}
+          </label>
+          <input
+            type="text"
+            value={customerAddress}
+            onChange={(e) => setCustomerAddress(e.target.value)}
+            className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+          />
         </div>
       </section>
 
