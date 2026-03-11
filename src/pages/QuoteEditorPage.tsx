@@ -416,11 +416,6 @@ export function QuoteEditorPage() {
                 <div>
                   <label className="mb-1 block text-xs font-medium text-slate-500">
                     {t('qty')}
-                    {getUnitFromItemName(item.itemName) && (
-                      <span className="block text-[11px] leading-tight text-slate-500">
-                        ({getUnitFromItemName(item.itemName)})
-                      </span>
-                    )}
                   </label>
                   <input
                     type="number"
