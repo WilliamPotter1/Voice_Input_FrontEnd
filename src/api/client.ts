@@ -99,6 +99,15 @@ export interface QuoteDetail extends QuoteSummary {
   items: (QuoteItemInput & { id: string; total: number })[];
 }
 
+export interface QuoteAttachment {
+  id: string;
+  filename: string;
+  mimeType: string;
+  size: number;
+  url: string;
+  createdAt: string;
+}
+
 async function fetchApi(
   url: string,
   options: RequestInit
@@ -194,4 +203,29 @@ export async function deleteQuote(id: string): Promise<void> {
     const data = await res.json().catch(() => ({}));
     throw new Error((data as { error?: string }).error ?? 'Failed to delete quote');
   }
+}
+
+export async function listQuoteAttachments(quoteId: string): Promise<QuoteAttachment[]> {
+  const res = await fetchApi(apiUrl(`/quotes/${quoteId}/attachments`), {
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) {
+    throw new Error('Failed to load attachments');
+  }
+  return res.json();
+}
+
+export async function uploadQuoteAttachment(quoteId: string, file: File): Promise<QuoteAttachment> {
+  const form = new FormData();
+  form.append('file', file);
+  const res = await fetchApi(apiUrl(`/quotes/${quoteId}/attachments`), {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: form,
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error((data as { error?: string }).error ?? 'Failed to upload attachment');
+  }
+  return data as QuoteAttachment;
 }

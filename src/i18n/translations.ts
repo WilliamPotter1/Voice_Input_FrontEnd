@@ -89,6 +89,11 @@ export const translations = {
     backToQuotes: 'Zurück zu den Angeboten',
     quote: 'Angebot',
     vatRateHint: 'z.B. 0,19 für 19 %',
+    attachments: 'Anhänge',
+    attachmentsHint: 'Fügen Sie PDFs, Bilder oder andere Dokumente hinzu (max. 25 MB).',
+    addAttachment: 'Anhang hinzufügen',
+    attachmentsSaveFirst: 'Speichern Sie das Angebot zuerst, um Anhänge hinzuzufügen.',
+    attachmentUploaded: 'Anhang hochgeladen',
   },
 
   en: {
@@ -175,6 +180,11 @@ export const translations = {
     backToQuotes: 'Back to quotes',
     quote: 'Quote',
     vatRateHint: 'e.g. 0.19 for 19%',
+    attachments: 'Attachments',
+    attachmentsHint: 'Add PDFs, images or other documents (max 25 MB).',
+    addAttachment: 'Add attachment',
+    attachmentsSaveFirst: 'Save the quote first to add attachments.',
+    attachmentUploaded: 'Attachment uploaded',
   },
 
   it: {
@@ -261,6 +271,11 @@ export const translations = {
     backToQuotes: 'Torna ai preventivi',
     quote: 'Preventivo',
     vatRateHint: 'es. 0,22 per 22%',
+    attachments: 'Allegati',
+    attachmentsHint: 'Aggiungi PDF, immagini o altri documenti (max 25 MB).',
+    addAttachment: 'Aggiungi allegato',
+    attachmentsSaveFirst: 'Salva prima il preventivo per aggiungere allegati.',
+    attachmentUploaded: 'Allegato caricato',
   },
 
   fr: {
@@ -347,6 +362,11 @@ export const translations = {
     backToQuotes: 'Retour aux devis',
     quote: 'Devis',
     vatRateHint: 'ex. 0,20 pour 20 %',
+    attachments: 'Pièces jointes',
+    attachmentsHint: 'Ajoutez des PDF, images ou autres documents (max. 25 Mo).',
+    addAttachment: 'Ajouter une pièce jointe',
+    attachmentsSaveFirst: 'Sauvegardez d\'abord le devis pour ajouter des pièces jointes.',
+    attachmentUploaded: 'Pièce jointe téléchargée',
   },
 
   es: {
@@ -433,6 +453,11 @@ export const translations = {
     backToQuotes: 'Volver a presupuestos',
     quote: 'Presupuesto',
     vatRateHint: 'p. ej. 0,21 para 21 %',
+    attachments: 'Adjuntos',
+    attachmentsHint: 'Añade PDFs, imágenes u otros documentos (máx. 25 MB).',
+    addAttachment: 'Añadir adjunto',
+    attachmentsSaveFirst: 'Guarda primero el presupuesto para añadir adjuntos.',
+    attachmentUploaded: 'Adjunto subido',
   },
 } as const;
 

@@ -7,7 +7,10 @@ import {
   createQuote,
   updateQuote,
   getQuote,
+  listQuoteAttachments,
+  uploadQuoteAttachment,
   type QuoteItemInput,
+  type QuoteAttachment,
 } from '../api/client';
 import { useQuoteFormStore, useQuoteTotals } from '../stores/quoteFormStore';
 import { useTranslation } from '../i18n/useTranslation';
@@ -94,6 +97,22 @@ export function QuoteEditorPage() {
     reset,
   } = useQuoteFormStore();
   const { subtotal, vat, total } = useQuoteTotals();
+
+  const attachmentsQuery = useQuery({
+    queryKey: ['quoteAttachments', id],
+    queryFn: () => listQuoteAttachments(id!),
+    enabled: isEdit && !!id,
+  });
+  const attachments: QuoteAttachment[] = attachmentsQuery.data ?? [];
+
+  const uploadAttachmentMutation = useMutation({
+    mutationFn: (file: File) => uploadQuoteAttachment(id!, file),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['quoteAttachments', id] });
+      toast.success(t('attachmentUploaded'));
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   const quoteQuery = useQuery({
     queryKey: ['quote', id],
@@ -332,6 +351,58 @@ export function QuoteEditorPage() {
         </section>
       )}
 
+      {/* Attachments */}
+      <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
+              {t('attachments')}
+            </h2>
+            <p className="text-xs text-slate-500">{t('attachmentsHint')}</p>
+          </div>
+          {isEdit && id ? (
+            <label className="inline-flex cursor-pointer items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100">
+              {uploadAttachmentMutation.isPending ? t('saving') : t('addAttachment')}
+              <input
+                type="file"
+                className="sr-only"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  uploadAttachmentMutation.mutate(file);
+                  e.target.value = '';
+                }}
+              />
+            </label>
+          ) : (
+            <p className="text-xs text-slate-400 sm:text-right">{t('attachmentsSaveFirst')}</p>
+          )}
+        </div>
+
+        {attachments.length > 0 && (
+          <ul className="mt-3 space-y-2">
+            {attachments.map((att) => (
+              <li
+                key={att.id}
+                className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs sm:text-sm text-slate-700"
+              >
+                <a
+                  href={att.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="max-w-[70%] truncate hover:underline"
+                >
+                  {att.filename}
+                </a>
+                <span className="ml-3 shrink-0 text-[11px] text-slate-500">
+                  {(att.size / 1024).toFixed(1)} KB
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
       {/* Line items — Desktop: table, Mobile: cards */}
       <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
         {/* Desktop table */}
@@ -383,12 +454,13 @@ export function QuoteEditorPage() {
                   </td>
                   <td className="px-4 py-3">
                     <input
-                      type="number"
-                      min={0}
-                      step={0.1}
-                      value={item.quantity || ''}
+                      type="text"
+                      inputMode="decimal"
+                      value={Number.isFinite(item.quantity) ? String(item.quantity) : ''}
                       onChange={(e) => {
-                        const v = Number(e.target.value);
+                        const raw = e.target.value.replace(',', '.');
+                        const normalized = raw.startsWith('.') ? `0${raw}` : raw;
+                        const v = Number(normalized);
                         updateItem(item.id, {
                           quantity: Number.isFinite(v) && v >= 0 ? v : 0,
                         });
@@ -398,12 +470,13 @@ export function QuoteEditorPage() {
                   </td>
                   <td className="px-4 py-3">
                     <input
-                      type="number"
-                      min={0}
-                      step={0.1}
-                      value={item.unitPrice || ''}
+                      type="text"
+                      inputMode="decimal"
+                      value={Number.isFinite(item.unitPrice) ? String(item.unitPrice) : ''}
                       onChange={(e) => {
-                        const v = Number(e.target.value);
+                        const raw = e.target.value.replace(',', '.');
+                        const normalized = raw.startsWith('.') ? `0${raw}` : raw;
+                        const v = Number(normalized);
                         updateItem(item.id, {
                           unitPrice: Number.isFinite(v) && v >= 0 ? v : 0,
                         });
@@ -465,12 +538,13 @@ export function QuoteEditorPage() {
                       {t('qty')}
                     </label>
                     <input
-                      type="number"
-                      min={0}
-                      step={0.1}
-                      value={item.quantity || ''}
+                      type="text"
+                      inputMode="decimal"
+                      value={Number.isFinite(item.quantity) ? String(item.quantity) : ''}
                       onChange={(e) => {
-                        const v = Number(e.target.value);
+                        const raw = e.target.value.replace(',', '.');
+                        const normalized = raw.startsWith('.') ? `0${raw}` : raw;
+                        const v = Number(normalized);
                         updateItem(item.id, {
                           quantity: Number.isFinite(v) && v >= 0 ? v : 0,
                         });
@@ -497,12 +571,13 @@ export function QuoteEditorPage() {
                       {`${t('unitPrice')} (${getCurrencySymbol(currency)})`}
                     </label>
                     <input
-                      type="number"
-                      min={0}
-                      step={0.1}
-                      value={item.unitPrice || 0 || ''}
+                      type="text"
+                      inputMode="decimal"
+                      value={Number.isFinite(item.unitPrice) ? String(item.unitPrice) : ''}
                       onChange={(e) => {
-                        const v = Number(e.target.value);
+                        const raw = e.target.value.replace(',', '.');
+                        const normalized = raw.startsWith('.') ? `0${raw}` : raw;
+                        const v = Number(normalized);
                         updateItem(item.id, {
                           unitPrice: Number.isFinite(v) && v >= 0 ? v : 0,
                         });
