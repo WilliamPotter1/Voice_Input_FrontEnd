@@ -83,6 +83,8 @@ export function QuoteEditorPage() {
   const [currency, setCurrency] = useState<string>(extractedCurrency || 'EUR');
   const [previewAttachment, setPreviewAttachment] = useState<QuoteAttachment | null>(null);
   const [pendingAttachments, setPendingAttachments] = useState<File[]>([]);
+  const [quantityInputs, setQuantityInputs] = useState<Record<string, string>>({});
+  const [unitPriceInputs, setUnitPriceInputs] = useState<Record<string, string>>({});
 
   const {
     clientName,
@@ -100,6 +102,36 @@ export function QuoteEditorPage() {
     reset,
   } = useQuoteFormStore();
   const { subtotal, vat, total } = useQuoteTotals();
+
+  useEffect(() => {
+    // Keep local input strings in sync with numeric values when items change (e.g. after load).
+    setQuantityInputs((prev) => {
+      const next: Record<string, string> = {};
+      for (const it of items) {
+        const existing = prev[it.id];
+        next[it.id] =
+          existing !== undefined
+            ? existing
+            : Number.isFinite(it.quantity)
+              ? String(it.quantity)
+              : '';
+      }
+      return next;
+    });
+    setUnitPriceInputs((prev) => {
+      const next: Record<string, string> = {};
+      for (const it of items) {
+        const existing = prev[it.id];
+        next[it.id] =
+          existing !== undefined
+            ? existing
+            : Number.isFinite(it.unitPrice)
+              ? String(it.unitPrice)
+              : '';
+      }
+      return next;
+    });
+  }, [items]);
 
   const attachmentsQuery = useQuery({
     queryKey: ['quoteAttachments', id],
@@ -435,14 +467,21 @@ export function QuoteEditorPage() {
                     <input
                       type="text"
                       inputMode="decimal"
-                      value={Number.isFinite(item.quantity) ? String(item.quantity) : ''}
+                      value={quantityInputs[item.id] ?? ''}
                       onChange={(e) => {
+                        const value = e.target.value;
+                        setQuantityInputs((prev) => ({ ...prev, [item.id]: value }));
+                      }}
+                      onBlur={(e) => {
                         const raw = e.target.value.replace(',', '.');
-                        const normalized = raw.startsWith('.') ? `0${raw}` : raw;
+                        const normalized = raw === '' ? '' : raw.startsWith('.') ? `0${raw}` : raw;
                         const v = Number(normalized);
-                        updateItem(item.id, {
-                          quantity: Number.isFinite(v) && v >= 0 ? v : 0,
-                        });
+                        const numeric = Number.isFinite(v) && v >= 0 ? v : 0;
+                        updateItem(item.id, { quantity: numeric });
+                        setQuantityInputs((prev) => ({
+                          ...prev,
+                          [item.id]: numeric === 0 ? '' : String(numeric),
+                        }));
                       }}
                       className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                     />
@@ -451,14 +490,21 @@ export function QuoteEditorPage() {
                     <input
                       type="text"
                       inputMode="decimal"
-                      value={Number.isFinite(item.unitPrice) ? String(item.unitPrice) : ''}
+                      value={unitPriceInputs[item.id] ?? ''}
                       onChange={(e) => {
+                        const value = e.target.value;
+                        setUnitPriceInputs((prev) => ({ ...prev, [item.id]: value }));
+                      }}
+                      onBlur={(e) => {
                         const raw = e.target.value.replace(',', '.');
-                        const normalized = raw.startsWith('.') ? `0${raw}` : raw;
+                        const normalized = raw === '' ? '' : raw.startsWith('.') ? `0${raw}` : raw;
                         const v = Number(normalized);
-                        updateItem(item.id, {
-                          unitPrice: Number.isFinite(v) && v >= 0 ? v : 0,
-                        });
+                        const numeric = Number.isFinite(v) && v >= 0 ? v : 0;
+                        updateItem(item.id, { unitPrice: numeric });
+                        setUnitPriceInputs((prev) => ({
+                          ...prev,
+                          [item.id]: numeric === 0 ? '' : String(numeric),
+                        }));
                       }}
                       className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                     />
@@ -519,14 +565,21 @@ export function QuoteEditorPage() {
                     <input
                       type="text"
                       inputMode="decimal"
-                      value={Number.isFinite(item.quantity) ? String(item.quantity) : ''}
+                      value={quantityInputs[item.id] ?? ''}
                       onChange={(e) => {
+                        const value = e.target.value;
+                        setQuantityInputs((prev) => ({ ...prev, [item.id]: value }));
+                      }}
+                      onBlur={(e) => {
                         const raw = e.target.value.replace(',', '.');
-                        const normalized = raw.startsWith('.') ? `0${raw}` : raw;
+                        const normalized = raw === '' ? '' : raw.startsWith('.') ? `0${raw}` : raw;
                         const v = Number(normalized);
-                        updateItem(item.id, {
-                          quantity: Number.isFinite(v) && v >= 0 ? v : 0,
-                        });
+                        const numeric = Number.isFinite(v) && v >= 0 ? v : 0;
+                        updateItem(item.id, { quantity: numeric });
+                        setQuantityInputs((prev) => ({
+                          ...prev,
+                          [item.id]: numeric === 0 ? '' : String(numeric),
+                        }));
                       }}
                       className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                     />
@@ -552,14 +605,21 @@ export function QuoteEditorPage() {
                     <input
                       type="text"
                       inputMode="decimal"
-                      value={Number.isFinite(item.unitPrice) ? String(item.unitPrice) : ''}
+                      value={unitPriceInputs[item.id] ?? ''}
                       onChange={(e) => {
+                        const value = e.target.value;
+                        setUnitPriceInputs((prev) => ({ ...prev, [item.id]: value }));
+                      }}
+                      onBlur={(e) => {
                         const raw = e.target.value.replace(',', '.');
-                        const normalized = raw.startsWith('.') ? `0${raw}` : raw;
+                        const normalized = raw === '' ? '' : raw.startsWith('.') ? `0${raw}` : raw;
                         const v = Number(normalized);
-                        updateItem(item.id, {
-                          unitPrice: Number.isFinite(v) && v >= 0 ? v : 0,
-                        });
+                        const numeric = Number.isFinite(v) && v >= 0 ? v : 0;
+                        updateItem(item.id, { unitPrice: numeric });
+                        setUnitPriceInputs((prev) => ({
+                          ...prev,
+                          [item.id]: numeric === 0 ? '' : String(numeric),
+                        }));
                       }}
                       className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                     />
@@ -664,9 +724,6 @@ export function QuoteEditorPage() {
                   >
                     {t('delete') ?? 'Delete'}
                   </button>
-                  <span className="text-[11px] text-slate-500">
-                    {(att.size / 1024).toFixed(1)} KB
-                  </span>
                 </div>
               </li>
             ))}
