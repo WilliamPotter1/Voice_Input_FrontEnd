@@ -82,6 +82,7 @@ export function QuoteEditorPage() {
   const [showFullTranscription, setShowFullTranscription] = useState(false);
   const [currency, setCurrency] = useState<string>(extractedCurrency || 'EUR');
   const [previewAttachment, setPreviewAttachment] = useState<QuoteAttachment | null>(null);
+  const [pendingAttachments, setPendingAttachments] = useState<File[]>([]);
 
   const {
     clientName,
@@ -179,11 +180,22 @@ export function QuoteEditorPage() {
   const createMutation = useMutation({
     mutationFn: (payload: { clientName?: string; customerAddress?: string; currency?: string; vatRate: number; items: QuoteItemInput[] }) =>
       createQuote(payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['quotes'] });
-      toast.success(t('quoteSaved'));
-      reset();
-      navigate('/quotes');
+    onSuccess: async (created) => {
+      try {
+        if (pendingAttachments.length) {
+          await Promise.all(
+            pendingAttachments.map((file) => uploadQuoteAttachment(created.id, file))
+          );
+          setPendingAttachments([]);
+          queryClient.invalidateQueries({ queryKey: ['quoteAttachments', created.id] });
+        }
+        queryClient.invalidateQueries({ queryKey: ['quotes'] });
+        toast.success(t('quoteSaved'));
+        reset();
+        navigate('/quotes');
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : 'Failed to upload attachments');
+      }
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -587,23 +599,24 @@ export function QuoteEditorPage() {
             </h2>
             <p className="text-xs text-slate-500">{t('attachmentsHint')}</p>
           </div>
-          {isEdit && id ? (
-            <label className="inline-flex cursor-pointer items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100">
-              {uploadAttachmentMutation.isPending ? t('saving') : t('addAttachment')}
-              <input
-                type="file"
-                className="sr-only"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (!file) return;
+          <label className="inline-flex cursor-pointer items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100">
+            {uploadAttachmentMutation.isPending ? t('saving') : t('addAttachment')}
+            <input
+              type="file"
+              className="sr-only"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                if (id) {
                   uploadAttachmentMutation.mutate(file);
-                  e.target.value = '';
-                }}
-              />
-            </label>
-          ) : (
-            <p className="text-xs text-slate-400 sm:text-right">{t('attachmentsSaveFirst')}</p>
-          )}
+                } else {
+                  setPendingAttachments((prev) => [...prev, file]);
+                  toast.success(t('attachmentQueued') ?? 'Attachment will be uploaded when you save the quote.');
+                }
+                e.target.value = '';
+              }}
+            />
+          </label>
         </div>
 
         {attachments.length > 0 && (
@@ -621,15 +634,21 @@ export function QuoteEditorPage() {
                   {att.filename}
                 </button>
                 <div className="flex items-center justify-end gap-2 shrink-0 whitespace-nowrap">
-                  {(isImageAttachment(att) || isPdfAttachment(att)) && (
-                    <button
-                      type="button"
-                      onClick={() => setPreviewAttachment(att)}
-                      className="rounded-lg border border-slate-300 px-2 py-1 text-[11px] font-medium text-slate-600 hover:bg-slate-100"
-                    >
-                      {t('preview') ?? 'Preview'}
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (isImageAttachment(att) || isPdfAttachment(att)) {
+                        setPreviewAttachment(att);
+                      }
+                    }}
+                    className={`rounded-lg border border-slate-300 px-2 py-1 text-[11px] font-medium text-slate-600 hover:bg-slate-100 ${
+                      isImageAttachment(att) || isPdfAttachment(att)
+                        ? ''
+                        : 'invisible pointer-events-none'
+                    }`}
+                  >
+                    {t('preview') ?? 'Preview'}
+                  </button>
                   <button
                     type="button"
                     onClick={async () => {
@@ -647,6 +666,49 @@ export function QuoteEditorPage() {
                   </button>
                   <span className="text-[11px] text-slate-500">
                     {(att.size / 1024).toFixed(1)} KB
+                  </span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {!id && pendingAttachments.length > 0 && (
+          <ul className="mt-3 space-y-2">
+            {pendingAttachments.map((file, idx) => (
+              <li
+                key={`${file.name}-${file.size}-${file.lastModified}-${idx}`}
+                className="grid grid-cols-[minmax(0,1fr)_140px] items-center gap-2 rounded-xl border border-dashed border-slate-200 bg-slate-50 px-3 py-2 text-xs sm:text-sm text-slate-700"
+              >
+                <span className="truncate text-left text-slate-700">
+                  {file.name}
+                  <span className="ml-1 text-[10px] text-slate-400">
+                    ({t('pending') ?? 'pending'})
+                  </span>
+                </span>
+                <div className="flex items-center justify-end gap-2 shrink-0 whitespace-nowrap">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      window.open(URL.createObjectURL(file), '_blank', 'noopener,noreferrer')
+                    }
+                    className="rounded-lg border border-slate-300 px-2 py-1 text-[11px] font-medium text-slate-600 hover:bg-slate-100"
+                  >
+                    {t('preview') ?? 'Preview'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setPendingAttachments((prev) =>
+                        prev.filter((_, i) => i !== idx)
+                      )
+                    }
+                    className="rounded-lg border border-red-100 px-2 py-1 text-[11px] font-medium text-red-600 hover:bg-red-50"
+                  >
+                    {t('delete') ?? 'Delete'}
+                  </button>
+                  <span className="text-[11px] text-slate-500">
+                    {(file.size / 1024).toFixed(1)} KB
                   </span>
                 </div>
               </li>

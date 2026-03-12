@@ -98,6 +98,8 @@ export const translations = {
     close: 'Schließen',
     previewNotAvailable: 'Für diesen Dateityp ist keine Vorschau verfügbar.',
     delete: 'Löschen',
+    attachmentQueued: 'Anhang wird beim Speichern hochgeladen.',
+    pending: 'ausstehend',
   },
 
   en: {
@@ -193,6 +195,8 @@ export const translations = {
     close: 'Close',
     previewNotAvailable: 'Preview is not available for this file type.',
     delete: 'Delete',
+    attachmentQueued: 'Attachment will be uploaded when you save the quote.',
+    pending: 'pending',
   },
 
   it: {
@@ -288,6 +292,8 @@ export const translations = {
     close: 'Chiudi',
     previewNotAvailable: 'Anteprima non disponibile per questo tipo di file.',
     delete: 'Elimina',
+    attachmentQueued: 'L\'allegato verrà caricato al salvataggio del preventivo.',
+    pending: 'in sospeso',
   },
 
   fr: {
@@ -383,6 +389,8 @@ export const translations = {
     close: 'Fermer',
     previewNotAvailable: 'Aucun aperçu n\'est disponible pour ce type de fichier.',
     delete: 'Supprimer',
+    attachmentQueued: 'La pièce jointe sera téléchargée lors de la sauvegarde du devis.',
+    pending: 'en attente',
   },
 
   es: {
@@ -478,6 +486,8 @@ export const translations = {
     close: 'Cerrar',
     previewNotAvailable: 'No hay vista previa disponible para este tipo de archivo.',
     delete: 'Eliminar',
+    attachmentQueued: 'El adjunto se subirá cuando guardes el presupuesto.',
+    pending: 'pendiente',
   },
 } as const;
 
