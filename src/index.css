@@ -35,6 +35,8 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  top: 0 !important;
+  position: static !important;
 }
 
 /* Focus ring for accessibility */

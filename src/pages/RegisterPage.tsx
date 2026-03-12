@@ -40,7 +40,7 @@ export function RegisterPage() {
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">{t('registerTitle')}</h1>
           <p className="mt-1.5 text-sm text-slate-500">{t('registerDesc')}</p>
         </div>
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-5 notranslate" translate="no">
           <div>
             <label htmlFor="reg-email" className="mb-1.5 block text-sm font-medium text-slate-700">
               {t('email')}
@@ -54,8 +54,9 @@ export function RegisterPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 autoComplete="email"
+                translate="no"
                 placeholder={t('emailPlaceholder')}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2.5 pl-10 pr-4 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2.5 pl-10 pr-4 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 notranslate"
               />
             </div>
           </div>
@@ -73,8 +74,9 @@ export function RegisterPage() {
                 required
                 minLength={8}
                 autoComplete="new-password"
+                translate="no"
                 placeholder={t('passwordMinLength')}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2.5 pl-10 pr-4 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2.5 pl-10 pr-4 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 notranslate"
               />
             </div>
             <p className="mt-1 text-xs text-slate-400">{t('passwordMinLength')}</p>
