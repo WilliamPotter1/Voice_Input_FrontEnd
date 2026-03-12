@@ -764,9 +764,6 @@ export function QuoteEditorPage() {
                   >
                     {t('delete') ?? 'Delete'}
                   </button>
-                  <span className="text-[11px] text-slate-500">
-                    {(file.size / 1024).toFixed(1)} KB
-                  </span>
                 </div>
               </li>
             ))}
