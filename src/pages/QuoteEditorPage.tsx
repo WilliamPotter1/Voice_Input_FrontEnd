@@ -103,35 +103,18 @@ export function QuoteEditorPage() {
   } = useQuoteFormStore();
   const { subtotal, vat, total } = useQuoteTotals();
 
+  const itemIds = items.map((it) => it.id).join(',');
   useEffect(() => {
-    // Keep local input strings in sync with numeric values when items change (e.g. after load).
-    setQuantityInputs((prev) => {
-      const next: Record<string, string> = {};
-      for (const it of items) {
-        const existing = prev[it.id];
-        next[it.id] =
-          existing !== undefined
-            ? existing
-            : Number.isFinite(it.quantity)
-              ? String(it.quantity)
-              : '';
-      }
-      return next;
-    });
-    setUnitPriceInputs((prev) => {
-      const next: Record<string, string> = {};
-      for (const it of items) {
-        const existing = prev[it.id];
-        next[it.id] =
-          existing !== undefined
-            ? existing
-            : Number.isFinite(it.unitPrice)
-              ? String(it.unitPrice)
-              : '';
-      }
-      return next;
-    });
-  }, [items]);
+    const qtyNext: Record<string, string> = {};
+    const priceNext: Record<string, string> = {};
+    for (const it of items) {
+      qtyNext[it.id] = Number.isFinite(it.quantity) ? String(it.quantity) : '';
+      priceNext[it.id] = Number.isFinite(it.unitPrice) ? String(it.unitPrice) : '';
+    }
+    setQuantityInputs(qtyNext);
+    setUnitPriceInputs(priceNext);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [itemIds]);
 
   const attachmentsQuery = useQuery({
     queryKey: ['quoteAttachments', id],
