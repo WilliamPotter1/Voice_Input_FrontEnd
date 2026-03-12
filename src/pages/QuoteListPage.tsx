@@ -76,7 +76,7 @@ export function QuoteListPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">{t('myQuotes')}</h1>
           <p className="mt-1 text-slate-600">
-            {quotes.length} {quotes.length !== 1 ? t('navQuotes').toLowerCase() : t('quote').toLowerCase()}
+            {quotes.length} {quotes.length !== 1 ? t('navQuotes') : t('quote')}
           </p>
         </div>
         <Link
