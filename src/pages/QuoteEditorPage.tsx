@@ -611,7 +611,7 @@ export function QuoteEditorPage() {
             {attachments.map((att) => (
               <li
                 key={att.id}
-                className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs sm:text-sm text-slate-700"
+                className="grid grid-cols-[minmax(0,1fr)_140px] items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs sm:text-sm text-slate-700"
               >
                 <button
                   type="button"
@@ -620,7 +620,7 @@ export function QuoteEditorPage() {
                 >
                   {att.filename}
                 </button>
-                <div className="flex items-center gap-2 shrink-0 whitespace-nowrap">
+                <div className="flex items-center justify-end gap-2 shrink-0 whitespace-nowrap">
                   {(isImageAttachment(att) || isPdfAttachment(att)) && (
                     <button
                       type="button"
