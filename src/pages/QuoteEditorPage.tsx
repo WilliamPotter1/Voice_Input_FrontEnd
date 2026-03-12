@@ -387,7 +387,7 @@ export function QuoteEditorPage() {
                 className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs sm:text-sm text-slate-700"
               >
                 <a
-                  href={att.url}
+                  href={`/api${att.url}`}
                   target="_blank"
                   rel="noreferrer"
                   className="max-w-[70%] truncate hover:underline"
