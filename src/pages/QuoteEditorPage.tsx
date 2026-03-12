@@ -467,7 +467,10 @@ export function QuoteEditorPage() {
                     <input
                       type="text"
                       inputMode="decimal"
-                      value={quantityInputs[item.id] ?? ''}
+                      value={
+                        quantityInputs[item.id] ??
+                        (Number.isFinite(item.quantity) ? String(item.quantity) : '')
+                      }
                       onChange={(e) => {
                         const value = e.target.value;
                         setQuantityInputs((prev) => ({ ...prev, [item.id]: value }));
@@ -490,7 +493,10 @@ export function QuoteEditorPage() {
                     <input
                       type="text"
                       inputMode="decimal"
-                      value={unitPriceInputs[item.id] ?? ''}
+                      value={
+                        unitPriceInputs[item.id] ??
+                        (Number.isFinite(item.unitPrice) ? String(item.unitPrice) : '')
+                      }
                       onChange={(e) => {
                         const value = e.target.value;
                         setUnitPriceInputs((prev) => ({ ...prev, [item.id]: value }));
@@ -565,7 +571,10 @@ export function QuoteEditorPage() {
                     <input
                       type="text"
                       inputMode="decimal"
-                      value={quantityInputs[item.id] ?? ''}
+                      value={
+                        quantityInputs[item.id] ??
+                        (Number.isFinite(item.quantity) ? String(item.quantity) : '')
+                      }
                       onChange={(e) => {
                         const value = e.target.value;
                         setQuantityInputs((prev) => ({ ...prev, [item.id]: value }));
@@ -605,7 +614,10 @@ export function QuoteEditorPage() {
                     <input
                       type="text"
                       inputMode="decimal"
-                      value={unitPriceInputs[item.id] ?? ''}
+                      value={
+                        unitPriceInputs[item.id] ??
+                        (Number.isFinite(item.unitPrice) ? String(item.unitPrice) : '')
+                      }
                       onChange={(e) => {
                         const value = e.target.value;
                         setUnitPriceInputs((prev) => ({ ...prev, [item.id]: value }));
