@@ -633,7 +633,7 @@ export function QuoteEditorPage() {
                 >
                   {att.filename}
                 </button>
-                <div className="flex items-center justify-end gap-2 shrink-0 whitespace-nowrap">
+                <div className="flex items-center justify-start gap-2 shrink-0 whitespace-nowrap">
                   <button
                     type="button"
                     onClick={() => {
@@ -686,7 +686,7 @@ export function QuoteEditorPage() {
                     ({t('pending') ?? 'pending'})
                   </span>
                 </span>
-                <div className="flex items-center justify-end gap-2 shrink-0 whitespace-nowrap">
+                <div className="flex items-center justify-start gap-2 shrink-0 whitespace-nowrap">
                   <button
                     type="button"
                     onClick={() =>
