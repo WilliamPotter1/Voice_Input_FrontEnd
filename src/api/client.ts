@@ -229,3 +229,14 @@ export async function uploadQuoteAttachment(quoteId: string, file: File): Promis
   }
   return data as QuoteAttachment;
 }
+
+export async function deleteQuoteAttachment(quoteId: string, attachmentId: string): Promise<void> {
+  const res = await fetchApi(apiUrl(`/quotes/${quoteId}/attachments/${attachmentId}`), {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok && res.status !== 204) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error((data as { error?: string }).error ?? 'Failed to delete attachment');
+  }
+}

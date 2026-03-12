@@ -97,6 +97,7 @@ export const translations = {
     preview: 'Vorschau',
     close: 'Schließen',
     previewNotAvailable: 'Für diesen Dateityp ist keine Vorschau verfügbar.',
+    delete: 'Löschen',
   },
 
   en: {
@@ -191,6 +192,7 @@ export const translations = {
     preview: 'Preview',
     close: 'Close',
     previewNotAvailable: 'Preview is not available for this file type.',
+    delete: 'Delete',
   },
 
   it: {
@@ -285,6 +287,7 @@ export const translations = {
     preview: 'Anteprima',
     close: 'Chiudi',
     previewNotAvailable: 'Anteprima non disponibile per questo tipo di file.',
+    delete: 'Elimina',
   },
 
   fr: {
@@ -379,6 +382,7 @@ export const translations = {
     preview: 'Aperçu',
     close: 'Fermer',
     previewNotAvailable: 'Aucun aperçu n\'est disponible pour ce type de fichier.',
+    delete: 'Supprimer',
   },
 
   es: {
@@ -473,6 +477,7 @@ export const translations = {
     preview: 'Vista previa',
     close: 'Cerrar',
     previewNotAvailable: 'No hay vista previa disponible para este tipo de archivo.',
+    delete: 'Eliminar',
   },
 } as const;
 

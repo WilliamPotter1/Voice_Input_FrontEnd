@@ -9,6 +9,7 @@ import {
   getQuote,
   listQuoteAttachments,
   uploadQuoteAttachment,
+  deleteQuoteAttachment,
   type QuoteItemInput,
   type QuoteAttachment,
 } from '../api/client';
@@ -610,17 +611,16 @@ export function QuoteEditorPage() {
             {attachments.map((att) => (
               <li
                 key={att.id}
-                className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs sm:text-sm text-slate-700"
+                className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs sm:text-sm text-slate-700"
               >
-                <a
-                  href={getAttachmentUrl(att)}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="max-w-[70%] truncate hover:underline"
+                <button
+                  type="button"
+                  onClick={() => window.open(getAttachmentUrl(att), '_blank', 'noopener,noreferrer')}
+                  className="truncate text-left text-emerald-700 hover:underline"
                 >
                   {att.filename}
-                </a>
-                <div className="ml-3 flex items-center gap-3 shrink-0">
+                </button>
+                <div className="flex items-center gap-2 shrink-0 whitespace-nowrap">
                   {(isImageAttachment(att) || isPdfAttachment(att)) && (
                     <button
                       type="button"
@@ -630,6 +630,21 @@ export function QuoteEditorPage() {
                       {t('preview') ?? 'Preview'}
                     </button>
                   )}
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (!id) return;
+                      try {
+                        await deleteQuoteAttachment(id, att.id);
+                        queryClient.invalidateQueries({ queryKey: ['quoteAttachments', id] });
+                      } catch (e) {
+                        toast.error(e instanceof Error ? e.message : 'Failed to delete attachment');
+                      }
+                    }}
+                    className="rounded-lg border border-red-100 px-2 py-1 text-[11px] font-medium text-red-600 hover:bg-red-50"
+                  >
+                    {t('delete') ?? 'Delete'}
+                  </button>
                   <span className="text-[11px] text-slate-500">
                     {(att.size / 1024).toFixed(1)} KB
                   </span>
