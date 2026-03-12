@@ -80,6 +80,7 @@ export function QuoteEditorPage() {
   const transcription = locationState?.transcription ?? '';
   const [showFullTranscription, setShowFullTranscription] = useState(false);
   const [currency, setCurrency] = useState<string>(extractedCurrency || 'EUR');
+  const [previewAttachment, setPreviewAttachment] = useState<QuoteAttachment | null>(null);
 
   const {
     clientName,
@@ -113,6 +114,23 @@ export function QuoteEditorPage() {
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
+  function getAttachmentUrl(att: QuoteAttachment): string {
+    // att.url is a path like "/quotes/:id/attachments/:attachmentId/download" or with /api prefix.
+    if (att.url.startsWith('http://') || att.url.startsWith('https://')) return att.url;
+    // Ensure a single leading "/"
+    const path = att.url.startsWith('/') ? att.url : `/${att.url}`;
+    // Our backend is mounted under /api, so prefix if not already there.
+    return path.startsWith('/api') ? path : `/api${path}`;
+  }
+
+  function isImageAttachment(att: QuoteAttachment): boolean {
+    return att.mimeType.startsWith('image/');
+  }
+
+  function isPdfAttachment(att: QuoteAttachment): boolean {
+    return att.mimeType === 'application/pdf';
+  }
 
   const quoteQuery = useQuery({
     queryKey: ['quote', id],
@@ -387,21 +405,77 @@ export function QuoteEditorPage() {
                 className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs sm:text-sm text-slate-700"
               >
                 <a
-                  href={`/api${att.url}`}
+                  href={getAttachmentUrl(att)}
                   target="_blank"
                   rel="noreferrer"
                   className="max-w-[70%] truncate hover:underline"
                 >
                   {att.filename}
                 </a>
-                <span className="ml-3 shrink-0 text-[11px] text-slate-500">
-                  {(att.size / 1024).toFixed(1)} KB
-                </span>
+                <div className="ml-3 flex items-center gap-3 shrink-0">
+                  {(isImageAttachment(att) || isPdfAttachment(att)) && (
+                    <button
+                      type="button"
+                      onClick={() => setPreviewAttachment(att)}
+                      className="rounded-lg border border-slate-300 px-2 py-1 text-[11px] font-medium text-slate-600 hover:bg-slate-100"
+                    >
+                      {t('preview') ?? 'Preview'}
+                    </button>
+                  )}
+                  <span className="text-[11px] text-slate-500">
+                    {(att.size / 1024).toFixed(1)} KB
+                  </span>
+                </div>
               </li>
             ))}
           </ul>
         )}
       </section>
+
+      {previewAttachment && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 px-4">
+          <div className="max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-xl">
+            <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+              <div className="min-w-0 pr-3">
+                <p className="truncate text-sm font-medium text-slate-900">
+                  {previewAttachment.filename}
+                </p>
+                <p className="text-xs text-slate-500">
+                  {(previewAttachment.size / 1024).toFixed(1)} KB · {previewAttachment.mimeType}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPreviewAttachment(null)}
+                className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+              >
+                {t('close') ?? 'Close'}
+              </button>
+            </div>
+            <div className="max-h-[80vh] overflow-auto bg-slate-50">
+              {isImageAttachment(previewAttachment) ? (
+                <div className="flex items-center justify-center p-4">
+                  <img
+                    src={getAttachmentUrl(previewAttachment)}
+                    alt={previewAttachment.filename}
+                    className="max-h-[70vh] max-w-full rounded-lg border border-slate-200 object-contain"
+                  />
+                </div>
+              ) : isPdfAttachment(previewAttachment) ? (
+                <iframe
+                  src={getAttachmentUrl(previewAttachment)}
+                  title={previewAttachment.filename}
+                  className="h-[70vh] w-full border-0 bg-white"
+                />
+              ) : (
+                <div className="p-4 text-sm text-slate-600">
+                  {t('previewNotAvailable') ?? 'Preview is not available for this file type.'}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Line items — Desktop: table, Mobile: cards */}
       <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">

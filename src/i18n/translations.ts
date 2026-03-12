@@ -94,6 +94,9 @@ export const translations = {
     addAttachment: 'Anhang hinzufügen',
     attachmentsSaveFirst: 'Speichern Sie das Angebot zuerst, um Anhänge hinzuzufügen.',
     attachmentUploaded: 'Anhang hochgeladen',
+    preview: 'Vorschau',
+    close: 'Schließen',
+    previewNotAvailable: 'Für diesen Dateityp ist keine Vorschau verfügbar.',
   },
 
   en: {
@@ -185,6 +188,9 @@ export const translations = {
     addAttachment: 'Add attachment',
     attachmentsSaveFirst: 'Save the quote first to add attachments.',
     attachmentUploaded: 'Attachment uploaded',
+    preview: 'Preview',
+    close: 'Close',
+    previewNotAvailable: 'Preview is not available for this file type.',
   },
 
   it: {
@@ -276,6 +282,9 @@ export const translations = {
     addAttachment: 'Aggiungi allegato',
     attachmentsSaveFirst: 'Salva prima il preventivo per aggiungere allegati.',
     attachmentUploaded: 'Allegato caricato',
+    preview: 'Anteprima',
+    close: 'Chiudi',
+    previewNotAvailable: 'Anteprima non disponibile per questo tipo di file.',
   },
 
   fr: {
@@ -367,6 +376,9 @@ export const translations = {
     addAttachment: 'Ajouter une pièce jointe',
     attachmentsSaveFirst: 'Sauvegardez d\'abord le devis pour ajouter des pièces jointes.',
     attachmentUploaded: 'Pièce jointe téléchargée',
+    preview: 'Aperçu',
+    close: 'Fermer',
+    previewNotAvailable: 'Aucun aperçu n\'est disponible pour ce type de fichier.',
   },
 
   es: {
@@ -458,6 +470,9 @@ export const translations = {
     addAttachment: 'Añadir adjunto',
     attachmentsSaveFirst: 'Guarda primero el presupuesto para añadir adjuntos.',
     attachmentUploaded: 'Adjunto subido',
+    preview: 'Vista previa',
+    close: 'Cerrar',
+    previewNotAvailable: 'No hay vista previa disponible para este tipo de archivo.',
   },
 } as const;
 
