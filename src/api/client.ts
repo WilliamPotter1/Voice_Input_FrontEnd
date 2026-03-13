@@ -333,3 +333,23 @@ export async function downloadQuotePdf(
   document.body.removeChild(a);
   URL.revokeObjectURL(blobUrl);
 }
+
+// ---- Send quote (email / WhatsApp) -----------------------------------------
+
+export async function sendQuote(
+  quoteId: string,
+  channel: 'email' | 'whatsapp',
+  recipient: string,
+  quoteDate: string,
+  validUntil: string,
+): Promise<void> {
+  const res = await fetchApi(apiUrl(`/quotes/${quoteId}/send`), {
+    method: 'POST',
+    headers: getAuthJsonHeaders(),
+    body: JSON.stringify({ channel, recipient, quoteDate, validUntil }),
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error((body as { error?: string }).error ?? 'Failed to send quote');
+  }
+}

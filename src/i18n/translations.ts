@@ -145,6 +145,17 @@ export const translations = {
     generate: 'PDF erstellen',
     pdfGenerated: 'PDF wurde erstellt',
     pdfFailed: 'PDF konnte nicht erstellt werden',
+
+    // Send quote
+    sendQuoteTitle: 'Angebot versenden',
+    sendByEmail: 'Per E-Mail',
+    sendByWhatsapp: 'Per WhatsApp',
+    emailAddress: 'E-Mail-Adresse',
+    whatsappNumber: 'WhatsApp-Nummer',
+    send: 'Senden',
+    sending: 'Wird gesendet…',
+    quoteSent: 'Angebot wurde versendet',
+    quoteSendFailed: 'Angebot konnte nicht versendet werden',
   },
 
   en: {
@@ -285,6 +296,16 @@ export const translations = {
     generate: 'Generate PDF',
     pdfGenerated: 'PDF generated',
     pdfFailed: 'Failed to generate PDF',
+
+    sendQuoteTitle: 'Send quote',
+    sendByEmail: 'By email',
+    sendByWhatsapp: 'By WhatsApp',
+    emailAddress: 'Email address',
+    whatsappNumber: 'WhatsApp number',
+    send: 'Send',
+    sending: 'Sending…',
+    quoteSent: 'Quote sent',
+    quoteSendFailed: 'Failed to send quote',
   },
 
   it: {
@@ -425,6 +446,16 @@ export const translations = {
     generate: 'Genera PDF',
     pdfGenerated: 'PDF generato',
     pdfFailed: 'Generazione PDF non riuscita',
+
+    sendQuoteTitle: 'Invia preventivo',
+    sendByEmail: 'Per e-mail',
+    sendByWhatsapp: 'Via WhatsApp',
+    emailAddress: 'Indirizzo e-mail',
+    whatsappNumber: 'Numero WhatsApp',
+    send: 'Invia',
+    sending: 'Invio…',
+    quoteSent: 'Preventivo inviato',
+    quoteSendFailed: 'Invio del preventivo non riuscito',
   },
 
   fr: {
@@ -565,6 +596,16 @@ export const translations = {
     generate: 'Générer PDF',
     pdfGenerated: 'PDF généré',
     pdfFailed: 'Échec de la génération du PDF',
+
+    sendQuoteTitle: 'Envoyer le devis',
+    sendByEmail: 'Par e-mail',
+    sendByWhatsapp: 'Par WhatsApp',
+    emailAddress: 'Adresse e-mail',
+    whatsappNumber: 'Numéro WhatsApp',
+    send: 'Envoyer',
+    sending: 'Envoi…',
+    quoteSent: 'Devis envoyé',
+    quoteSendFailed: 'Échec de l’envoi du devis',
   },
 
   es: {
@@ -705,6 +746,16 @@ export const translations = {
     generate: 'Generar PDF',
     pdfGenerated: 'PDF generado',
     pdfFailed: 'Error al generar el PDF',
+
+    sendQuoteTitle: 'Enviar presupuesto',
+    sendByEmail: 'Por correo',
+    sendByWhatsapp: 'Por WhatsApp',
+    emailAddress: 'Dirección de correo',
+    whatsappNumber: 'Número de WhatsApp',
+    send: 'Enviar',
+    sending: 'Enviando…',
+    quoteSent: 'Presupuesto enviado',
+    quoteSendFailed: 'No se pudo enviar el presupuesto',
   },
 } as const;
 
