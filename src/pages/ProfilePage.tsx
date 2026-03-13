@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Loader2, Camera } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getProfile, updateProfile, uploadAvatar, type UserProfile } from '../api/client';
+import { getProfile, updateProfile, uploadAvatar } from '../api/client';
 import { useTranslation } from '../i18n/useTranslation';
 
 interface ProfileFormState {
