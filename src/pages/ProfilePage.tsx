@@ -5,6 +5,22 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getProfile, updateProfile, uploadAvatar, type UserProfile } from '../api/client';
 import { useTranslation } from '../i18n/useTranslation';
 
+interface ProfileFormState {
+  name: string;
+  phone: string;
+  taxRate: string;
+  websiteUrl: string;
+  companyName: string;
+  companyAddress: string;
+  bankName: string;
+  blz: string;
+  kto: string;
+  iban: string;
+  bic: string;
+  taxNumber: string;
+  taxOfficeName: string;
+}
+
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6">
@@ -57,7 +73,7 @@ export function ProfilePage() {
     queryFn: getProfile,
   });
 
-  const [form, setForm] = useState<Omit<UserProfile, 'email' | 'avatarUrl'> & { taxRate: string }>({
+  const [form, setForm] = useState<ProfileFormState>({
     name: '',
     phone: '',
     taxRate: '',
@@ -134,7 +150,7 @@ export function ProfilePage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  function set(key: keyof typeof form) {
+  function set(key: keyof ProfileFormState) {
     return (v: string) => setForm((prev) => ({ ...prev, [key]: v }));
   }
 
