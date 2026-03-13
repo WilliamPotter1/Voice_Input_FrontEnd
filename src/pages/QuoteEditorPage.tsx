@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { Plus, Trash2, Loader2, ArrowLeft } from 'lucide-react';
+import { Plus, Trash2, Loader2, ArrowLeft, Download } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
@@ -15,6 +15,7 @@ import {
 } from '../api/client';
 import { useQuoteFormStore, useQuoteTotals } from '../stores/quoteFormStore';
 import { useTranslation } from '../i18n/useTranslation';
+import { ExportPdfModal } from '../components/ExportPdfModal';
 
 function getUnitFromItemName(name: string): string {
   const match = name.match(/\(([^)]+)\)\s*$/);
@@ -85,6 +86,7 @@ export function QuoteEditorPage() {
   const [pendingAttachments, setPendingAttachments] = useState<File[]>([]);
   const [quantityInputs, setQuantityInputs] = useState<Record<string, string>>({});
   const [unitPriceInputs, setUnitPriceInputs] = useState<Record<string, string>>({});
+  const [exportOpen, setExportOpen] = useState(false);
 
   const {
     clientName,
@@ -303,6 +305,16 @@ export function QuoteEditorPage() {
               t('saveQuote')
             )}
           </button>
+          {isEdit && (
+            <button
+              type="button"
+              onClick={() => setExportOpen(true)}
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-slate-700 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-slate-800 sm:flex-none"
+            >
+              <Download className="size-4" />
+              {t('exportPdf')}
+            </button>
+          )}
         </div>
       </div>
 
@@ -830,6 +842,10 @@ export function QuoteEditorPage() {
           </div>
         </div>
       </div>
+
+      {exportOpen && id && (
+        <ExportPdfModal quoteId={id} onClose={() => setExportOpen(false)} />
+      )}
     </div>
   );
 }

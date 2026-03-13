@@ -135,6 +135,16 @@ export const translations = {
     profileSectionBank: 'Bankverbindung',
     profileSectionTax: 'Steuerdaten',
     goToProfile: 'Zum Profil',
+
+    // PDF export
+    exportPdf: 'PDF exportieren',
+    exportPdfTitle: 'Angebot als PDF exportieren',
+    quoteDate: 'Angebotsdatum',
+    validUntil: 'Gültig bis',
+    generating: 'Wird erstellt…',
+    generate: 'PDF erstellen',
+    pdfGenerated: 'PDF wurde erstellt',
+    pdfFailed: 'PDF konnte nicht erstellt werden',
   },
 
   en: {
@@ -266,6 +276,15 @@ export const translations = {
     profileSectionBank: 'Bank details',
     profileSectionTax: 'Tax information',
     goToProfile: 'Go to profile',
+
+    exportPdf: 'Export PDF',
+    exportPdfTitle: 'Export quote as PDF',
+    quoteDate: 'Quote date',
+    validUntil: 'Valid until',
+    generating: 'Generating…',
+    generate: 'Generate PDF',
+    pdfGenerated: 'PDF generated',
+    pdfFailed: 'Failed to generate PDF',
   },
 
   it: {
@@ -397,6 +416,15 @@ export const translations = {
     profileSectionBank: 'Coordinate bancarie',
     profileSectionTax: 'Dati fiscali',
     goToProfile: 'Vai al profilo',
+
+    exportPdf: 'Esporta PDF',
+    exportPdfTitle: 'Esporta preventivo come PDF',
+    quoteDate: 'Data preventivo',
+    validUntil: 'Valido fino al',
+    generating: 'Generazione…',
+    generate: 'Genera PDF',
+    pdfGenerated: 'PDF generato',
+    pdfFailed: 'Generazione PDF non riuscita',
   },
 
   fr: {
@@ -528,6 +556,15 @@ export const translations = {
     profileSectionBank: 'Coordonnées bancaires',
     profileSectionTax: 'Informations fiscales',
     goToProfile: 'Aller au profil',
+
+    exportPdf: 'Exporter PDF',
+    exportPdfTitle: 'Exporter le devis en PDF',
+    quoteDate: 'Date du devis',
+    validUntil: 'Valable jusqu\'au',
+    generating: 'Génération…',
+    generate: 'Générer PDF',
+    pdfGenerated: 'PDF généré',
+    pdfFailed: 'Échec de la génération du PDF',
   },
 
   es: {
@@ -659,6 +696,15 @@ export const translations = {
     profileSectionBank: 'Datos bancarios',
     profileSectionTax: 'Datos fiscales',
     goToProfile: 'Ir al perfil',
+
+    exportPdf: 'Exportar PDF',
+    exportPdfTitle: 'Exportar presupuesto como PDF',
+    quoteDate: 'Fecha del presupuesto',
+    validUntil: 'Válido hasta',
+    generating: 'Generando…',
+    generate: 'Generar PDF',
+    pdfGenerated: 'PDF generado',
+    pdfFailed: 'Error al generar el PDF',
   },
 } as const;
 

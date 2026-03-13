@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FileText, Pencil, Trash2, Plus, Loader2 } from 'lucide-react';
+import { FileText, Pencil, Trash2, Plus, Loader2, Download } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { listQuotes, deleteQuote } from '../api/client';
 import { useTranslation } from '../i18n/useTranslation';
+import { ExportPdfModal } from '../components/ExportPdfModal';
 
 function formatMoney(n: number): string {
   return new Intl.NumberFormat(undefined, {
@@ -23,6 +25,7 @@ function formatDate(iso: string): string {
 export function QuoteListPage() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+  const [exportQuoteId, setExportQuoteId] = useState<string | null>(null);
   const { data: quotes, isLoading } = useQuery({
     queryKey: ['quotes'],
     queryFn: listQuotes,
@@ -105,6 +108,15 @@ export function QuoteListPage() {
                 {formatMoney(q.total)}
               </span>
               <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => setExportQuoteId(q.id)}
+                  className="flex size-10 items-center justify-center rounded-xl text-slate-500 transition hover:bg-emerald-50 hover:text-emerald-600"
+                  aria-label={t('exportPdf')}
+                  title={t('exportPdf')}
+                >
+                  <Download className="size-5" />
+                </button>
                 <Link
                   to={`/quotes/${q.id}`}
                   className="flex size-10 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
@@ -129,6 +141,13 @@ export function QuoteListPage() {
           </li>
         ))}
       </ul>
+
+      {exportQuoteId && (
+        <ExportPdfModal
+          quoteId={exportQuoteId}
+          onClose={() => setExportQuoteId(null)}
+        />
+      )}
     </div>
   );
 }

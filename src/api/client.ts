@@ -305,3 +305,31 @@ export async function uploadAvatar(file: File): Promise<{ avatarUrl: string }> {
   if (!res.ok) throw new Error((body as { error?: string }).error ?? 'Failed to upload avatar');
   return body as { avatarUrl: string };
 }
+
+// ---- PDF Export -------------------------------------------------------------
+
+export async function downloadQuotePdf(
+  quoteId: string,
+  quoteDate: string,
+  validUntil: string,
+  lang: string,
+): Promise<void> {
+  const params = new URLSearchParams({ quoteDate, validUntil, lang });
+  const url = apiUrl(`/quotes/${quoteId}/pdf?${params.toString()}`);
+  const res = await fetch(url, { headers: getAuthHeaders() });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: res.statusText }));
+    throw new Error((err as { error?: string }).error ?? 'Failed to generate PDF');
+  }
+  const blob = await res.blob();
+  const blobUrl = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = blobUrl;
+  const disposition = res.headers.get('Content-Disposition') ?? '';
+  const filenameMatch = disposition.match(/filename="?([^"]+)"?/);
+  a.download = filenameMatch?.[1] ?? `Angebot-${quoteId.slice(0, 8)}.pdf`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(blobUrl);
+}
