@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { LogOut, Mic, FileText, Menu, X } from 'lucide-react';
+import { LogOut, Mic, FileText, Menu, X, UserCircle } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import { useTranslation } from '../i18n/useTranslation';
 
@@ -14,6 +14,7 @@ export function Layout() {
   const navLinks = [
     { to: '/', label: t('navVoice'), icon: Mic },
     { to: '/quotes', label: t('navQuotes'), icon: FileText },
+    { to: '/profile', label: t('navProfile'), icon: UserCircle },
   ];
 
   function handleLogout() {

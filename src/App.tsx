@@ -6,6 +6,7 @@ import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { QuoteListPage } from './pages/QuoteListPage';
 import { QuoteEditorPage } from './pages/QuoteEditorPage';
+import { ProfilePage } from './pages/ProfilePage';
 
 function App() {
   return (
@@ -14,6 +15,14 @@ function App() {
         <Route index element={<VoiceInputPage />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="register" element={<RegisterPage />} />
+        <Route
+          path="profile"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="quotes"
           element={

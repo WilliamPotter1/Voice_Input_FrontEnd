@@ -240,3 +240,68 @@ export async function deleteQuoteAttachment(quoteId: string, attachmentId: strin
     throw new Error((data as { error?: string }).error ?? 'Failed to delete attachment');
   }
 }
+
+// ---- Profile ----------------------------------------------------------------
+
+export interface UserProfile {
+  name: string;
+  phone: string;
+  email: string;
+  taxRate: number | null;
+  websiteUrl: string;
+  companyName: string;
+  companyAddress: string;
+  bankName: string;
+  blz: string;
+  kto: string;
+  iban: string;
+  bic: string;
+  taxNumber: string;
+  taxOfficeName: string;
+  avatarUrl: string | null;
+}
+
+const REQUIRED_PROFILE_FIELDS: (keyof UserProfile)[] = [
+  'name', 'companyName', 'companyAddress', 'bankName',
+  'blz', 'kto', 'iban', 'bic', 'taxNumber', 'taxOfficeName',
+];
+
+export function isProfileComplete(profile: UserProfile): boolean {
+  return REQUIRED_PROFILE_FIELDS.every((key) => {
+    const val = profile[key];
+    return typeof val === 'string' && val.trim().length > 0;
+  });
+}
+
+export async function getProfile(): Promise<UserProfile> {
+  const res = await fetchApi(apiUrl('/profile'), { headers: getAuthHeaders() });
+  if (!res.ok) {
+    if (res.status === 401) throw new Error('Unauthorized');
+    throw new Error('Failed to load profile');
+  }
+  return res.json();
+}
+
+export async function updateProfile(data: Partial<Omit<UserProfile, 'email' | 'avatarUrl'>>): Promise<UserProfile> {
+  const res = await fetchApi(apiUrl('/profile'), {
+    method: 'PATCH',
+    headers: getAuthJsonHeaders(),
+    body: JSON.stringify(data),
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error((body as { error?: string }).error ?? 'Failed to update profile');
+  return body;
+}
+
+export async function uploadAvatar(file: File): Promise<{ avatarUrl: string }> {
+  const form = new FormData();
+  form.append('file', file);
+  const res = await fetchApi(apiUrl('/profile/avatar'), {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: form,
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error((body as { error?: string }).error ?? 'Failed to upload avatar');
+  return body as { avatarUrl: string };
+}

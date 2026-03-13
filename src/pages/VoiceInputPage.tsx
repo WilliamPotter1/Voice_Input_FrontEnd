@@ -1,9 +1,9 @@
-import { Mic, Upload, Languages, Loader2 } from 'lucide-react';
+import { Mic, Upload, Languages, Loader2, AlertTriangle } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { useMutation } from '@tanstack/react-query';
-import { transcribeAudio, extractQuoteItems } from '../api/client';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { transcribeAudio, extractQuoteItems, getProfile, isProfileComplete } from '../api/client';
 import { useVoiceStore } from '../stores/voiceStore';
 import { useAuthStore } from '../stores/authStore';
 import { useTranslation } from '../i18n/useTranslation';
@@ -46,6 +46,13 @@ export function VoiceInputPage() {
   const navigate = useNavigate();
   const { setTranscribedText, selectedLanguage, setSelectedLanguage } = useVoiceStore();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated());
+
+  const profileQuery = useQuery({
+    queryKey: ['profile'],
+    queryFn: getProfile,
+    enabled: isAuthenticated,
+  });
+  const profileComplete = profileQuery.data ? isProfileComplete(profileQuery.data) : true;
 
   const transcribeMutation = useMutation({
     mutationFn: ({ file, language }: { file: File; language?: string }) =>
@@ -170,6 +177,24 @@ export function VoiceInputPage() {
         </div>
       </section>
 
+      {isAuthenticated && !profileComplete && !profileQuery.isLoading && (
+        <section className="rounded-2xl border border-amber-200 bg-amber-50/70 p-5 shadow-sm">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="mt-0.5 size-5 shrink-0 text-amber-600" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-amber-800">{t('profileCompletePrompt')}</p>
+              <button
+                type="button"
+                onClick={() => navigate('/profile')}
+                className="mt-3 inline-flex items-center justify-center rounded-xl bg-amber-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-amber-700"
+              >
+                {t('goToProfile')}
+              </button>
+            </div>
+          </div>
+        </section>
+      )}
+
       {isAuthenticated ? (
         <section className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">
           <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-500">
@@ -179,7 +204,7 @@ export function VoiceInputPage() {
             <button
               type="button"
               onClick={recording ? stopRecording : startRecording}
-              disabled={isBusy}
+              disabled={isBusy || !profileComplete}
               className={`relative flex flex-1 items-center justify-center gap-3 rounded-xl px-6 py-5 font-medium text-white transition disabled:opacity-50 ${
                 recording
                   ? 'bg-red-500 shadow-lg shadow-red-500/30 hover:bg-red-600'
@@ -194,7 +219,7 @@ export function VoiceInputPage() {
                 {recording ? `${t('stopRecording')} · ${formatTime(elapsed)}` : t('startRecording')}
               </span>
             </button>
-            <label className="flex flex-1 cursor-pointer items-center justify-center gap-3 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/50 px-6 py-5 font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-100">
+            <label className={`flex flex-1 items-center justify-center gap-3 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/50 px-6 py-5 font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-100 ${!profileComplete ? 'pointer-events-none opacity-50' : 'cursor-pointer'}`}>
               <Upload className="size-6 shrink-0 text-slate-500" />
               {t('uploadFile')}
               <input
@@ -202,7 +227,7 @@ export function VoiceInputPage() {
                 accept={ALLOWED_ACCEPT}
                 onChange={handleFileSelect}
                 className="sr-only"
-                disabled={isBusy}
+                disabled={isBusy || !profileComplete}
               />
             </label>
           </div>
