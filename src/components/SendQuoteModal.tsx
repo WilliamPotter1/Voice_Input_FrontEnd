@@ -144,7 +144,7 @@ export function SendQuoteModal({
                   : 'border-slate-200 bg-slate-50 text-slate-700'
               }`}
             >
-              <img src="/images/email.jpg" alt="" className="size-5 shrink-0 object-contain" />
+              <img src="/images/email.png" alt="" className="size-5 shrink-0 object-contain" />
               {t('sendByEmail')}
             </button>
             <button
