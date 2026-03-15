@@ -308,13 +308,14 @@ export async function uploadAvatar(file: File): Promise<{ avatarUrl: string }> {
 
 // ---- PDF Export -------------------------------------------------------------
 
+/** Fetches the quote PDF, triggers a download, and returns the suggested filename. */
 export async function downloadQuotePdf(
   quoteId: string,
   quoteDate: string,
   validUntil: string,
   lang: string,
   quoteNumber: number,
-): Promise<void> {
+): Promise<string> {
   const params = new URLSearchParams({ quoteDate, validUntil, lang, quoteNumber: String(quoteNumber) });
   const url = apiUrl(`/quotes/${quoteId}/pdf?${params.toString()}`);
   const res = await fetch(url, { headers: getAuthHeaders() });
@@ -323,16 +324,48 @@ export async function downloadQuotePdf(
     throw new Error((err as { error?: string }).error ?? 'Failed to generate PDF');
   }
   const blob = await res.blob();
+  const disposition = res.headers.get('Content-Disposition') ?? '';
+  const filenameMatch = disposition.match(/filename="?([^"]+)"?/);
+  const filename = filenameMatch?.[1] ?? `Angebot-${quoteId.slice(0, 8)}.pdf`;
   const blobUrl = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = blobUrl;
-  const disposition = res.headers.get('Content-Disposition') ?? '';
-  const filenameMatch = disposition.match(/filename="?([^"]+)"?/);
-  a.download = filenameMatch?.[1] ?? `Angebot-${quoteId.slice(0, 8)}.pdf`;
+  a.download = filename;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(blobUrl);
+  return filename;
+}
+
+// ---- Send quote links (for email body pre-fill) -----------------------------
+
+export interface QuoteSendLinks {
+  pdfUrl: string;
+  attachmentUrls: { filename: string; url: string }[];
+}
+
+export async function getQuoteSendLinks(
+  quoteId: string,
+  quoteDate: string,
+  validUntil: string,
+  quoteNumber: number,
+  lang: string,
+): Promise<QuoteSendLinks> {
+  const params = new URLSearchParams({
+    quoteDate,
+    validUntil,
+    quoteNumber: String(quoteNumber),
+    lang,
+  });
+  const res = await fetch(apiUrl(`/quotes/${quoteId}/send-links?${params.toString()}`), {
+    headers: getAuthHeaders(),
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error((body as { error?: string }).error ?? 'Failed to get send links');
+  }
+  return body as QuoteSendLinks;
 }
 
 // ---- Send quote (email / WhatsApp) -----------------------------------------
