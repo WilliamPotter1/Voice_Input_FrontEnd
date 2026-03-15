@@ -29,7 +29,7 @@ export function SendQuoteModal({
 
   async function handleSend() {
     if (!recipient || !quoteDate || !validUntil) return;
-    const num = Math.max(1, Math.min(99, Math.floor(Number(quoteNumber)) || 1));
+    const num = Math.max(1, Math.floor(Number(quoteNumber)) || 1);
     setLoading(true);
     try {
       await sendQuote(quoteId, channel, recipient.trim(), quoteDate, validUntil, num);
@@ -83,7 +83,6 @@ export function SendQuoteModal({
             <input
               type="number"
               min={1}
-              max={99}
               value={quoteNumber}
               required
               aria-required="true"
@@ -91,7 +90,7 @@ export function SendQuoteModal({
                 const raw = e.target.value;
                 if (raw === '') { setQuoteNumber(1); return; }
                 const n = Math.floor(Number(raw));
-                setQuoteNumber(Number.isNaN(n) ? 1 : Math.max(1, Math.min(99, n)));
+                setQuoteNumber(Number.isNaN(n) ? 1 : Math.max(1, n));
               }}
               className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
             />
@@ -147,7 +146,7 @@ export function SendQuoteModal({
           <button
             type="button"
             onClick={handleSend}
-            disabled={loading || !recipient || !quoteDate || !validUntil || quoteNumber < 1 || quoteNumber > 99}
+            disabled={loading || !recipient || !quoteDate || !validUntil || quoteNumber < 1}
             className="flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700 disabled:opacity-60"
           >
             {loading ? (

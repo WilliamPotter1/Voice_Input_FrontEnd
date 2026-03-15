@@ -33,7 +33,7 @@ export function ExportPdfModal({
 
   async function handleGenerate() {
     if (!quoteDate || !validUntil) return;
-    const num = Math.max(1, Math.min(99, Math.floor(Number(quoteNumber)) || 1));
+    const num = Math.max(1, Math.floor(Number(quoteNumber)) || 1);
     setLoading(true);
     try {
       await downloadQuotePdf(quoteId, quoteDate, validUntil, lang, num);
@@ -60,7 +60,6 @@ export function ExportPdfModal({
             <input
               type="number"
               min={1}
-              max={99}
               value={quoteNumber}
               required
               aria-required="true"
@@ -68,7 +67,7 @@ export function ExportPdfModal({
                 const raw = e.target.value;
                 if (raw === '') { setQuoteNumber(1); return; }
                 const n = Math.floor(Number(raw));
-                setQuoteNumber(Number.isNaN(n) ? 1 : Math.max(1, Math.min(99, n)));
+                setQuoteNumber(Number.isNaN(n) ? 1 : Math.max(1, n));
               }}
               className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
             />
@@ -109,7 +108,7 @@ export function ExportPdfModal({
           <button
             type="button"
             onClick={handleGenerate}
-            disabled={loading || !quoteDate || !validUntil || quoteNumber < 1 || quoteNumber > 99}
+            disabled={loading || !quoteDate || !validUntil || quoteNumber < 1}
             className="flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700 disabled:opacity-60"
           >
             {loading ? (
