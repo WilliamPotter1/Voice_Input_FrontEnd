@@ -139,6 +139,7 @@ export const translations = {
     // PDF export
     exportPdf: 'PDF exportieren',
     exportPdfTitle: 'Angebot als PDF exportieren',
+    quoteNo: 'Angebots-Nr.',
     quoteDate: 'Angebotsdatum',
     validUntil: 'Gültig bis',
     generating: 'Wird erstellt…',
@@ -290,6 +291,7 @@ export const translations = {
 
     exportPdf: 'Export PDF',
     exportPdfTitle: 'Export quote as PDF',
+    quoteNo: 'Quote no.',
     quoteDate: 'Quote date',
     validUntil: 'Valid until',
     generating: 'Generating…',
@@ -440,6 +442,7 @@ export const translations = {
 
     exportPdf: 'Esporta PDF',
     exportPdfTitle: 'Esporta preventivo come PDF',
+    quoteNo: 'N° preventivo',
     quoteDate: 'Data preventivo',
     validUntil: 'Valido fino al',
     generating: 'Generazione…',
@@ -740,6 +743,7 @@ export const translations = {
 
     exportPdf: 'Exportar PDF',
     exportPdfTitle: 'Exportar presupuesto como PDF',
+    quoteNo: 'Nº de presupuesto',
     quoteDate: 'Fecha del presupuesto',
     validUntil: 'Válido hasta',
     generating: 'Generando…',

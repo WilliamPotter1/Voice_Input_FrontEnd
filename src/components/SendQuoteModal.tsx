@@ -8,6 +8,10 @@ function todayISO(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+function randomQuoteNo(): number {
+  return Math.floor(Math.random() * 99) + 1;
+}
+
 export function SendQuoteModal({
   quoteId,
   onClose,
@@ -18,15 +22,17 @@ export function SendQuoteModal({
   const { t } = useTranslation();
   const [channel, setChannel] = useState<'email' | 'whatsapp'>('email');
   const [recipient, setRecipient] = useState('');
+  const [quoteNumber, setQuoteNumber] = useState(randomQuoteNo);
   const [quoteDate, setQuoteDate] = useState(todayISO);
   const [validUntil, setValidUntil] = useState(todayISO);
   const [loading, setLoading] = useState(false);
 
   async function handleSend() {
     if (!recipient || !quoteDate || !validUntil) return;
+    const num = Math.max(1, Math.min(99, Math.floor(Number(quoteNumber)) || 1));
     setLoading(true);
     try {
-      await sendQuote(quoteId, channel, recipient.trim(), quoteDate, validUntil);
+      await sendQuote(quoteId, channel, recipient.trim(), quoteDate, validUntil, num);
       toast.success(t('quoteSent'));
       onClose();
     } catch (err) {
@@ -69,6 +75,27 @@ export function SendQuoteModal({
             </button>
           </div>
 
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">
+              {t('quoteNo')}
+              <span className="text-red-500" aria-hidden="true"> *</span>
+            </label>
+            <input
+              type="number"
+              min={1}
+              max={99}
+              value={quoteNumber}
+              required
+              aria-required="true"
+              onChange={(e) => {
+                const raw = e.target.value;
+                if (raw === '') { setQuoteNumber(1); return; }
+                const n = Math.floor(Number(raw));
+                setQuoteNumber(Number.isNaN(n) ? 1 : Math.max(1, Math.min(99, n)));
+              }}
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+            />
+          </div>
           <div>
             <label className="mb-1.5 block text-sm font-medium text-slate-700">
               {channel === 'email' ? t('emailAddress') : t('whatsappNumber')}
@@ -120,7 +147,7 @@ export function SendQuoteModal({
           <button
             type="button"
             onClick={handleSend}
-            disabled={loading || !recipient || !quoteDate || !validUntil}
+            disabled={loading || !recipient || !quoteDate || !validUntil || quoteNumber < 1 || quoteNumber > 99}
             className="flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700 disabled:opacity-60"
           >
             {loading ? (

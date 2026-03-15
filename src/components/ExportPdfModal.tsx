@@ -14,6 +14,10 @@ function plus30Days(): string {
   return d.toISOString().slice(0, 10);
 }
 
+function randomQuoteNo(): number {
+  return Math.floor(Math.random() * 99) + 1;
+}
+
 export function ExportPdfModal({
   quoteId,
   onClose,
@@ -22,15 +26,17 @@ export function ExportPdfModal({
   onClose: () => void;
 }) {
   const { t, lang } = useTranslation();
+  const [quoteNumber, setQuoteNumber] = useState(randomQuoteNo);
   const [quoteDate, setQuoteDate] = useState(todayISO);
   const [validUntil, setValidUntil] = useState(plus30Days);
   const [loading, setLoading] = useState(false);
 
   async function handleGenerate() {
     if (!quoteDate || !validUntil) return;
+    const num = Math.max(1, Math.min(99, Math.floor(Number(quoteNumber)) || 1));
     setLoading(true);
     try {
-      await downloadQuotePdf(quoteId, quoteDate, validUntil, lang);
+      await downloadQuotePdf(quoteId, quoteDate, validUntil, lang, num);
       toast.success(t('pdfGenerated'));
       onClose();
     } catch (err) {
@@ -46,6 +52,27 @@ export function ExportPdfModal({
         <h2 className="text-lg font-bold text-slate-900">{t('exportPdfTitle')}</h2>
 
         <div className="mt-5 space-y-4">
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">
+              {t('quoteNo')}
+              <span className="text-red-500" aria-hidden="true"> *</span>
+            </label>
+            <input
+              type="number"
+              min={1}
+              max={99}
+              value={quoteNumber}
+              required
+              aria-required="true"
+              onChange={(e) => {
+                const raw = e.target.value;
+                if (raw === '') { setQuoteNumber(1); return; }
+                const n = Math.floor(Number(raw));
+                setQuoteNumber(Number.isNaN(n) ? 1 : Math.max(1, Math.min(99, n)));
+              }}
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+            />
+          </div>
           <div>
             <label className="mb-1.5 block text-sm font-medium text-slate-700">
               {t('quoteDate')}
@@ -82,7 +109,7 @@ export function ExportPdfModal({
           <button
             type="button"
             onClick={handleGenerate}
-            disabled={loading || !quoteDate || !validUntil}
+            disabled={loading || !quoteDate || !validUntil || quoteNumber < 1 || quoteNumber > 99}
             className="flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700 disabled:opacity-60"
           >
             {loading ? (

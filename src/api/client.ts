@@ -313,8 +313,9 @@ export async function downloadQuotePdf(
   quoteDate: string,
   validUntil: string,
   lang: string,
+  quoteNumber: number,
 ): Promise<void> {
-  const params = new URLSearchParams({ quoteDate, validUntil, lang });
+  const params = new URLSearchParams({ quoteDate, validUntil, lang, quoteNumber: String(quoteNumber) });
   const url = apiUrl(`/quotes/${quoteId}/pdf?${params.toString()}`);
   const res = await fetch(url, { headers: getAuthHeaders() });
   if (!res.ok) {
@@ -342,11 +343,12 @@ export async function sendQuote(
   recipient: string,
   quoteDate: string,
   validUntil: string,
+  quoteNumber: number,
 ): Promise<void> {
   const res = await fetchApi(apiUrl(`/quotes/${quoteId}/send`), {
     method: 'POST',
     headers: getAuthJsonHeaders(),
-    body: JSON.stringify({ channel, recipient, quoteDate, validUntil }),
+    body: JSON.stringify({ channel, recipient, quoteDate, validUntil, quoteNumber }),
   });
   const body = await res.json().catch(() => ({}));
   if (!res.ok) {
