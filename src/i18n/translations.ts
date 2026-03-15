@@ -170,6 +170,8 @@ export const translations = {
     sendEmailBodyLinksIntro: 'Anbei die Links zu Ihrem Angebot und den Anhängen:',
     sendEmailPdfLabel: 'Angebot (PDF):',
     sendEmailAttachmentsLabel: 'Anhänge:',
+    sendEmailComposeOpened: 'E-Mail-Fenster mit Angebotslinks geöffnet.',
+    sendWhatsAppComposeOpened: 'WhatsApp mit Angebotslinks geöffnet.',
   },
 
   en: {
@@ -334,6 +336,8 @@ export const translations = {
     sendEmailBodyLinksIntro: 'Please find your quote and attachments at the following links:',
     sendEmailPdfLabel: 'Quote PDF:',
     sendEmailAttachmentsLabel: 'Attachments:',
+    sendEmailComposeOpened: 'Compose window opened with quote and attachment links.',
+    sendWhatsAppComposeOpened: 'WhatsApp opened with quote and attachment links.',
   },
 
   it: {
@@ -497,6 +501,8 @@ export const translations = {
     sendEmailBodyLinksIntro: 'Trovi il preventivo e gli allegati ai seguenti link:',
     sendEmailPdfLabel: 'Preventivo (PDF):',
     sendEmailAttachmentsLabel: 'Allegati:',
+    sendEmailComposeOpened: 'Finestra di composizione aperta con link a preventivo e allegati.',
+    sendWhatsAppComposeOpened: 'WhatsApp aperto con link a preventivo e allegati.',
     pdfDownloadedOpenMail: 'PDF scaricato. Allega il file nella finestra di composizione che si è aperta.',
   },
 
@@ -662,6 +668,8 @@ export const translations = {
     sendEmailBodyLinksIntro: 'Veuillez trouver votre devis et les pièces jointes aux liens suivants :',
     sendEmailPdfLabel: 'Devis (PDF) :',
     sendEmailAttachmentsLabel: 'Pièces jointes :',
+    sendEmailComposeOpened: 'Fenêtre de composition ouverte avec les liens du devis et des pièces jointes.',
+    sendWhatsAppComposeOpened: 'WhatsApp ouvert avec les liens du devis et des pièces jointes.',
   },
 
   es: {
@@ -826,6 +834,8 @@ export const translations = {
     sendEmailBodyLinksIntro: 'Encontrará su presupuesto y los adjuntos en los siguientes enlaces:',
     sendEmailPdfLabel: 'Presupuesto (PDF):',
     sendEmailAttachmentsLabel: 'Adjuntos:',
+    sendEmailComposeOpened: 'Ventana de redacción abierta con enlaces al presupuesto y adjuntos.',
+    sendWhatsAppComposeOpened: 'WhatsApp abierto con enlaces al presupuesto y adjuntos.',
   },
 } as const;
 

@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Loader2, Mail, MessageCircle } from 'lucide-react';
+import { Loader2, Mail } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { downloadQuotePdf, getQuoteSendLinks, sendQuote } from '../api/client';
+import { getQuoteSendLinks } from '../api/client';
 import { useTranslation } from '../i18n/useTranslation';
 
 function todayISO(): string {
@@ -13,6 +13,13 @@ function randomQuoteNo(): number {
 }
 
 type EmailProvider = 'gmail' | 'outlook' | 'yahoo' | 'other';
+
+const EMAIL_PROVIDER_IMAGES: Record<EmailProvider, string> = {
+  gmail: '/images/gmail.png',
+  outlook: '/images/outlook.jpg',
+  yahoo: '/images/yahoo.jpg',
+  other: '/images/other.jpg',
+};
 
 function buildComposeUrl(
   provider: EmailProvider,
@@ -72,12 +79,10 @@ export function SendQuoteModal({
         attachmentUrls.forEach((a) => bodyLines.push(`${a.filename}: ${a.url}`));
       }
       const body = bodyLines.join('\n');
-
-      await downloadQuotePdf(quoteId, quoteDate, validUntil, lang, num);
       const subject = t('sendEmailSubject') as string;
       const url = buildComposeUrl(provider, recipient.trim(), subject, body);
       window.open(url, '_blank', 'noopener,noreferrer');
-      toast.success(t('pdfDownloadedOpenMail'));
+      toast.success(t('sendEmailComposeOpened'));
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t('quoteSendFailed'));
     } finally {
@@ -90,9 +95,30 @@ export function SendQuoteModal({
     const num = Math.max(1, Math.floor(Number(quoteNumber)) || 1);
     setLoading(true);
     try {
-      await sendQuote(quoteId, 'whatsapp', recipient.trim(), quoteDate, validUntil, num);
-      toast.success(t('quoteSent'));
-      onClose();
+      const { pdfUrl, attachmentUrls } = await getQuoteSendLinks(
+        quoteId,
+        quoteDate,
+        validUntil,
+        num,
+        lang,
+      );
+      const intro = t('sendEmailBodyLinksIntro') as string;
+      const pdfLabel = t('sendEmailPdfLabel') as string;
+      const attachmentsLabel = t('sendEmailAttachmentsLabel') as string;
+      const bodyLines = [intro, '', pdfLabel, pdfUrl];
+      if (attachmentUrls.length > 0) {
+        bodyLines.push('', attachmentsLabel);
+        attachmentUrls.forEach((a) => bodyLines.push(`${a.filename}: ${a.url}`));
+      }
+      const body = bodyLines.join('\n');
+      const phone = recipient.trim().replace(/\D/g, '');
+      if (!phone) {
+        toast.error(t('quoteSendFailed'));
+        return;
+      }
+      const url = `https://wa.me/${phone}?text=${encodeURIComponent(body)}`;
+      window.open(url, '_blank', 'noopener,noreferrer');
+      toast.success(t('sendWhatsAppComposeOpened'));
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t('quoteSendFailed'));
     } finally {
@@ -111,7 +137,7 @@ export function SendQuoteModal({
           <div className="flex gap-2">
             <button
               type="button"
-              onClick={() => setChannel('email')}
+              onClick={() => { setChannel('email'); setRecipient(''); }}
               className={`flex-1 inline-flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium ${
                 channel === 'email'
                   ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
@@ -123,14 +149,14 @@ export function SendQuoteModal({
             </button>
             <button
               type="button"
-              onClick={() => setChannel('whatsapp')}
+              onClick={() => { setChannel('whatsapp'); setRecipient(''); }}
               className={`flex-1 inline-flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium ${
                 channel === 'whatsapp'
                   ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
                   : 'border-slate-200 bg-slate-50 text-slate-700'
               }`}
             >
-              <MessageCircle className="size-4" />
+              <img src="/images/whatsapp.jpg" alt="" className="size-5 shrink-0 object-contain" />
               {t('sendByWhatsapp')}
             </button>
           </div>
@@ -202,8 +228,13 @@ export function SendQuoteModal({
                   onClick={() => handleEmailProvider('gmail')}
                   disabled={!canSubmit || loading}
                   className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:opacity-60"
+                  aria-label={t('openGmail')}
                 >
-                  {loading ? <Loader2 className="size-4 animate-spin" /> : null}
+                  {loading ? (
+                    <Loader2 className="size-5 shrink-0 animate-spin" />
+                  ) : (
+                    <img src={EMAIL_PROVIDER_IMAGES.gmail} alt="" className="size-6 shrink-0 object-contain" />
+                  )}
                   {t('openGmail')}
                 </button>
                 <button
@@ -211,8 +242,13 @@ export function SendQuoteModal({
                   onClick={() => handleEmailProvider('outlook')}
                   disabled={!canSubmit || loading}
                   className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:opacity-60"
+                  aria-label={t('openOutlook')}
                 >
-                  {loading ? <Loader2 className="size-4 animate-spin" /> : null}
+                  {loading ? (
+                    <Loader2 className="size-5 shrink-0 animate-spin" />
+                  ) : (
+                    <img src={EMAIL_PROVIDER_IMAGES.outlook} alt="" className="size-6 shrink-0 object-contain" />
+                  )}
                   {t('openOutlook')}
                 </button>
                 <button
@@ -220,8 +256,13 @@ export function SendQuoteModal({
                   onClick={() => handleEmailProvider('yahoo')}
                   disabled={!canSubmit || loading}
                   className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:opacity-60"
+                  aria-label={t('openYahoo')}
                 >
-                  {loading ? <Loader2 className="size-4 animate-spin" /> : null}
+                  {loading ? (
+                    <Loader2 className="size-5 shrink-0 animate-spin" />
+                  ) : (
+                    <img src={EMAIL_PROVIDER_IMAGES.yahoo} alt="" className="size-6 shrink-0 object-contain" />
+                  )}
                   {t('openYahoo')}
                 </button>
                 <button
@@ -229,8 +270,13 @@ export function SendQuoteModal({
                   onClick={() => handleEmailProvider('other')}
                   disabled={!canSubmit || loading}
                   className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:opacity-60"
+                  aria-label={t('openOtherEmail')}
                 >
-                  {loading ? <Loader2 className="size-4 animate-spin" /> : null}
+                  {loading ? (
+                    <Loader2 className="size-5 shrink-0 animate-spin" />
+                  ) : (
+                    <img src={EMAIL_PROVIDER_IMAGES.other} alt="" className="size-6 shrink-0 object-contain" />
+                  )}
                   {t('openOtherEmail')}
                 </button>
               </div>
