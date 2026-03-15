@@ -593,6 +593,7 @@ export const translations = {
 
     exportPdf: 'Exporter PDF',
     exportPdfTitle: 'Exporter le devis en PDF',
+    quoteNo: 'N° de devis',
     quoteDate: 'Date du devis',
     validUntil: 'Valable jusqu\'au',
     generating: 'Génération…',

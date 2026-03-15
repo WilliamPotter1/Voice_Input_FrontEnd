@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Loader2, Camera } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { getProfile, updateProfile, uploadAvatar } from '../api/client';
 import { useTranslation } from '../i18n/useTranslation';
 
@@ -67,6 +68,7 @@ function Field({
 export function ProfilePage() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const profileQuery = useQuery({
     queryKey: ['profile'],
@@ -137,6 +139,7 @@ export function ProfilePage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       toast.success(t('profileSaved'));
+      navigate('/');
     },
     onError: (e: Error) => toast.error(e.message || t('profileSaveFailed')),
   });
