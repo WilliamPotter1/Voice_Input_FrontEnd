@@ -119,6 +119,23 @@ export function ProfilePage() {
 
   const saveMutation = useMutation({
     mutationFn: () => {
+      // IBAN / BLZ / KTO rules:
+      // - If IBAN is provided, BLZ and KTO are optional.
+      // - If IBAN is empty, both BLZ and KTO are required.
+      const ibanTrimmed = form.iban.trim().replace(/\s/g, '');
+      const hasIban = ibanTrimmed.length > 0;
+      if (hasIban) {
+        if (!/^[A-Z]{2}\d{20}$/i.test(ibanTrimmed)) {
+          throw new Error(t('profileIbanInvalid') as string);
+        }
+      } else {
+        const hasBlz = form.blz.trim().length > 0;
+        const hasKto = form.kto.trim().length > 0;
+        if (!hasBlz || !hasKto) {
+          throw new Error(t('profileBankIbanOrBlzKto') as string);
+        }
+      }
+
       const taxRateNum = Number(form.taxRate.replace(',', '.'));
       return updateProfile({
         name: form.name,
