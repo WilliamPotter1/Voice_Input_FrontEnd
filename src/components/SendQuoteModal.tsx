@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Loader2, Mail } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getQuoteSendLinks } from '../api/client';
 import { useTranslation } from '../i18n/useTranslation';
@@ -144,7 +144,7 @@ export function SendQuoteModal({
                   : 'border-slate-200 bg-slate-50 text-slate-700'
               }`}
             >
-              <Mail className="size-4" />
+              <img src="/images/email.jpg" alt="" className="size-5 shrink-0 object-contain" />
               {t('sendByEmail')}
             </button>
             <button
