@@ -341,7 +341,7 @@ export function QuoteEditorPage() {
                 <button
                   type="button"
                   onClick={() => setExportOpen(true)}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-slate-700 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-slate-800 sm:flex-none"
+                  className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 sm:flex-none"
                 >
                   <Download className="size-4" />
                   {t('exportPdf')}
