@@ -36,10 +36,17 @@ jobs:
           script: |
             set -e
 
+            # Deploy main project
             cd ${{ secrets.VPS_PROJECT_PATH }}
             git fetch origin
             git checkout main
             git reset --hard origin/main
             npm install
             npm run build
-            sudo systemctl restart nginx
+
+            # Replace contents of the holder path with the new build
+            mkdir -p "${{ secrets.VPS_BACK_PROJECT_PATH }}"
+            rm -rf "${{ secrets.VPS_BACK_PROJECT_PATH }}"/* "${{ secrets.VPS_BACK_PROJECT_PATH }}"/.[!.]* "${{ secrets.VPS_BACK_PROJECT_PATH }}"/..?* || true
+            cp -a dist/. "${{ secrets.VPS_BACK_PROJECT_PATH }}/"
+
+            echo "Deployment completed successfully"
