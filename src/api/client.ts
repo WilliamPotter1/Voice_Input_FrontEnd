@@ -90,6 +90,9 @@ export interface QuotePayload {
   customerAddress?: string;
   currency?: string;
   vatRate?: number;
+  quoteNumber?: number;
+  quoteDate?: string;
+  validUntil?: string;
   items: QuoteItemInput[];
 }
 
@@ -102,10 +105,16 @@ export interface QuoteSummary {
   vat: number;
   total: number;
   createdAt: string;
+  quoteNumber: number | null;
+  quoteDate: string | null;
+  validUntil: string | null;
 }
 
 export interface QuoteDetail extends QuoteSummary {
   vatRate: number;
+  quoteNumber: number | null;
+  quoteDate: string | null;
+  validUntil: string | null;
   items: (QuoteItemInput & { id: string; total: number })[];
 }
 

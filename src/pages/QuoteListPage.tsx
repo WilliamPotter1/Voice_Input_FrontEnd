@@ -3,9 +3,8 @@ import { Link } from 'react-router-dom';
 import { FileText, Pencil, Trash2, Plus, Loader2, Download, CheckCircle2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { listQuotes, deleteQuote } from '../api/client';
+import { listQuotes, deleteQuote, downloadQuotePdf } from '../api/client';
 import { useTranslation } from '../i18n/useTranslation';
-import { ExportPdfModal } from '../components/ExportPdfModal';
 
 function formatMoney(n: number): string {
   return new Intl.NumberFormat(undefined, {
@@ -23,9 +22,8 @@ function formatDate(iso: string): string {
 }
 
 export function QuoteListPage() {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const queryClient = useQueryClient();
-  const [exportQuoteId, setExportQuoteId] = useState<string | null>(null);
   const [sentMap, setSentMap] = useState<Record<string, boolean>>({});
   const { data: quotes, isLoading } = useQuery({
     queryKey: ['quotes'],
@@ -132,7 +130,24 @@ export function QuoteListPage() {
                 )}
                 <button
                   type="button"
-                  onClick={() => setExportQuoteId(q.id)}
+                  onClick={async () => {
+                    if (!q.quoteDate || !q.validUntil || !q.quoteNumber) {
+                      toast.error(t('pdfFailed'));
+                      return;
+                    }
+                    try {
+                      await downloadQuotePdf(
+                        q.id,
+                        q.quoteDate.slice(0, 10),
+                        q.validUntil.slice(0, 10),
+                        lang as string,
+                        q.quoteNumber,
+                      );
+                      toast.success(t('pdfGenerated'));
+                    } catch (e) {
+                      toast.error(e instanceof Error ? e.message : t('pdfFailed'));
+                    }
+                  }}
                   className="flex size-10 items-center justify-center rounded-xl text-slate-500 transition hover:bg-emerald-50 hover:text-emerald-600"
                   aria-label={t('exportPdf')}
                   title={t('exportPdf')}
@@ -164,12 +179,6 @@ export function QuoteListPage() {
         ))}
       </ul>
 
-      {exportQuoteId && (
-        <ExportPdfModal
-          quoteId={exportQuoteId}
-          onClose={() => setExportQuoteId(null)}
-        />
-      )}
     </div>
   );
 }

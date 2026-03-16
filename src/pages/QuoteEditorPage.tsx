@@ -13,12 +13,13 @@ import {
   getAttachmentDisplayUrl,
   getQuoteSendLinks,
   sendQuote,
+  downloadQuotePdf,
   type QuoteItemInput,
   type QuoteAttachment,
 } from '../api/client';
 import { useQuoteFormStore, useQuoteTotals } from '../stores/quoteFormStore';
 import { useTranslation } from '../i18n/useTranslation';
-import { ExportPdfModal } from '../components/ExportPdfModal';
+// ExportPdfModal no longer used; export happens inline with stored fields
 
 function getUnitFromItemName(name: string): string {
   const match = name.match(/\(([^)]+)\)\s*$/);
@@ -116,7 +117,6 @@ export function QuoteEditorPage() {
   const [pendingAttachments, setPendingAttachments] = useState<File[]>([]);
   const [quantityInputs, setQuantityInputs] = useState<Record<string, string>>({});
   const [unitPriceInputs, setUnitPriceInputs] = useState<Record<string, string>>({});
-  const [exportOpen, setExportOpen] = useState(false);
 
   // Inline send controls
   const [sendEmailTo, setSendEmailTo] = useState('');
@@ -265,6 +265,9 @@ export function QuoteEditorPage() {
       customerAddress: customerAddress.trim() || undefined,
       currency,
       vatRate,
+      quoteNumber: sendQuoteNumber,
+      quoteDate: sendQuoteDate,
+      validUntil: sendValidUntil,
       items: items.map((i) => ({
         itemName: i.itemName.trim() || 'Item',
         quantity: i.quantity,
@@ -336,17 +339,27 @@ export function QuoteEditorPage() {
                 t('saveQuote')
               )}
             </button>
-            {isEdit && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => setExportOpen(true)}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 sm:flex-none"
-                >
-                  <Download className="size-4" />
-                  {t('exportPdf')}
-                </button>
-              </>
+            {isEdit && id && (
+              <button
+                type="button"
+                onClick={async () => {
+                  if (!sendQuoteDate || !sendValidUntil || !sendQuoteNumber) {
+                    toast.error(t('pdfFailed'));
+                    return;
+                  }
+                  try {
+                    const num = Math.max(1, Math.floor(Number(sendQuoteNumber)) || 1);
+                    await downloadQuotePdf(id, sendQuoteDate, sendValidUntil, lang as string, num);
+                    toast.success(t('pdfGenerated'));
+                  } catch (e) {
+                    toast.error(e instanceof Error ? e.message : t('pdfFailed'));
+                  }
+                }}
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 sm:flex-none"
+              >
+                <Download className="size-4" />
+                {t('exportPdf')}
+              </button>
             )}
           </div>
         </div>
@@ -354,6 +367,28 @@ export function QuoteEditorPage() {
 
       {/* Client, VAT & Address */}
       <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6">
+        {isEdit && (
+          <div className="mb-4 w-full sm:w-64">
+            <label className="mb-2 block text-sm font-medium text-slate-700">
+              {t('quoteNo')}
+            </label>
+            <input
+              type="number"
+              min={1}
+              value={sendQuoteNumber}
+              onChange={(e) => {
+                const raw = e.target.value;
+                if (raw === '') {
+                  setSendQuoteNumber(1);
+                  return;
+                }
+                const n = Math.floor(Number(raw));
+                setSendQuoteNumber(Number.isNaN(n) ? 1 : Math.max(1, n));
+              }}
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+            />
+          </div>
+        )}
         {/* Desktop: client + VAT on first row, address full-width on second row.
             Mobile: client, then address, then VAT. */}
         <div className="flex flex-col gap-4 sm:grid sm:grid-cols-2 sm:gap-6">
@@ -691,127 +726,6 @@ export function QuoteEditorPage() {
         </div>
       </section>
 
-      {/* Attachments */}
-      <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
-              {t('attachments')}
-            </h2>
-            <p className="text-xs text-slate-500">{t('attachmentsHint')}</p>
-          </div>
-          <label className="inline-flex cursor-pointer items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100">
-            {uploadAttachmentMutation.isPending ? t('saving') : t('addAttachment')}
-            <input
-              type="file"
-              className="sr-only"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (!file) return;
-                if (id) {
-                  uploadAttachmentMutation.mutate(file);
-                } else {
-                  setPendingAttachments((prev) => [...prev, file]);
-                  toast.success(t('attachmentQueued') ?? 'Attachment will be uploaded when you save the quote.');
-                }
-                e.target.value = '';
-              }}
-            />
-          </label>
-        </div>
-
-        {attachments.length > 0 && (
-          <ul className="mt-3 space-y-2">
-            {attachments.map((att) => (
-              <li
-                key={att.id}
-                className="grid grid-cols-[minmax(0,1fr)_140px] items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs sm:text-sm text-slate-700"
-              >
-                <button
-                  type="button"
-                  onClick={() => window.open(getAttachmentDisplayUrl(att), '_blank', 'noopener,noreferrer')}
-                  className="truncate text-left text-emerald-700 hover:underline"
-                >
-                  {att.filename}
-                </button>
-                <div className="flex items-center justify-start gap-2 shrink-0 whitespace-nowrap">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (isImageAttachment(att) || isPdfAttachment(att)) {
-                        setPreviewAttachment(att);
-                      }
-                    }}
-                    className={`rounded-lg border border-slate-300 px-2 py-1 text-[11px] font-medium text-slate-600 hover:bg-slate-100 ${
-                      isImageAttachment(att) || isPdfAttachment(att)
-                        ? ''
-                        : 'invisible pointer-events-none'
-                    }`}
-                  >
-                    {t('preview') ?? 'Preview'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      if (!id) return;
-                      try {
-                        await deleteQuoteAttachment(id, att.id);
-                        queryClient.invalidateQueries({ queryKey: ['quoteAttachments', id] });
-                      } catch (e) {
-                        toast.error(e instanceof Error ? e.message : 'Failed to delete attachment');
-                      }
-                    }}
-                    className="rounded-lg border border-red-100 px-2 py-1 text-[11px] font-medium text-red-600 hover:bg-red-50"
-                  >
-                    {t('delete') ?? 'Delete'}
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-
-        {!id && pendingAttachments.length > 0 && (
-          <ul className="mt-3 space-y-2">
-            {pendingAttachments.map((file, idx) => (
-              <li
-                key={`${file.name}-${file.size}-${file.lastModified}-${idx}`}
-                className="grid grid-cols-[minmax(0,1fr)_140px] items-center gap-2 rounded-xl border border-dashed border-slate-200 bg-slate-50 px-3 py-2 text-xs sm:text-sm text-slate-700"
-              >
-                <span className="truncate text-left text-slate-700">
-                  {file.name}
-                  <span className="ml-1 text-[10px] text-slate-400">
-                    ({t('pending') ?? 'pending'})
-                  </span>
-                </span>
-                <div className="flex items-center justify-start gap-2 shrink-0 whitespace-nowrap">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      window.open(URL.createObjectURL(file), '_blank', 'noopener,noreferrer')
-                    }
-                    className="rounded-lg border border-slate-300 px-2 py-1 text-[11px] font-medium text-slate-600 hover:bg-slate-100"
-                  >
-                    {t('preview') ?? 'Preview'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setPendingAttachments((prev) =>
-                        prev.filter((_, i) => i !== idx)
-                      )
-                    }
-                    className="rounded-lg border border-red-100 px-2 py-1 text-[11px] font-medium text-red-600 hover:bg-red-50"
-                  >
-                    {t('delete') ?? 'Delete'}
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
       {previewAttachment && (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 px-4">
           <div className="max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-xl">
@@ -889,26 +803,6 @@ export function QuoteEditorPage() {
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
                   <label className="mb-1.5 block text-xs font-medium text-slate-700">
-                    {t('quoteNo')}
-                  </label>
-                  <input
-                    type="number"
-                    min={1}
-                    value={sendQuoteNumber}
-                    onChange={(e) => {
-                      const raw = e.target.value;
-                      if (raw === '') {
-                        setSendQuoteNumber(1);
-                        return;
-                      }
-                      const n = Math.floor(Number(raw));
-                      setSendQuoteNumber(Number.isNaN(n) ? 1 : Math.max(1, n));
-                    }}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-xs font-medium text-slate-700">
                     {t('quoteDate')}
                   </label>
                   <input
@@ -918,9 +812,6 @@ export function QuoteEditorPage() {
                     className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
                   />
                 </div>
-              </div>
-
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
                   <label className="mb-1.5 block text-xs font-medium text-slate-700">
                     {t('validUntil')}
@@ -1042,9 +933,127 @@ export function QuoteEditorPage() {
         )}
       </div>
 
-      {exportOpen && id && (
-        <ExportPdfModal quoteId={id} onClose={() => setExportOpen(false)} />
-      )}
+      {/* Attachments */}
+      <section className="mt-4 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
+              {t('attachments')}
+            </h2>
+            <p className="text-xs text-slate-500">{t('attachmentsHint')}</p>
+          </div>
+          <label className="inline-flex cursor-pointer items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100">
+            {uploadAttachmentMutation.isPending ? t('saving') : t('addAttachment')}
+            <input
+              type="file"
+              className="sr-only"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                if (id) {
+                  uploadAttachmentMutation.mutate(file);
+                } else {
+                  setPendingAttachments((prev) => [...prev, file]);
+                  toast.success(t('attachmentQueued') ?? 'Attachment will be uploaded when you save the quote.');
+                }
+                e.target.value = '';
+              }}
+            />
+          </label>
+        </div>
+
+        {attachments.length > 0 && (
+          <ul className="mt-3 space-y-2">
+            {attachments.map((att) => (
+              <li
+                key={att.id}
+                className="grid grid-cols-[minmax(0,1fr)_140px] items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs sm:text-sm text-slate-700"
+              >
+                <button
+                  type="button"
+                  onClick={() => window.open(getAttachmentDisplayUrl(att), '_blank', 'noopener,noreferrer')}
+                  className="truncate text-left text-emerald-700 hover:underline"
+                >
+                  {att.filename}
+                </button>
+                <div className="flex items-center justify-start gap-2 shrink-0 whitespace-nowrap">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (isImageAttachment(att) || isPdfAttachment(att)) {
+                        setPreviewAttachment(att);
+                      }
+                    }}
+                    className={`rounded-lg border border-slate-300 px-2 py-1 text-[11px] font-medium text-slate-600 hover:bg-slate-100 ${
+                      isImageAttachment(att) || isPdfAttachment(att)
+                        ? ''
+                        : 'invisible pointer-events-none'
+                    }`}
+                  >
+                    {t('preview') ?? 'Preview'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (!id) return;
+                      try {
+                        await deleteQuoteAttachment(id, att.id);
+                        queryClient.invalidateQueries({ queryKey: ['quoteAttachments', id] });
+                      } catch (e) {
+                        toast.error(e instanceof Error ? e.message : 'Failed to delete attachment');
+                      }
+                    }}
+                    className="rounded-lg border border-red-100 px-2 py-1 text-[11px] font-medium text-red-600 hover:bg-red-50"
+                  >
+                    {t('delete') ?? 'Delete'}
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {!id && pendingAttachments.length > 0 && (
+          <ul className="mt-3 space-y-2">
+            {pendingAttachments.map((file, idx) => (
+              <li
+                key={`${file.name}-${file.size}-${file.lastModified}-${idx}`}
+                className="grid grid-cols-[minmax(0,1fr)_140px] items-center gap-2 rounded-xl border border-dashed border-slate-200 bg-slate-50 px-3 py-2 text-xs sm:text-sm text-slate-700"
+              >
+                <span className="truncate text-left text-slate-700">
+                  {file.name}
+                  <span className="ml-1 text-[10px] text-slate-400">
+                    ({t('pending') ?? 'pending'})
+                  </span>
+                </span>
+                <div className="flex items-center justify-start gap-2 shrink-0 whitespace-nowrap">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      window.open(URL.createObjectURL(file), '_blank', 'noopener,noreferrer')
+                    }
+                    className="rounded-lg border border-slate-300 px-2 py-1 text-[11px] font-medium text-slate-600 hover:bg-slate-100"
+                  >
+                    {t('preview') ?? 'Preview'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setPendingAttachments((prev) =>
+                        prev.filter((_, i) => i !== idx)
+                      )
+                    }
+                    className="rounded-lg border border-red-100 px-2 py-1 text-[11px] font-medium text-red-600 hover:bg-red-50"
+                  >
+                    {t('delete') ?? 'Delete'}
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
     </div>
   );
 }
