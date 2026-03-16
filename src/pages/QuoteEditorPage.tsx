@@ -142,7 +142,7 @@ export function QuoteEditorPage() {
     // Ensure a single leading "/"
     const path = att.url.startsWith('/') ? att.url : `/${att.url}`;
     // Our backend is mounted under /api, so prefix if not already there.
-    return path.startsWith('/api') ? `/api${path}` : `/api/api${path}`;
+    return path;
   }
 
   function isImageAttachment(att: QuoteAttachment): boolean {
