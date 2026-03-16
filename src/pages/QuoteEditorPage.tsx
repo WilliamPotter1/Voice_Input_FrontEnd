@@ -966,7 +966,11 @@ export function QuoteEditorPage() {
                   }}
                   className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-medium text-white shadow-sm transition hover:bg-indigo-700 disabled:opacity-60"
                 >
-                  {sendingEmail ? <Loader2 className="size-3 animate-spin" /> : <Send className="size-3" />}
+                  {sendingEmail ? (
+                    <Loader2 className="size-3 animate-spin" />
+                  ) : (
+                    <img src="/images/email.png" alt="" className="size-4 shrink-0 object-contain" />
+                  )}
                   <span>{t('sendByEmail')}</span>
                 </button>
 
@@ -1010,7 +1014,11 @@ export function QuoteEditorPage() {
                   }}
                   className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
                 >
-                  {openingWhatsapp ? <Loader2 className="size-3 animate-spin" /> : null}
+                  {openingWhatsapp ? (
+                    <Loader2 className="size-3 animate-spin" />
+                  ) : (
+                    <img src="/images/whatsapp.jpg" alt="" className="size-4 shrink-0 object-contain" />
+                  )}
                   <span>{t('sendByWhatsapp')}</span>
                 </button>
               </div>
