@@ -5,6 +5,16 @@ const API_BASE =
     ? `${import.meta.env.VITE_API_URL.replace(/\/$/, '')}/api`
     : '/api';
 
+/** Base URL for static uploads (no /api). Use for attachment preview/download links. */
+function uploadsBase(): string {
+  const u = import.meta.env.VITE_API_URL;
+  if (u != null && u !== '') {
+    const base = String(u).replace(/\/$/, '').replace(/\/api\/?$/, '');
+    if (base.startsWith('http')) return base;
+  }
+  return typeof window !== 'undefined' ? window.location.origin : '';
+}
+
 function getAuthHeaders(): HeadersInit {
   const token = useAuthStore.getState().token;
   const headers: Record<string, string> = {};
@@ -106,6 +116,18 @@ export interface QuoteAttachment {
   size: number;
   url: string;
   createdAt: string;
+}
+
+/** Full URL for viewing/downloading an attachment (uses /uploads, not /api). */
+export function getAttachmentDisplayUrl(att: QuoteAttachment): string {
+  const path = att.url.startsWith('http')
+    ? att.url
+    : att.url.startsWith('/')
+      ? att.url
+      : `/${att.url}`;
+  if (path.startsWith('http')) return path;
+  const base = uploadsBase();
+  return base ? `${base}${path}` : path;
 }
 
 async function fetchApi(

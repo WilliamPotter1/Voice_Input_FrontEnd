@@ -10,6 +10,7 @@ import {
   listQuoteAttachments,
   uploadQuoteAttachment,
   deleteQuoteAttachment,
+  getAttachmentDisplayUrl,
   type QuoteItemInput,
   type QuoteAttachment,
 } from '../api/client';
@@ -135,15 +136,6 @@ export function QuoteEditorPage() {
     },
     onError: (e: Error) => toast.error(e.message),
   });
-
-  function getAttachmentUrl(att: QuoteAttachment): string {
-    // att.url is a path like "/quotes/:id/attachments/:attachmentId/download" or with /api prefix.
-    if (att.url.startsWith('http://') || att.url.startsWith('https://')) return att.url;
-    // Ensure a single leading "/"
-    const path = att.url.startsWith('/') ? att.url : `/${att.url}`;
-    // Our backend is mounted under /api, so prefix if not already there.
-    return path;
-  }
 
   function isImageAttachment(att: QuoteAttachment): boolean {
     return att.mimeType.startsWith('image/');
@@ -709,7 +701,7 @@ export function QuoteEditorPage() {
               >
                 <button
                   type="button"
-                  onClick={() => window.open(getAttachmentUrl(att), '_blank', 'noopener,noreferrer')}
+                  onClick={() => window.open(getAttachmentDisplayUrl(att), '_blank', 'noopener,noreferrer')}
                   className="truncate text-left text-emerald-700 hover:underline"
                 >
                   {att.filename}
@@ -816,14 +808,14 @@ export function QuoteEditorPage() {
               {isImageAttachment(previewAttachment) ? (
                 <div className="flex items-center justify-center p-4">
                   <img
-                    src={getAttachmentUrl(previewAttachment)}
+                    src={getAttachmentDisplayUrl(previewAttachment)}
                     alt={previewAttachment.filename}
                     className="max-h-[70vh] max-w-full rounded-lg border border-slate-200 object-contain"
                   />
                 </div>
               ) : isPdfAttachment(previewAttachment) ? (
                 <iframe
-                  src={getAttachmentUrl(previewAttachment)}
+                  src={getAttachmentDisplayUrl(previewAttachment)}
                   title={previewAttachment.filename}
                   className="h-[70vh] w-full border-0 bg-white"
                 />
