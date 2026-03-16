@@ -283,16 +283,36 @@ export interface UserProfile {
   avatarUrl: string | null;
 }
 
+// Base required fields that must always be present.
+// Bank account requirement (IBAN vs. BLZ+KTO) is handled separately in isProfileComplete.
 const REQUIRED_PROFILE_FIELDS: (keyof UserProfile)[] = [
-  'name', 'companyName', 'companyAddress', 'bankName',
-  'blz', 'kto', 'iban', 'bic', 'taxNumber', 'taxOfficeName',
+  'name',
+  'companyName',
+  'companyAddress',
+  'bankName',
+  'bic',
+  'taxNumber',
+  'taxOfficeName',
 ];
 
 export function isProfileComplete(profile: UserProfile): boolean {
-  return REQUIRED_PROFILE_FIELDS.every((key) => {
+  // 1) Base fields must be non-empty strings.
+  const baseOk = REQUIRED_PROFILE_FIELDS.every((key) => {
     const val = profile[key];
     return typeof val === 'string' && val.trim().length > 0;
   });
+
+  if (!baseOk) return false;
+
+  // 2) Bank details: either IBAN is filled, OR both BLZ and KTO are filled.
+  const iban = profile.iban?.trim() ?? '';
+  const blz = profile.blz?.trim() ?? '';
+  const kto = profile.kto?.trim() ?? '';
+
+  const hasIban = iban.length > 0;
+  const hasBlzAndKto = blz.length > 0 && kto.length > 0;
+
+  return hasIban || hasBlzAndKto;
 }
 
 export async function getProfile(): Promise<UserProfile> {
