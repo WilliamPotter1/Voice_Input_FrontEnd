@@ -374,14 +374,10 @@ export async function getQuoteSendLinks(
   quoteNumber: number,
   lang: string,
 ): Promise<QuoteSendLinks> {
-  const params = new URLSearchParams({
-    quoteDate,
-    validUntil,
-    quoteNumber: String(quoteNumber),
-    lang,
-  });
-  const res = await fetch(apiUrl(`/quotes/${quoteId}/send-links?${params.toString()}`), {
-    headers: getAuthHeaders(),
+  const res = await fetchApi(apiUrl(`/quotes/${quoteId}/send-links`), {
+    method: 'POST',
+    headers: getAuthJsonHeaders(),
+    body: JSON.stringify({ quoteDate, validUntil, quoteNumber, lang }),
   });
   const body = await res.json().catch(() => ({}));
   if (!res.ok) {
