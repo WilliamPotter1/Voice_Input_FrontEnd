@@ -771,167 +771,55 @@ export function QuoteEditorPage() {
         </div>
       )}
 
-      {/* Totals + Send section */}
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div className="flex justify-end lg:order-1 lg:flex-1 lg:justify-start">
-          <div className="w-full rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:w-auto sm:min-w-[280px] sm:p-6">
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm text-slate-600">
-                <span>{t('subtotal')}</span>
-                <span className="tabular-nums font-medium">{formatMoney(subtotal, currency)}</span>
-              </div>
-              <div className="flex justify-between text-sm text-slate-600">
-                <span>{t('vat')} ({(vatRate * 100).toFixed(0)}%)</span>
-                <span className="tabular-nums font-medium">{formatMoney(vat, currency)}</span>
-              </div>
-              <div className="flex justify-between border-t border-slate-200 pt-3 text-base font-bold text-slate-900">
-                <span>{t('total')}</span>
-                <span className="tabular-nums">{formatMoney(total, currency)}</span>
-              </div>
+      {/* Summary (totals) */}
+      <div className="flex justify-end">
+        <div className="w-full rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:w-auto sm:min-w-[280px] sm:p-6">
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm text-slate-600">
+              <span>{t('subtotal')}</span>
+              <span className="tabular-nums font-medium">{formatMoney(subtotal, currency)}</span>
+            </div>
+            <div className="flex justify-between text-sm text-slate-600">
+              <span>{t('vat')} ({(vatRate * 100).toFixed(0)}%)</span>
+              <span className="tabular-nums font-medium">{formatMoney(vat, currency)}</span>
+            </div>
+            <div className="flex justify-between border-t border-slate-200 pt-3 text-base font-bold text-slate-900">
+              <span>{t('total')}</span>
+              <span className="tabular-nums">{formatMoney(total, currency)}</span>
             </div>
           </div>
         </div>
-
-        {isEdit && id && (
-          <section className="w-full rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6 lg:order-2 lg:max-w-md">
-            <h3 className="text-sm font-semibold text-slate-900">{t('sendQuoteTitle')}</h3>
-            <p className="mt-1 text-xs text-slate-500">
-              {t('sendByEmail')} / {t('sendByWhatsapp')}
-            </p>
-
-            <div className="mt-4 space-y-3">
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <div>
-                  <label className="mb-1.5 block text-xs font-medium text-slate-700">
-                    {t('quoteDate')}
-                  </label>
-                  <input
-                    type="date"
-                    value={sendQuoteDate}
-                    onChange={(e) => setSendQuoteDate(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-xs font-medium text-slate-700">
-                    {t('validUntil')}
-                  </label>
-                  <input
-                    type="date"
-                    value={sendValidUntil}
-                    onChange={(e) => setSendValidUntil(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="mb-1.5 block text-xs font-medium text-slate-700">
-                  {t('emailAddress')}
-                </label>
-                <input
-                  type="email"
-                  value={sendEmailTo}
-                  onChange={(e) => setSendEmailTo(e.target.value)}
-                  placeholder="name@example.com"
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
-                />
-              </div>
-
-              <div>
-                <label className="mb-1.5 block text-xs font-medium text-slate-700">
-                  {t('whatsappNumber')}
-                </label>
-                <input
-                  type="tel"
-                  value={sendWhatsappTo}
-                  onChange={(e) => setSendWhatsappTo(e.target.value)}
-                  placeholder="+491701234567"
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
-                />
-              </div>
-
-              <div className="mt-2 flex flex-row flex-wrap gap-2 justify-end">
-                <button
-                  type="button"
-                  disabled={sendingEmail || !sendEmailTo.trim() || !sendQuoteDate || !sendValidUntil}
-                  onClick={async () => {
-                    if (!id) return;
-                    const num = Math.max(1, Math.floor(Number(sendQuoteNumber)) || 1);
-                    setSendingEmail(true);
-                    try {
-                      await sendQuote(id, 'email', sendEmailTo.trim(), sendQuoteDate, sendValidUntil, num);
-                      markQuoteSentLocally(id);
-                      toast.success(t('quoteSent'));
-                    } catch (err) {
-                      toast.error(err instanceof Error ? err.message : t('quoteSendFailed'));
-                    } finally {
-                      setSendingEmail(false);
-                    }
-                  }}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-60"
-                >
-                  {sendingEmail ? (
-                    <Loader2 className="size-3 animate-spin" />
-                  ) : (
-                    <img src="/images/email.png" alt="" className="size-4 shrink-0 object-contain" />
-                  )}
-                  <span>{t('sendByEmail')}</span>
-                </button>
-
-                <button
-                  type="button"
-                  disabled={openingWhatsapp || !sendWhatsappTo.trim() || !sendQuoteDate || !sendValidUntil}
-                  onClick={async () => {
-                    if (!id) return;
-                    const num = Math.max(1, Math.floor(Number(sendQuoteNumber)) || 1);
-                    setOpeningWhatsapp(true);
-                    try {
-                      const { pdfUrl, attachmentUrls } = await getQuoteSendLinks(
-                        id,
-                        sendQuoteDate,
-                        sendValidUntil,
-                        num,
-                        (lang as string) || 'de',
-                      );
-                      const intro = t('sendEmailBodyLinksIntro') as string;
-                      const pdfLabel = t('sendEmailPdfLabel') as string;
-                      const attachmentsLabel = t('sendEmailAttachmentsLabel') as string;
-                      const lines: string[] = [intro, '', pdfLabel, pdfUrl];
-                      if (attachmentUrls.length > 0) {
-                        lines.push('', attachmentsLabel);
-                        attachmentUrls.forEach((a) => lines.push(`${a.filename}: ${a.url}`));
-                      }
-                      const body = lines.join('\n');
-                      const phone = sendWhatsappTo.trim().replace(/\D/g, '');
-                      if (!phone) {
-                        toast.error(t('quoteSendFailed'));
-                      } else {
-                        const url = `https://wa.me/${phone}?text=${encodeURIComponent(body)}`;
-                        window.open(url, '_blank', 'noopener,noreferrer');
-                        markQuoteSentLocally(id);
-                        toast.success(t('sendWhatsAppComposeOpened'));
-                      }
-                    } catch (err) {
-                      toast.error(err instanceof Error ? err.message : t('quoteSendFailed'));
-                    } finally {
-                      setOpeningWhatsapp(false);
-                    }
-                  }}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
-                >
-                  {openingWhatsapp ? (
-                    <Loader2 className="size-3 animate-spin" />
-                  ) : (
-                    <img src="/images/whatsapp.jpg" alt="" className="size-4 shrink-0 object-contain" />
-                  )}
-                  <span>{t('sendByWhatsapp')}</span>
-                </button>
-              </div>
-            </div>
-          </section>
-        )}
       </div>
+
+      {/* Send dates (between summary and attachments) */}
+      {isEdit && id && (
+        <section className="mt-4 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-slate-700">
+                {t('quoteDate')}
+              </label>
+              <input
+                type="date"
+                value={sendQuoteDate}
+                onChange={(e) => setSendQuoteDate(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+              />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-slate-700">
+                {t('validUntil')}
+              </label>
+              <input
+                type="date"
+                value={sendValidUntil}
+                onChange={(e) => setSendValidUntil(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+              />
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Attachments */}
       <section className="mt-4 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6">
@@ -1053,6 +941,122 @@ export function QuoteEditorPage() {
           </ul>
         )}
       </section>
+
+      {/* Send section (after attachments) */}
+      {isEdit && id && (
+        <section className="mt-4 w-full rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6 lg:max-w-md">
+          <h3 className="text-sm font-semibold text-slate-900">{t('sendQuoteTitle')}</h3>
+          <p className="mt-1 text-xs text-slate-500">
+            {t('sendByEmail')} / {t('sendByWhatsapp')}
+          </p>
+
+          <div className="mt-4 space-y-3">
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-slate-700">
+                {t('emailAddress')}
+              </label>
+              <input
+                type="email"
+                value={sendEmailTo}
+                onChange={(e) => setSendEmailTo(e.target.value)}
+                placeholder="name@example.com"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+              />
+            </div>
+
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-slate-700">
+                {t('whatsappNumber')}
+              </label>
+              <input
+                type="tel"
+                value={sendWhatsappTo}
+                onChange={(e) => setSendWhatsappTo(e.target.value)}
+                placeholder="+491701234567"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+              />
+            </div>
+
+            <div className="mt-2 flex flex-row flex-wrap gap-2 justify-end">
+              <button
+                type="button"
+                disabled={sendingEmail || !sendEmailTo.trim() || !sendQuoteDate || !sendValidUntil}
+                onClick={async () => {
+                  if (!id) return;
+                  const num = Math.max(1, Math.floor(Number(sendQuoteNumber)) || 1);
+                  setSendingEmail(true);
+                  try {
+                    await sendQuote(id, 'email', sendEmailTo.trim(), sendQuoteDate, sendValidUntil, num);
+                    markQuoteSentLocally(id);
+                    toast.success(t('quoteSent'));
+                  } catch (err) {
+                    toast.error(err instanceof Error ? err.message : t('quoteSendFailed'));
+                  } finally {
+                    setSendingEmail(false);
+                  }
+                }}
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-60"
+              >
+                {sendingEmail ? (
+                  <Loader2 className="size-3 animate-spin" />
+                ) : (
+                  <img src="/images/email.png" alt="" className="size-4 shrink-0 object-contain" />
+                )}
+                <span>{t('sendByEmail')}</span>
+              </button>
+
+              <button
+                type="button"
+                disabled={openingWhatsapp || !sendWhatsappTo.trim() || !sendQuoteDate || !sendValidUntil}
+                onClick={async () => {
+                  if (!id) return;
+                  const num = Math.max(1, Math.floor(Number(sendQuoteNumber)) || 1);
+                  setOpeningWhatsapp(true);
+                  try {
+                    const { pdfUrl, attachmentUrls } = await getQuoteSendLinks(
+                      id,
+                      sendQuoteDate,
+                      sendValidUntil,
+                      num,
+                      (lang as string) || 'de',
+                    );
+                    const intro = t('sendEmailBodyLinksIntro') as string;
+                    const pdfLabel = t('sendEmailPdfLabel') as string;
+                    const attachmentsLabel = t('sendEmailAttachmentsLabel') as string;
+                    const lines: string[] = [intro, '', pdfLabel, pdfUrl];
+                    if (attachmentUrls.length > 0) {
+                      lines.push('', attachmentsLabel);
+                      attachmentUrls.forEach((a) => lines.push(`${a.filename}: ${a.url}`));
+                    }
+                    const body = lines.join('\n');
+                    const phone = sendWhatsappTo.trim().replace(/\D/g, '');
+                    if (!phone) {
+                      toast.error(t('quoteSendFailed'));
+                    } else {
+                      const url = `https://wa.me/${phone}?text=${encodeURIComponent(body)}`;
+                      window.open(url, '_blank', 'noopener,noreferrer');
+                      markQuoteSentLocally(id);
+                      toast.success(t('sendWhatsAppComposeOpened'));
+                    }
+                  } catch (err) {
+                    toast.error(err instanceof Error ? err.message : t('quoteSendFailed'));
+                  } finally {
+                    setOpeningWhatsapp(false);
+                  }
+                }}
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
+              >
+                {openingWhatsapp ? (
+                  <Loader2 className="size-3 animate-spin" />
+                ) : (
+                  <img src="/images/whatsapp.jpg" alt="" className="size-4 shrink-0 object-contain" />
+                )}
+                <span>{t('sendByWhatsapp')}</span>
+              </button>
+            </div>
+          </div>
+        </section>
+      )}
 
     </div>
   );
