@@ -960,7 +960,7 @@ export function QuoteEditorPage() {
                 />
               </div>
 
-              <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:justify-end">
+              <div className="mt-2 flex flex-row flex-wrap gap-2 justify-end">
                 <button
                   type="button"
                   disabled={sendingEmail || !sendEmailTo.trim() || !sendQuoteDate || !sendValidUntil}
