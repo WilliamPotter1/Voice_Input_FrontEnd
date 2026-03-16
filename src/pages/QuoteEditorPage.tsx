@@ -944,13 +944,20 @@ export function QuoteEditorPage() {
 
       {/* Send section (after attachments) */}
       {isEdit && id && (
-        <section className="mt-4 w-full rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6 lg:max-w-md">
-          <h3 className="text-sm font-semibold text-slate-900">{t('sendQuoteTitle')}</h3>
-          <p className="mt-1 text-xs text-slate-500">
-            {t('sendByEmail')} / {t('sendByWhatsapp')}
-          </p>
+        <section className="mt-6 w-full rounded-2xl border border-emerald-200/80 bg-emerald-50/70 p-5 shadow-md sm:p-6 lg:max-w-md">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-semibold text-emerald-900">{t('sendQuoteTitle')}</h3>
+              <p className="mt-1 text-xs text-emerald-700">
+                {t('sendByEmail')} / {t('sendByWhatsapp')}
+              </p>
+            </div>
+            <span className="rounded-full bg-emerald-600 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-white">
+              Action
+            </span>
+          </div>
 
-          <div className="mt-4 space-y-3">
+          <div className="mt-5 space-y-3">
             <div>
               <label className="mb-1.5 block text-xs font-medium text-slate-700">
                 {t('emailAddress')}
@@ -960,7 +967,7 @@ export function QuoteEditorPage() {
                 value={sendEmailTo}
                 onChange={(e) => setSendEmailTo(e.target.value)}
                 placeholder="name@example.com"
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+                className="w-full rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs text-slate-900 shadow-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/30"
               />
             </div>
 
@@ -973,11 +980,11 @@ export function QuoteEditorPage() {
                 value={sendWhatsappTo}
                 onChange={(e) => setSendWhatsappTo(e.target.value)}
                 placeholder="+491701234567"
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+                className="w-full rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs text-slate-900 shadow-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/30"
               />
             </div>
 
-            <div className="mt-2 flex flex-row flex-wrap gap-2 justify-end">
+            <div className="mt-3 flex flex-row flex-wrap gap-2 justify-end">
               <button
                 type="button"
                 disabled={sendingEmail || !sendEmailTo.trim() || !sendQuoteDate || !sendValidUntil}
@@ -995,7 +1002,7 @@ export function QuoteEditorPage() {
                     setSendingEmail(false);
                   }
                 }}
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-60"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-white px-4 py-2 text-xs font-medium text-emerald-800 shadow-md transition hover:bg-emerald-50 disabled:opacity-60"
               >
                 {sendingEmail ? (
                   <Loader2 className="size-3 animate-spin" />
@@ -1044,7 +1051,7 @@ export function QuoteEditorPage() {
                     setOpeningWhatsapp(false);
                   }
                 }}
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-white px-4 py-2 text-xs font-medium text-emerald-800 shadow-md transition hover:bg-emerald-50 disabled:opacity-60"
               >
                 {openingWhatsapp ? (
                   <Loader2 className="size-3 animate-spin" />
