@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { Plus, Trash2, Loader2, ArrowLeft, Download, Send } from 'lucide-react';
+import { Plus, Trash2, Loader2, ArrowLeft, Download } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
