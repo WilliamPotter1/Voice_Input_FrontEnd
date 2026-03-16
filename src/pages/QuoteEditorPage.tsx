@@ -76,6 +76,19 @@ function randomQuoteNo(): number {
   return Math.floor(Math.random() * 99) + 1;
 }
 
+function markQuoteSentLocally(quoteId: string) {
+  if (typeof window === 'undefined') return;
+  try {
+    const key = 'sentQuotes';
+    const raw = window.localStorage.getItem(key);
+    const map: Record<string, boolean> = raw ? JSON.parse(raw) : {};
+    map[quoteId] = true;
+    window.localStorage.setItem(key, JSON.stringify(map));
+  } catch {
+    // ignore storage errors
+  }
+}
+
 export function QuoteEditorPage() {
   const { t, lang } = useTranslation();
   const { id } = useParams<{ id: string }>();
@@ -957,6 +970,7 @@ export function QuoteEditorPage() {
                     setSendingEmail(true);
                     try {
                       await sendQuote(id, 'email', sendEmailTo.trim(), sendQuoteDate, sendValidUntil, num);
+                      markQuoteSentLocally(id);
                       toast.success(t('quoteSent'));
                     } catch (err) {
                       toast.error(err instanceof Error ? err.message : t('quoteSendFailed'));
@@ -964,7 +978,7 @@ export function QuoteEditorPage() {
                       setSendingEmail(false);
                     }
                   }}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-medium text-white shadow-sm transition hover:bg-indigo-700 disabled:opacity-60"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-60"
                 >
                   {sendingEmail ? (
                     <Loader2 className="size-3 animate-spin" />
@@ -1004,6 +1018,7 @@ export function QuoteEditorPage() {
                       } else {
                         const url = `https://wa.me/${phone}?text=${encodeURIComponent(body)}`;
                         window.open(url, '_blank', 'noopener,noreferrer');
+                        markQuoteSentLocally(id);
                         toast.success(t('sendWhatsAppComposeOpened'));
                       }
                     } catch (err) {

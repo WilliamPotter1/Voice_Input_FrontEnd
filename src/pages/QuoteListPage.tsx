@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FileText, Pencil, Trash2, Plus, Loader2, Download } from 'lucide-react';
+import { FileText, Pencil, Trash2, Plus, Loader2, Download, CheckCircle2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { listQuotes, deleteQuote } from '../api/client';
@@ -26,10 +26,23 @@ export function QuoteListPage() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [exportQuoteId, setExportQuoteId] = useState<string | null>(null);
+  const [sentMap, setSentMap] = useState<Record<string, boolean>>({});
   const { data: quotes, isLoading } = useQuery({
     queryKey: ['quotes'],
     queryFn: listQuotes,
   });
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const raw = window.localStorage.getItem('sentQuotes');
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as Record<string, boolean>;
+      setSentMap(parsed);
+    } catch {
+      // ignore parse errors
+    }
+  }, []);
   const deleteMutation = useMutation({
     mutationFn: deleteQuote,
     onSuccess: () => {
@@ -108,6 +121,15 @@ export function QuoteListPage() {
                 {formatMoney(q.total)}
               </span>
               <div className="flex items-center gap-1">
+                {sentMap[q.id] && (
+                  <div
+                    className="flex size-10 items-center justify-center rounded-xl text-emerald-600"
+                    title={t('quoteSent')}
+                    aria-label={t('quoteSent')}
+                  >
+                    <CheckCircle2 className="size-5" />
+                  </div>
+                )}
                 <button
                   type="button"
                   onClick={() => setExportQuoteId(q.id)}
