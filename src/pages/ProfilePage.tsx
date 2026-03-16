@@ -177,7 +177,8 @@ export function ProfilePage() {
   function resolveAvatarSrc(): string | undefined {
     if (!avatarUrl) return undefined;
     if (avatarUrl.startsWith('http')) return avatarUrl;
-    return avatarUrl.startsWith('/api') ? avatarUrl : `/api${avatarUrl}`;
+    // Backend now returns paths like /uploads/profile/...
+    return avatarUrl;
   }
 
   if (profileQuery.isLoading) {
