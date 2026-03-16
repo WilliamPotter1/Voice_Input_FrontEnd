@@ -11,13 +11,14 @@ import {
   uploadQuoteAttachment,
   deleteQuoteAttachment,
   getAttachmentDisplayUrl,
+  getQuoteSendLinks,
+  sendQuote,
   type QuoteItemInput,
   type QuoteAttachment,
 } from '../api/client';
 import { useQuoteFormStore, useQuoteTotals } from '../stores/quoteFormStore';
 import { useTranslation } from '../i18n/useTranslation';
 import { ExportPdfModal } from '../components/ExportPdfModal';
-import { SendQuoteModal } from '../components/SendQuoteModal';
 
 function getUnitFromItemName(name: string): string {
   const match = name.match(/\(([^)]+)\)\s*$/);
@@ -61,8 +62,22 @@ function formatMoney(n: number, currency: string): string {
   }).format(n);
 }
 
+function todayISO(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function plus30Days(): string {
+  const d = new Date();
+  d.setDate(d.getDate() + 30);
+  return d.toISOString().slice(0, 10);
+}
+
+function randomQuoteNo(): number {
+  return Math.floor(Math.random() * 99) + 1;
+}
+
 export function QuoteEditorPage() {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
   const navigate = useNavigate();
@@ -89,7 +104,15 @@ export function QuoteEditorPage() {
   const [quantityInputs, setQuantityInputs] = useState<Record<string, string>>({});
   const [unitPriceInputs, setUnitPriceInputs] = useState<Record<string, string>>({});
   const [exportOpen, setExportOpen] = useState(false);
-  const [sendOpen, setSendOpen] = useState(false);
+
+  // Inline send controls
+  const [sendEmailTo, setSendEmailTo] = useState('');
+  const [sendWhatsappTo, setSendWhatsappTo] = useState('');
+  const [sendQuoteNumber, setSendQuoteNumber] = useState(randomQuoteNo);
+  const [sendQuoteDate, setSendQuoteDate] = useState(todayISO);
+  const [sendValidUntil, setSendValidUntil] = useState(plus30Days);
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [openingWhatsapp, setOpeningWhatsapp] = useState(false);
 
   const {
     clientName,
@@ -309,14 +332,6 @@ export function QuoteEditorPage() {
                 >
                   <Download className="size-4" />
                   {t('exportPdf')}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSendOpen(true)}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-indigo-700 sm:flex-none"
-                >
-                  <Send className="size-4" />
-                  {t('send')}
                 </button>
               </>
             )}
@@ -829,31 +844,183 @@ export function QuoteEditorPage() {
         </div>
       )}
 
-      {/* Totals */}
-      <div className="flex justify-end">
-        <div className="w-full rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:w-auto sm:min-w-[280px] sm:p-6">
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm text-slate-600">
-              <span>{t('subtotal')}</span>
-              <span className="tabular-nums font-medium">{formatMoney(subtotal, currency)}</span>
-            </div>
-            <div className="flex justify-between text-sm text-slate-600">
-              <span>{t('vat')} ({(vatRate * 100).toFixed(0)}%)</span>
-              <span className="tabular-nums font-medium">{formatMoney(vat, currency)}</span>
-            </div>
-            <div className="flex justify-between border-t border-slate-200 pt-3 text-base font-bold text-slate-900">
-              <span>{t('total')}</span>
-              <span className="tabular-nums">{formatMoney(total, currency)}</span>
+      {/* Totals + Send section */}
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="flex justify-end lg:order-1 lg:flex-1 lg:justify-start">
+          <div className="w-full rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:w-auto sm:min-w-[280px] sm:p-6">
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm text-slate-600">
+                <span>{t('subtotal')}</span>
+                <span className="tabular-nums font-medium">{formatMoney(subtotal, currency)}</span>
+              </div>
+              <div className="flex justify-between text-sm text-slate-600">
+                <span>{t('vat')} ({(vatRate * 100).toFixed(0)}%)</span>
+                <span className="tabular-nums font-medium">{formatMoney(vat, currency)}</span>
+              </div>
+              <div className="flex justify-between border-t border-slate-200 pt-3 text-base font-bold text-slate-900">
+                <span>{t('total')}</span>
+                <span className="tabular-nums">{formatMoney(total, currency)}</span>
+              </div>
             </div>
           </div>
         </div>
+
+        {isEdit && id && (
+          <section className="w-full rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6 lg:order-2 lg:max-w-md">
+            <h3 className="text-sm font-semibold text-slate-900">{t('sendQuoteTitle')}</h3>
+            <p className="mt-1 text-xs text-slate-500">
+              {t('sendByEmail')} / {t('sendByWhatsapp')}
+            </p>
+
+            <div className="mt-4 space-y-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1.5 block text-xs font-medium text-slate-700">
+                    {t('quoteNo')}
+                  </label>
+                  <input
+                    type="number"
+                    min={1}
+                    value={sendQuoteNumber}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      if (raw === '') {
+                        setSendQuoteNumber(1);
+                        return;
+                      }
+                      const n = Math.floor(Number(raw));
+                      setSendQuoteNumber(Number.isNaN(n) ? 1 : Math.max(1, n));
+                    }}
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-xs font-medium text-slate-700">
+                    {t('quoteDate')}
+                  </label>
+                  <input
+                    type="date"
+                    value={sendQuoteDate}
+                    onChange={(e) => setSendQuoteDate(e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1.5 block text-xs font-medium text-slate-700">
+                    {t('validUntil')}
+                  </label>
+                  <input
+                    type="date"
+                    value={sendValidUntil}
+                    onChange={(e) => setSendValidUntil(e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-slate-700">
+                  {t('emailAddress')}
+                </label>
+                <input
+                  type="email"
+                  value={sendEmailTo}
+                  onChange={(e) => setSendEmailTo(e.target.value)}
+                  placeholder="name@example.com"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-slate-700">
+                  {t('whatsappNumber')}
+                </label>
+                <input
+                  type="tel"
+                  value={sendWhatsappTo}
+                  onChange={(e) => setSendWhatsappTo(e.target.value)}
+                  placeholder="+491701234567"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+                />
+              </div>
+
+              <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:justify-end">
+                <button
+                  type="button"
+                  disabled={sendingEmail || !sendEmailTo.trim() || !sendQuoteDate || !sendValidUntil}
+                  onClick={async () => {
+                    if (!id) return;
+                    const num = Math.max(1, Math.floor(Number(sendQuoteNumber)) || 1);
+                    setSendingEmail(true);
+                    try {
+                      await sendQuote(id, 'email', sendEmailTo.trim(), sendQuoteDate, sendValidUntil, num);
+                      toast.success(t('quoteSent'));
+                    } catch (err) {
+                      toast.error(err instanceof Error ? err.message : t('quoteSendFailed'));
+                    } finally {
+                      setSendingEmail(false);
+                    }
+                  }}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-medium text-white shadow-sm transition hover:bg-indigo-700 disabled:opacity-60"
+                >
+                  {sendingEmail ? <Loader2 className="size-3 animate-spin" /> : <Send className="size-3" />}
+                  <span>{t('sendByEmail')}</span>
+                </button>
+
+                <button
+                  type="button"
+                  disabled={openingWhatsapp || !sendWhatsappTo.trim() || !sendQuoteDate || !sendValidUntil}
+                  onClick={async () => {
+                    if (!id) return;
+                    const num = Math.max(1, Math.floor(Number(sendQuoteNumber)) || 1);
+                    setOpeningWhatsapp(true);
+                    try {
+                      const { pdfUrl, attachmentUrls } = await getQuoteSendLinks(
+                        id,
+                        sendQuoteDate,
+                        sendValidUntil,
+                        num,
+                        (lang as string) || 'de',
+                      );
+                      const intro = t('sendEmailBodyLinksIntro') as string;
+                      const pdfLabel = t('sendEmailPdfLabel') as string;
+                      const attachmentsLabel = t('sendEmailAttachmentsLabel') as string;
+                      const lines: string[] = [intro, '', pdfLabel, pdfUrl];
+                      if (attachmentUrls.length > 0) {
+                        lines.push('', attachmentsLabel);
+                        attachmentUrls.forEach((a) => lines.push(`${a.filename}: ${a.url}`));
+                      }
+                      const body = lines.join('\n');
+                      const phone = sendWhatsappTo.trim().replace(/\D/g, '');
+                      if (!phone) {
+                        toast.error(t('quoteSendFailed'));
+                      } else {
+                        const url = `https://wa.me/${phone}?text=${encodeURIComponent(body)}`;
+                        window.open(url, '_blank', 'noopener,noreferrer');
+                        toast.success(t('sendWhatsAppComposeOpened'));
+                      }
+                    } catch (err) {
+                      toast.error(err instanceof Error ? err.message : t('quoteSendFailed'));
+                    } finally {
+                      setOpeningWhatsapp(false);
+                    }
+                  }}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
+                >
+                  {openingWhatsapp ? <Loader2 className="size-3 animate-spin" /> : null}
+                  <span>{t('sendByWhatsapp')}</span>
+                </button>
+              </div>
+            </div>
+          </section>
+        )}
       </div>
 
       {exportOpen && id && (
         <ExportPdfModal quoteId={id} onClose={() => setExportOpen(false)} />
-      )}
-      {sendOpen && id && (
-        <SendQuoteModal quoteId={id} onClose={() => setSendOpen(false)} />
       )}
     </div>
   );
