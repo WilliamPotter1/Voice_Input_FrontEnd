@@ -939,20 +939,22 @@ export function QuoteEditorPage() {
       </section>
 
       {/* Send section (after attachments) */}
-      <section className="mt-6 w-full rounded-2xl border border-emerald-200/80 bg-emerald-50/70 p-5 shadow-md sm:p-6 lg:max-w-md">
+      <section className="mt-6 w-full rounded-2xl border border-emerald-300 bg-emerald-50 p-5 shadow-md sm:p-6 lg:max-w-xl">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <h3 className="text-sm font-semibold text-emerald-900">{t('sendQuoteTitle')}</h3>
+              <h3 className="text-sm font-semibold text-emerald-900 tracking-wide">
+                {t('sendQuoteTitle')}
+              </h3>
               <p className="mt-1 text-xs text-emerald-700">
-                {t('sendByEmail')} / {t('sendByWhatsapp')}
+                {t('sendByEmail')} · {t('sendByWhatsapp')}
               </p>
             </div>
             <span className="rounded-full bg-emerald-600 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-white">
-              Action
+              SEND
             </span>
           </div>
 
-          <div className="mt-5 space-y-4">
+          <div className="mt-4 border-t border-emerald-200/70 pt-4 space-y-4">
             {/* Email row: address + button (always side-by-side, also on mobile) */}
             <div className="grid items-end gap-2 grid-cols-[minmax(0,1.3fr)_auto]">
               <div>
