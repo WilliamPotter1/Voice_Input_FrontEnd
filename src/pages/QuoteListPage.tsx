@@ -24,7 +24,7 @@ function formatDate(iso: string): string {
 export function QuoteListPage() {
   const { t, lang } = useTranslation();
   const queryClient = useQueryClient();
-  const [sentMap, setSentMap] = useState<Record<string, boolean>>({});
+  const [sentMap, setSentMap] = useState<Record<string, string>>({});
   const { data: quotes, isLoading } = useQuery({
     queryKey: ['quotes'],
     queryFn: listQuotes,
@@ -35,8 +35,14 @@ export function QuoteListPage() {
     try {
       const raw = window.localStorage.getItem('sentQuotes');
       if (!raw) return;
-      const parsed = JSON.parse(raw) as Record<string, boolean>;
-      setSentMap(parsed);
+      const parsed = JSON.parse(raw) as Record<string, { at?: string }>;
+      const flattened: Record<string, string> = {};
+      Object.entries(parsed).forEach(([id, val]) => {
+        if (val && typeof val.at === 'string') {
+          flattened[id] = val.at;
+        }
+      });
+      setSentMap(flattened);
     } catch {
       // ignore parse errors
     }
@@ -112,7 +118,25 @@ export function QuoteListPage() {
               <p className="font-semibold text-slate-900">
                 {q.clientName || t('quote')}
               </p>
-              <p className="mt-0.5 text-sm text-slate-500">{formatDate(q.createdAt)}</p>
+              <p className="mt-0.5 text-sm text-slate-500 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                <span>{formatDate(q.createdAt)}</span>
+                {sentMap[q.id] && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700">
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                    <span>
+                      {new Date(sentMap[q.id]).toLocaleDateString(undefined, {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: '2-digit',
+                      })}{' '}
+                      {new Date(sentMap[q.id]).toLocaleTimeString(undefined, {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </span>
+                  </span>
+                )}
+              </p>
             </div>
             <div className="flex items-center justify-between gap-4 sm:justify-end">
               <span className="text-lg font-bold tabular-nums text-slate-900">
@@ -121,7 +145,7 @@ export function QuoteListPage() {
               <div className="flex items-center gap-1">
                 {sentMap[q.id] && (
                   <div
-                    className="flex size-10 items-center justify-center rounded-xl text-emerald-600"
+                    className="hidden sm:flex size-10 items-center justify-center rounded-xl text-emerald-600"
                     title={t('quoteSent')}
                     aria-label={t('quoteSent')}
                   >

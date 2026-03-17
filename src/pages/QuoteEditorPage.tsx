@@ -82,8 +82,8 @@ function markQuoteSentLocally(quoteId: string) {
   try {
     const key = 'sentQuotes';
     const raw = window.localStorage.getItem(key);
-    const map: Record<string, boolean> = raw ? JSON.parse(raw) : {};
-    map[quoteId] = true;
+    const map: Record<string, { at: string }> = raw ? JSON.parse(raw) : {};
+    map[quoteId] = { at: new Date().toISOString() };
     window.localStorage.setItem(key, JSON.stringify(map));
   } catch {
     // ignore storage errors
