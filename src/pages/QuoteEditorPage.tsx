@@ -946,7 +946,11 @@ export function QuoteEditorPage() {
                 {t('sendQuoteTitle')}
               </h3>
               <p className="mt-1 text-xs text-emerald-700">
-                {t('sendByEmail')} · {t('sendByWhatsapp')}
+                <img
+                  src="/images/ew.png"
+                  alt=""
+                  className="h-5 object-contain"
+                />
               </p>
             </div>
             <span className="rounded-full bg-emerald-600 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-white">
