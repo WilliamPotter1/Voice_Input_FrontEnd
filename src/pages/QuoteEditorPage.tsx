@@ -816,20 +816,23 @@ export function QuoteEditorPage() {
             <label className="mb-1.5 block text-xs font-medium text-slate-700">
               {t('validUntil')}
             </label>
-            <input
-              type="date"
-              value={sendValidUntil}
-              onChange={(e) => setSendValidUntil(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
-            />
+            <div className="flex items-center gap-2">
+              <input
+                type="date"
+                value={sendValidUntil}
+                onChange={(e) => setSendValidUntil(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+              />
+              <button
+                type="button"
+                onClick={() => setSendValidUntil('')}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-xs font-semibold text-slate-500 shadow-sm transition hover:bg-slate-100 hover:text-slate-700"
+                aria-label={t('clear') ?? 'Clear date'}
+              >
+                ×
+              </button>
+            </div>
           </div>
-          <button
-            type="button"
-            onClick={() => setSendValidUntil('')}
-            className="mt-1 inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-medium text-slate-600 shadow-sm transition hover:bg-slate-50 sm:mt-0"
-          >
-            ×
-          </button>
         </div>
       </section>
 
