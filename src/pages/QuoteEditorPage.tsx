@@ -207,21 +207,21 @@ export function QuoteEditorPage() {
   }, [id, setQuoteId, reset, loadQuote, extractedItems, extractedCustomerName, extractedVatRate]);
 
   useEffect(() => {
-    if (quoteQuery.data) {
-      if ((quoteQuery.data as any).currency) {
-        setCurrency((quoteQuery.data as any).currency);
+      if (quoteQuery.data) {
+        if ((quoteQuery.data as any).currency) {
+          setCurrency((quoteQuery.data as any).currency);
+        }
+        loadQuote(
+          quoteQuery.data.clientName,
+          quoteQuery.data.customerAddress,
+          quoteQuery.data.vatRate,
+          quoteQuery.data.items.map((i) => ({
+            itemName: i.itemName,
+            quantity: i.quantity,
+            unitPrice: i.unitPrice,
+          }))
+        );
       }
-      loadQuote(
-        quoteQuery.data.clientName,
-        quoteQuery.data.customerAddress,
-        quoteQuery.data.vatRate,
-        quoteQuery.data.items.map((i) => ({
-          itemName: i.itemName,
-          quantity: i.quantity,
-          unitPrice: i.unitPrice,
-        }))
-      );
-    }
   }, [quoteQuery.data, loadQuote]);
 
   const createMutation = useMutation({
@@ -367,28 +367,26 @@ export function QuoteEditorPage() {
 
       {/* Client, VAT & Address */}
       <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6">
-        {isEdit && (
-          <div className="mb-4 w-full sm:w-64">
-            <label className="mb-2 block text-sm font-medium text-slate-700">
-              {t('quoteNo')}
-            </label>
-            <input
-              type="number"
-              min={1}
-              value={sendQuoteNumber}
-              onChange={(e) => {
-                const raw = e.target.value;
-                if (raw === '') {
-                  setSendQuoteNumber(1);
-                  return;
-                }
-                const n = Math.floor(Number(raw));
-                setSendQuoteNumber(Number.isNaN(n) ? 1 : Math.max(1, n));
-              }}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
-            />
-          </div>
-        )}
+        <div className="mb-4 w-full sm:w-64">
+          <label className="mb-2 block text-sm font-medium text-slate-700">
+            {t('quoteNo')}
+          </label>
+          <input
+            type="number"
+            min={1}
+            value={sendQuoteNumber}
+            onChange={(e) => {
+              const raw = e.target.value;
+              if (raw === '') {
+                setSendQuoteNumber(1);
+                return;
+              }
+              const n = Math.floor(Number(raw));
+              setSendQuoteNumber(Number.isNaN(n) ? 1 : Math.max(1, n));
+            }}
+            className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+          />
+        </div>
         {/* Desktop: client + VAT on first row, address full-width on second row.
             Mobile: client, then address, then VAT. */}
         <div className="flex flex-col gap-4 sm:grid sm:grid-cols-2 sm:gap-6">
@@ -792,34 +790,32 @@ export function QuoteEditorPage() {
       </div>
 
       {/* Send dates (between summary and attachments) */}
-      {isEdit && id && (
-        <section className="mt-4 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div>
-              <label className="mb-1.5 block text-xs font-medium text-slate-700">
-                {t('quoteDate')}
-              </label>
-              <input
-                type="date"
-                value={sendQuoteDate}
-                onChange={(e) => setSendQuoteDate(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
-              />
-            </div>
-            <div>
-              <label className="mb-1.5 block text-xs font-medium text-slate-700">
-                {t('validUntil')}
-              </label>
-              <input
-                type="date"
-                value={sendValidUntil}
-                onChange={(e) => setSendValidUntil(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
-              />
-            </div>
+      <section className="mt-4 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-slate-700">
+              {t('quoteDate')}
+            </label>
+            <input
+              type="date"
+              value={sendQuoteDate}
+              onChange={(e) => setSendQuoteDate(e.target.value)}
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+            />
           </div>
-        </section>
-      )}
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-slate-700">
+              {t('validUntil')}
+            </label>
+            <input
+              type="date"
+              value={sendValidUntil}
+              onChange={(e) => setSendValidUntil(e.target.value)}
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+            />
+          </div>
+        </div>
+      </section>
 
       {/* Attachments */}
       <section className="mt-4 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6">
@@ -943,8 +939,7 @@ export function QuoteEditorPage() {
       </section>
 
       {/* Send section (after attachments) */}
-      {isEdit && id && (
-        <section className="mt-6 w-full rounded-2xl border border-emerald-200/80 bg-emerald-50/70 p-5 shadow-md sm:p-6 lg:max-w-md">
+      <section className="mt-6 w-full rounded-2xl border border-emerald-200/80 bg-emerald-50/70 p-5 shadow-md sm:p-6 lg:max-w-md">
           <div className="flex items-center justify-between gap-3">
             <div>
               <h3 className="text-sm font-semibold text-emerald-900">{t('sendQuoteTitle')}</h3>
@@ -957,44 +952,136 @@ export function QuoteEditorPage() {
             </span>
           </div>
 
-          <div className="mt-5 space-y-3">
-            <div>
-              <label className="mb-1.5 block text-xs font-medium text-slate-700">
-                {t('emailAddress')}
-              </label>
-              <input
-                type="email"
-                value={sendEmailTo}
-                onChange={(e) => setSendEmailTo(e.target.value)}
-                placeholder="name@example.com"
-                className="w-full rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs text-slate-900 shadow-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/30"
-              />
+          <div className="mt-5 space-y-4">
+            {/* Email row: address + button */}
+            <div className="grid grid-cols-1 items-end gap-2 sm:grid-cols-[minmax(0,1.3fr)_auto]">
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-slate-700">
+                  {t('emailAddress')}
+                </label>
+                <input
+                  type="email"
+                  value={sendEmailTo}
+                  onChange={(e) => setSendEmailTo(e.target.value)}
+                  placeholder="name@example.com"
+                  className="w-full rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs text-slate-900 shadow-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/30"
+                />
+              </div>
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  disabled={sendingEmail || !sendEmailTo.trim() || !sendQuoteDate || !sendValidUntil}
+                  onClick={async () => {
+                    if (!sendQuoteDate || !sendValidUntil) return;
+                    const num = Math.max(1, Math.floor(Number(sendQuoteNumber)) || 1);
+                    setSendingEmail(true);
+                    try {
+                      let quoteIdToUse = id;
+                      if (!quoteIdToUse) {
+                        // Save quote first
+                        const payload = {
+                          clientName: clientName.trim() || undefined,
+                          customerAddress: customerAddress.trim() || undefined,
+                          currency,
+                          vatRate,
+                          quoteNumber: sendQuoteNumber,
+                          quoteDate: sendQuoteDate,
+                          validUntil: sendValidUntil,
+                          items: items.map((i) => ({
+                            itemName: i.itemName.trim() || 'Item',
+                            quantity: i.quantity,
+                            unitPrice: i.unitPrice,
+                          })),
+                        };
+                        const created = await createQuote(payload);
+                        quoteIdToUse = created.id;
+                        setQuoteId(created.id);
+                        // Upload any pending attachments
+                        if (pendingAttachments.length) {
+                          await Promise.all(
+                            pendingAttachments.map((file) => uploadQuoteAttachment(created.id, file)),
+                          );
+                          setPendingAttachments([]);
+                          queryClient.invalidateQueries({ queryKey: ['quoteAttachments', created.id] });
+                        }
+                      }
+                      if (!quoteIdToUse) return;
+                      await sendQuote(quoteIdToUse, 'email', sendEmailTo.trim(), sendQuoteDate, sendValidUntil, num);
+                      markQuoteSentLocally(quoteIdToUse);
+                      toast.success(t('quoteSent'));
+                    } catch (err) {
+                      toast.error(err instanceof Error ? err.message : t('quoteSendFailed'));
+                    } finally {
+                      setSendingEmail(false);
+                    }
+                  }}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-white px-4 py-2 text-xs font-medium text-emerald-800 shadow-md transition hover:bg-emerald-50 disabled:opacity-60 w-full sm:w-auto"
+                >
+                  {sendingEmail ? (
+                    <Loader2 className="size-3 animate-spin" />
+                  ) : (
+                    <img src="/images/email.png" alt="" className="size-4 shrink-0 object-contain" />
+                  )}
+                  <span>{t('sendByEmail')}</span>
+                </button>
+              </div>
             </div>
 
-            <div>
-              <label className="mb-1.5 block text-xs font-medium text-slate-700">
-                {t('whatsappNumber')}
-              </label>
-              <input
-                type="tel"
-                value={sendWhatsappTo}
-                onChange={(e) => setSendWhatsappTo(e.target.value)}
-                placeholder="+491701234567"
-                className="w-full rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs text-slate-900 shadow-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/30"
-              />
-            </div>
-
-            <div className="mt-3 flex flex-row flex-wrap gap-2 justify-end">
+            {/* WhatsApp row: number + button */}
+            <div className="grid grid-cols-1 items-end gap-2 sm:grid-cols-[minmax(0,1.3fr)_auto]">
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-slate-700">
+                  {t('whatsappNumber')}
+                </label>
+                <input
+                  type="tel"
+                  value={sendWhatsappTo}
+                  onChange={(e) => setSendWhatsappTo(e.target.value)}
+                  placeholder="+491701234567"
+                  className="w-full rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs text-slate-900 shadow-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/30"
+                />
+              </div>
+              <div className="flex justify-end">
               <button
                 type="button"
                 disabled={sendingEmail || !sendEmailTo.trim() || !sendQuoteDate || !sendValidUntil}
                 onClick={async () => {
-                  if (!id) return;
+                  if (!sendQuoteDate || !sendValidUntil) return;
                   const num = Math.max(1, Math.floor(Number(sendQuoteNumber)) || 1);
                   setSendingEmail(true);
                   try {
-                    await sendQuote(id, 'email', sendEmailTo.trim(), sendQuoteDate, sendValidUntil, num);
-                    markQuoteSentLocally(id);
+                    let quoteIdToUse = id;
+                    if (!quoteIdToUse) {
+                      // Save quote first
+                      const payload = {
+                        clientName: clientName.trim() || undefined,
+                        customerAddress: customerAddress.trim() || undefined,
+                        currency,
+                        vatRate,
+                        quoteNumber: sendQuoteNumber,
+                        quoteDate: sendQuoteDate,
+                        validUntil: sendValidUntil,
+                        items: items.map((i) => ({
+                          itemName: i.itemName.trim() || 'Item',
+                          quantity: i.quantity,
+                          unitPrice: i.unitPrice,
+                        })),
+                      };
+                      const created = await createQuote(payload);
+                      quoteIdToUse = created.id;
+                      setQuoteId(created.id);
+                      // Upload any pending attachments
+                      if (pendingAttachments.length) {
+                        await Promise.all(
+                          pendingAttachments.map((file) => uploadQuoteAttachment(created.id, file)),
+                        );
+                        setPendingAttachments([]);
+                        queryClient.invalidateQueries({ queryKey: ['quoteAttachments', created.id] });
+                      }
+                    }
+                    if (!quoteIdToUse) return;
+                    await sendQuote(quoteIdToUse, 'email', sendEmailTo.trim(), sendQuoteDate, sendValidUntil, num);
+                    markQuoteSentLocally(quoteIdToUse);
                     toast.success(t('quoteSent'));
                   } catch (err) {
                     toast.error(err instanceof Error ? err.message : t('quoteSendFailed'));
@@ -1002,7 +1089,7 @@ export function QuoteEditorPage() {
                     setSendingEmail(false);
                   }
                 }}
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-white px-4 py-2 text-xs font-medium text-emerald-800 shadow-md transition hover:bg-emerald-50 disabled:opacity-60"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-white px-4 py-2 text-xs font-medium text-emerald-800 shadow-md transition hover:bg-emerald-50 disabled:opacity-60 w-full sm:w-auto"
               >
                 {sendingEmail ? (
                   <Loader2 className="size-3 animate-spin" />
@@ -1011,17 +1098,48 @@ export function QuoteEditorPage() {
                 )}
                 <span>{t('sendByEmail')}</span>
               </button>
+              </div>
+            </div>
 
+            <div className="mt-1 flex flex-row flex-wrap gap-2 justify-end">
               <button
                 type="button"
                 disabled={openingWhatsapp || !sendWhatsappTo.trim() || !sendQuoteDate || !sendValidUntil}
                 onClick={async () => {
-                  if (!id) return;
+                  if (!sendQuoteDate || !sendValidUntil) return;
                   const num = Math.max(1, Math.floor(Number(sendQuoteNumber)) || 1);
                   setOpeningWhatsapp(true);
                   try {
+                    let quoteIdToUse = id;
+                    if (!quoteIdToUse) {
+                      const payload = {
+                        clientName: clientName.trim() || undefined,
+                        customerAddress: customerAddress.trim() || undefined,
+                        currency,
+                        vatRate,
+                        quoteNumber: sendQuoteNumber,
+                        quoteDate: sendQuoteDate,
+                        validUntil: sendValidUntil,
+                        items: items.map((i) => ({
+                          itemName: i.itemName.trim() || 'Item',
+                          quantity: i.quantity,
+                          unitPrice: i.unitPrice,
+                        })),
+                      };
+                      const created = await createQuote(payload);
+                      quoteIdToUse = created.id;
+                      setQuoteId(created.id);
+                      if (pendingAttachments.length) {
+                        await Promise.all(
+                          pendingAttachments.map((file) => uploadQuoteAttachment(created.id, file)),
+                        );
+                        setPendingAttachments([]);
+                        queryClient.invalidateQueries({ queryKey: ['quoteAttachments', created.id] });
+                      }
+                    }
+                    if (!quoteIdToUse) return;
                     const { pdfUrl, attachmentUrls } = await getQuoteSendLinks(
-                      id,
+                      quoteIdToUse,
                       sendQuoteDate,
                       sendValidUntil,
                       num,
@@ -1042,7 +1160,7 @@ export function QuoteEditorPage() {
                     } else {
                       const url = `https://wa.me/${phone}?text=${encodeURIComponent(body)}`;
                       window.open(url, '_blank', 'noopener,noreferrer');
-                      markQuoteSentLocally(id);
+                      markQuoteSentLocally(quoteIdToUse);
                       toast.success(t('sendWhatsAppComposeOpened'));
                     }
                   } catch (err) {
@@ -1051,7 +1169,7 @@ export function QuoteEditorPage() {
                     setOpeningWhatsapp(false);
                   }
                 }}
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-white px-4 py-2 text-xs font-medium text-emerald-800 shadow-md transition hover:bg-emerald-50 disabled:opacity-60"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-white px-4 py-2 text-xs font-medium text-emerald-800 shadow-md transition hover:bg-emerald-50 disabled:opacity-60 w-full sm:w-auto"
               >
                 {openingWhatsapp ? (
                   <Loader2 className="size-3 animate-spin" />
@@ -1063,7 +1181,6 @@ export function QuoteEditorPage() {
             </div>
           </div>
         </section>
-      )}
 
     </div>
   );
