@@ -1015,6 +1015,7 @@ export function QuoteEditorPage() {
                   onClick={async () => {
                     if (!sendQuoteDate) return;
                     const num = Math.max(1, Math.floor(Number(sendQuoteNumber)) || 1);
+                  const normalizedValidUntil = normalizeDateToInput(sendValidUntil);
                     setSendingEmail(true);
                     try {
                       let quoteIdToUse = id;
@@ -1025,9 +1026,9 @@ export function QuoteEditorPage() {
                           customerAddress: customerAddress.trim() || undefined,
                           currency,
                           vatRate,
-                          quoteNumber: sendQuoteNumber,
+                        quoteNumber: num,
                           quoteDate: sendQuoteDate,
-                          validUntil: sendValidUntil === '' ? null : sendValidUntil,
+                        validUntil: normalizedValidUntil === '' ? null : normalizedValidUntil,
                           items: items.map((i) => ({
                             itemName: i.itemName.trim() || 'Item',
                             quantity: i.quantity,
@@ -1045,9 +1046,25 @@ export function QuoteEditorPage() {
                           setPendingAttachments([]);
                           queryClient.invalidateQueries({ queryKey: ['quoteAttachments', created.id] });
                         }
+                    } else {
+                      // Persist latest edits before generating/sending PDF
+                      const payload = {
+                        clientName: clientName.trim() || undefined,
+                        customerAddress: customerAddress.trim() || undefined,
+                        currency,
+                        vatRate,
+                        quoteNumber: num,
+                        validUntil: normalizedValidUntil === '' ? null : normalizedValidUntil,
+                        items: items.map((i) => ({
+                          itemName: i.itemName.trim() || 'Item',
+                          quantity: i.quantity,
+                          unitPrice: i.unitPrice,
+                        })),
+                      };
+                      await updateQuote(quoteIdToUse, payload);
                       }
                       if (!quoteIdToUse) return;
-                      await sendQuote(quoteIdToUse, 'email', sendEmailTo.trim(), sendQuoteDate, sendValidUntil || '', num);
+                    await sendQuote(quoteIdToUse, 'email', sendEmailTo.trim(), sendQuoteDate, normalizedValidUntil, num);
                       markQuoteSentLocally(quoteIdToUse);
                       toast.success(t('quoteSent'));
                       navigate('/quotes');
@@ -1090,6 +1107,7 @@ export function QuoteEditorPage() {
                   onClick={async () => {
                   if (!sendQuoteDate) return;
                   const num = Math.max(1, Math.floor(Number(sendQuoteNumber)) || 1);
+                  const normalizedValidUntil = normalizeDateToInput(sendValidUntil);
                   setOpeningWhatsapp(true);
                   try {
                     let quoteIdToUse = id;
@@ -1099,9 +1117,9 @@ export function QuoteEditorPage() {
                         customerAddress: customerAddress.trim() || undefined,
                         currency,
                         vatRate,
-                        quoteNumber: sendQuoteNumber,
+                        quoteNumber: num,
                         quoteDate: sendQuoteDate,
-                        validUntil: sendValidUntil === '' ? null : sendValidUntil,
+                        validUntil: normalizedValidUntil === '' ? null : normalizedValidUntil,
                         items: items.map((i) => ({
                           itemName: i.itemName.trim() || 'Item',
                           quantity: i.quantity,
@@ -1118,12 +1136,28 @@ export function QuoteEditorPage() {
                         setPendingAttachments([]);
                         queryClient.invalidateQueries({ queryKey: ['quoteAttachments', created.id] });
                       }
+                    } else {
+                      // Persist latest edits before generating/sending PDF
+                      const payload = {
+                        clientName: clientName.trim() || undefined,
+                        customerAddress: customerAddress.trim() || undefined,
+                        currency,
+                        vatRate,
+                        quoteNumber: num,
+                        validUntil: normalizedValidUntil === '' ? null : normalizedValidUntil,
+                        items: items.map((i) => ({
+                          itemName: i.itemName.trim() || 'Item',
+                          quantity: i.quantity,
+                          unitPrice: i.unitPrice,
+                        })),
+                      };
+                      await updateQuote(quoteIdToUse, payload);
                     }
                     if (!quoteIdToUse) return;
                       const { pdfUrl, attachmentUrls } = await getQuoteSendLinks(
                         quoteIdToUse,
                         sendQuoteDate,
-                        sendValidUntil || '',
+                        normalizedValidUntil,
                         num,
                         (lang as string) || 'de',
                       );
