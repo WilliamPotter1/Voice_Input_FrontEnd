@@ -949,12 +949,16 @@ export function QuoteEditorPage() {
                 <img
                   src="/images/ew.png"
                   alt=""
-                  className="h-15 sm:h-15 object-contain"
+                  className="h-11 sm:h-11 object-contain"
                 />
               </p>
             </div>
-            <span className="rounded-full bg-emerald-600 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-white">
-              SEND
+            <span className="inline-flex items-center justify-center rounded-full bg-emerald-600 px-2 py-1">
+              <img
+                src="/images/send.jpg"
+                alt=""
+                className="h-15 w-auto rounded-full object-contain"
+              />
             </span>
           </div>
 
