@@ -73,6 +73,16 @@ function plus30Days(): string {
   return d.toISOString().slice(0, 10);
 }
 
+function normalizeDateToInput(value: string | null | undefined): string {
+  if (!value) return '';
+  // HTML date inputs expect `YYYY-MM-DD`.
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+  // Backend usually sends ISO timestamps: `YYYY-MM-DDTHH:mm:ssZ`.
+  if (/^\d{4}-\d{2}-\d{2}T/.test(value)) return value.slice(0, 10);
+  // Treat other formats (e.g. `mm/dd/yyyy`) as invalid -> clear.
+  return '';
+}
+
 function randomQuoteNo(): number {
   return Math.floor(Math.random() * 99) + 1;
 }
@@ -221,6 +231,7 @@ export function QuoteEditorPage() {
           unitPrice: i.unitPrice,
         })),
       );
+      setSendValidUntil(normalizeDateToInput((quoteQuery.data as any).validUntil));
       // When editing an existing quote, keep the saved quote number rather than a new random one.
       if (typeof quoteQuery.data.quoteNumber === 'number') {
         setSendQuoteNumber(quoteQuery.data.quoteNumber);
@@ -264,6 +275,7 @@ export function QuoteEditorPage() {
   });
 
   function handleSave() {
+          const normalizedValidUntil = normalizeDateToInput(sendValidUntil);
           const payload = {
             clientName: clientName.trim() || undefined,
             customerAddress: customerAddress.trim() || undefined,
@@ -271,7 +283,7 @@ export function QuoteEditorPage() {
             vatRate,
             quoteNumber: sendQuoteNumber,
             // quoteDate is no longer editable in UI; keep existing value on backend
-            validUntil: sendValidUntil === '' ? null : sendValidUntil,
+            validUntil: normalizedValidUntil === '' ? null : normalizedValidUntil,
             items: items.map((i) => ({
               itemName: i.itemName.trim() || 'Item',
               quantity: i.quantity,
