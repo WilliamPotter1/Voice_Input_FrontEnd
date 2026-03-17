@@ -1042,70 +1042,10 @@ export function QuoteEditorPage() {
                 />
               </div>
               <div className="flex justify-end">
-              <button
-                type="button"
-                disabled={sendingEmail || !sendEmailTo.trim() || !sendQuoteDate || !sendValidUntil}
-                onClick={async () => {
-                  if (!sendQuoteDate || !sendValidUntil) return;
-                  const num = Math.max(1, Math.floor(Number(sendQuoteNumber)) || 1);
-                  setSendingEmail(true);
-                  try {
-                    let quoteIdToUse = id;
-                    if (!quoteIdToUse) {
-                      // Save quote first
-                      const payload = {
-                        clientName: clientName.trim() || undefined,
-                        customerAddress: customerAddress.trim() || undefined,
-                        currency,
-                        vatRate,
-                        quoteNumber: sendQuoteNumber,
-                        quoteDate: sendQuoteDate,
-                        validUntil: sendValidUntil,
-                        items: items.map((i) => ({
-                          itemName: i.itemName.trim() || 'Item',
-                          quantity: i.quantity,
-                          unitPrice: i.unitPrice,
-                        })),
-                      };
-                      const created = await createQuote(payload);
-                      quoteIdToUse = created.id;
-                      setQuoteId(created.id);
-                      // Upload any pending attachments
-                      if (pendingAttachments.length) {
-                        await Promise.all(
-                          pendingAttachments.map((file) => uploadQuoteAttachment(created.id, file)),
-                        );
-                        setPendingAttachments([]);
-                        queryClient.invalidateQueries({ queryKey: ['quoteAttachments', created.id] });
-                      }
-                    }
-                    if (!quoteIdToUse) return;
-                    await sendQuote(quoteIdToUse, 'email', sendEmailTo.trim(), sendQuoteDate, sendValidUntil, num);
-                    markQuoteSentLocally(quoteIdToUse);
-                    toast.success(t('quoteSent'));
-                  } catch (err) {
-                    toast.error(err instanceof Error ? err.message : t('quoteSendFailed'));
-                  } finally {
-                    setSendingEmail(false);
-                  }
-                }}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-white px-4 py-2 text-xs font-medium text-emerald-800 shadow-md transition hover:bg-emerald-50 disabled:opacity-60 w-full sm:w-auto"
-              >
-                {sendingEmail ? (
-                  <Loader2 className="size-3 animate-spin" />
-                ) : (
-                  <img src="/images/email.png" alt="" className="size-4 shrink-0 object-contain" />
-                )}
-                <span>{t('sendByEmail')}</span>
-              </button>
-              </div>
-            </div>
-
-            <div className="mt-1 flex flex-row flex-wrap gap-2 justify-end">
-              <button
-                type="button"
-                disabled={openingWhatsapp || !sendWhatsappTo.trim() || !sendQuoteDate || !sendValidUntil}
-                onClick={async () => {
+                <button
+                  type="button"
+                  disabled={openingWhatsapp || !sendWhatsappTo.trim() || !sendQuoteDate || !sendValidUntil}
+                  onClick={async () => {
                   if (!sendQuoteDate || !sendValidUntil) return;
                   const num = Math.max(1, Math.floor(Number(sendQuoteNumber)) || 1);
                   setOpeningWhatsapp(true);
@@ -1169,15 +1109,16 @@ export function QuoteEditorPage() {
                     setOpeningWhatsapp(false);
                   }
                 }}
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-white px-4 py-2 text-xs font-medium text-emerald-800 shadow-md transition hover:bg-emerald-50 disabled:opacity-60 w-full sm:w-auto"
-              >
-                {openingWhatsapp ? (
-                  <Loader2 className="size-3 animate-spin" />
-                ) : (
-                  <img src="/images/whatsapp.jpg" alt="" className="size-4 shrink-0 object-contain" />
-                )}
-                <span>{t('sendByWhatsapp')}</span>
-              </button>
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-white px-4 py-2 text-xs font-medium text-emerald-800 shadow-md transition hover:bg-emerald-50 disabled:opacity-60 w-full sm:w-auto"
+                >
+                  {openingWhatsapp ? (
+                    <Loader2 className="size-3 animate-spin" />
+                  ) : (
+                    <img src="/images/whatsapp.jpg" alt="" className="size-4 shrink-0 object-contain" />
+                  )}
+                  <span>{t('sendByWhatsapp')}</span>
+                </button>
+              </div>
             </div>
           </div>
         </section>
