@@ -949,7 +949,7 @@ export function QuoteEditorPage() {
                 <img
                   src="/images/ew.png"
                   alt=""
-                  className="h-5 object-contain"
+                  className="h-7 sm:h-8 object-contain"
                 />
               </p>
             </div>
