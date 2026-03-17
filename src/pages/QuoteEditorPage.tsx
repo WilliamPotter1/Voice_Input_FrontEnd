@@ -122,7 +122,7 @@ export function QuoteEditorPage() {
   const [sendEmailTo, setSendEmailTo] = useState('');
   const [sendWhatsappTo, setSendWhatsappTo] = useState('');
   const [sendQuoteNumber, setSendQuoteNumber] = useState(randomQuoteNo);
-  const [sendQuoteDate, setSendQuoteDate] = useState(todayISO);
+  const [sendQuoteDate] = useState(todayISO);
   const [sendValidUntil, setSendValidUntil] = useState(plus30Days);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [openingWhatsapp, setOpeningWhatsapp] = useState(false);
@@ -260,20 +260,20 @@ export function QuoteEditorPage() {
   });
 
   function handleSave() {
-    const payload = {
-      clientName: clientName.trim() || undefined,
-      customerAddress: customerAddress.trim() || undefined,
-      currency,
-      vatRate,
-      quoteNumber: sendQuoteNumber,
-      quoteDate: sendQuoteDate,
-      validUntil: sendValidUntil,
-      items: items.map((i) => ({
-        itemName: i.itemName.trim() || 'Item',
-        quantity: i.quantity,
-        unitPrice: i.unitPrice,
-      })),
-    };
+          const payload = {
+            clientName: clientName.trim() || undefined,
+            customerAddress: customerAddress.trim() || undefined,
+            currency,
+            vatRate,
+            quoteNumber: sendQuoteNumber,
+            // quoteDate is no longer editable in UI; keep existing value on backend
+            validUntil: sendValidUntil || undefined,
+            items: items.map((i) => ({
+              itemName: i.itemName.trim() || 'Item',
+              quantity: i.quantity,
+              unitPrice: i.unitPrice,
+            })),
+          };
     if (isEdit && id) {
       updateMutation.mutate(payload);
     } else {
@@ -355,8 +355,7 @@ export function QuoteEditorPage() {
                       currency,
                       vatRate,
                       quoteNumber: sendQuoteNumber,
-                      quoteDate: sendQuoteDate,
-                      validUntil: sendValidUntil,
+                      validUntil: sendValidUntil || undefined,
                       items: items.map((i) => ({
                         itemName: i.itemName.trim() || 'Item',
                         quantity: i.quantity,
@@ -806,21 +805,10 @@ export function QuoteEditorPage() {
         </div>
       </div>
 
-      {/* Send dates (between summary and attachments) */}
+      {/* Valid until (between summary and attachments) */}
       <section className="mt-4 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <div>
-            <label className="mb-1.5 block text-xs font-medium text-slate-700">
-              {t('quoteDate')}
-            </label>
-            <input
-              type="date"
-              value={sendQuoteDate}
-              onChange={(e) => setSendQuoteDate(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
-            />
-          </div>
-          <div>
+          <div className="sm:col-span-2">
             <label className="mb-1.5 block text-xs font-medium text-slate-700">
               {t('validUntil')}
             </label>
@@ -997,9 +985,9 @@ export function QuoteEditorPage() {
               <div className="flex justify-end">
                 <button
                   type="button"
-                  disabled={sendingEmail || !sendEmailTo.trim() || !sendQuoteDate || !sendValidUntil}
+                  disabled={sendingEmail || !sendEmailTo.trim()}
                   onClick={async () => {
-                    if (!sendQuoteDate || !sendValidUntil) return;
+                    if (!sendQuoteDate) return;
                     const num = Math.max(1, Math.floor(Number(sendQuoteNumber)) || 1);
                     setSendingEmail(true);
                     try {
@@ -1013,7 +1001,7 @@ export function QuoteEditorPage() {
                           vatRate,
                           quoteNumber: sendQuoteNumber,
                           quoteDate: sendQuoteDate,
-                          validUntil: sendValidUntil,
+                          validUntil: sendValidUntil || undefined,
                           items: items.map((i) => ({
                             itemName: i.itemName.trim() || 'Item',
                             quantity: i.quantity,
@@ -1033,7 +1021,7 @@ export function QuoteEditorPage() {
                         }
                       }
                       if (!quoteIdToUse) return;
-                      await sendQuote(quoteIdToUse, 'email', sendEmailTo.trim(), sendQuoteDate, sendValidUntil, num);
+                      await sendQuote(quoteIdToUse, 'email', sendEmailTo.trim(), sendQuoteDate, sendValidUntil || '', num);
                       markQuoteSentLocally(quoteIdToUse);
                       toast.success(t('quoteSent'));
                       navigate('/quotes');
@@ -1072,9 +1060,9 @@ export function QuoteEditorPage() {
               <div className="flex justify-end">
                 <button
                   type="button"
-                  disabled={openingWhatsapp || !sendWhatsappTo.trim() || !sendQuoteDate || !sendValidUntil}
+                  disabled={openingWhatsapp || !sendWhatsappTo.trim()}
                   onClick={async () => {
-                  if (!sendQuoteDate || !sendValidUntil) return;
+                  if (!sendQuoteDate) return;
                   const num = Math.max(1, Math.floor(Number(sendQuoteNumber)) || 1);
                   setOpeningWhatsapp(true);
                   try {
@@ -1087,7 +1075,7 @@ export function QuoteEditorPage() {
                         vatRate,
                         quoteNumber: sendQuoteNumber,
                         quoteDate: sendQuoteDate,
-                        validUntil: sendValidUntil,
+                        validUntil: sendValidUntil || undefined,
                         items: items.map((i) => ({
                           itemName: i.itemName.trim() || 'Item',
                           quantity: i.quantity,
@@ -1106,13 +1094,13 @@ export function QuoteEditorPage() {
                       }
                     }
                     if (!quoteIdToUse) return;
-                    const { pdfUrl, attachmentUrls } = await getQuoteSendLinks(
-                      quoteIdToUse,
-                      sendQuoteDate,
-                      sendValidUntil,
-                      num,
-                      (lang as string) || 'de',
-                    );
+                      const { pdfUrl, attachmentUrls } = await getQuoteSendLinks(
+                        quoteIdToUse,
+                        sendQuoteDate,
+                        sendValidUntil || '',
+                        num,
+                        (lang as string) || 'de',
+                      );
                     const intro = t('sendEmailBodyLinksIntro') as string;
                     const pdfLabel = t('sendEmailPdfLabel') as string;
                     const attachmentsLabel = t('sendEmailAttachmentsLabel') as string;
