@@ -827,7 +827,7 @@ export function QuoteEditorPage() {
                 type="button"
                 onClick={() => setSendValidUntil('')}
                 className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-xs font-semibold text-slate-500 shadow-sm transition hover:bg-slate-100 hover:text-slate-700"
-                aria-label={t('clear') ?? 'Clear date'}
+                aria-label="Clear date"
               >
                 ×
               </button>
