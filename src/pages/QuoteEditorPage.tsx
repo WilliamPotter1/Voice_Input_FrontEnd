@@ -939,7 +939,7 @@ export function QuoteEditorPage() {
       </section>
 
       {/* Send section (after attachments) */}
-      <section className="mt-6 w-full rounded-2xl border border-emerald-300 bg-emerald-50 p-5 shadow-md sm:p-6 lg:max-w-xl">
+      <section className="mt-6 w-full rounded-2xl border border-emerald-300 bg-emerald-50/90 p-5 shadow-md sm:p-6 lg:max-w-xl transition-transform transition-shadow duration-300 ease-out hover:-translate-y-1 hover:shadow-xl focus-within:-translate-y-1 focus-within:shadow-xl">
           <div className="flex items-center justify-between gap-3">
             <div>
               <h3 className="text-sm font-semibold text-emerald-900 tracking-wide">
