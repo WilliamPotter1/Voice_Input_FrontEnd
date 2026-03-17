@@ -953,8 +953,8 @@ export function QuoteEditorPage() {
           </div>
 
           <div className="mt-5 space-y-4">
-            {/* Email row: address + button */}
-            <div className="grid grid-cols-1 items-end gap-2 sm:grid-cols-[minmax(0,1.3fr)_auto]">
+            {/* Email row: address + button (always side-by-side, also on mobile) */}
+            <div className="grid items-end gap-2 grid-cols-[minmax(0,1.3fr)_auto]">
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-slate-700">
                   {t('emailAddress')}
@@ -1027,8 +1027,8 @@ export function QuoteEditorPage() {
               </div>
             </div>
 
-            {/* WhatsApp row: number + button */}
-            <div className="grid grid-cols-1 items-end gap-2 sm:grid-cols-[minmax(0,1.3fr)_auto]">
+            {/* WhatsApp row: number + button (always side-by-side, also on mobile) */}
+            <div className="grid items-end gap-2 grid-cols-[minmax(0,1.3fr)_auto]">
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-slate-700">
                   {t('whatsappNumber')}
