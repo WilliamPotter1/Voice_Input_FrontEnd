@@ -207,21 +207,25 @@ export function QuoteEditorPage() {
   }, [id, setQuoteId, reset, loadQuote, extractedItems, extractedCustomerName, extractedVatRate]);
 
   useEffect(() => {
-      if (quoteQuery.data) {
-        if ((quoteQuery.data as any).currency) {
-          setCurrency((quoteQuery.data as any).currency);
-        }
-        loadQuote(
-          quoteQuery.data.clientName,
-          quoteQuery.data.customerAddress,
-          quoteQuery.data.vatRate,
-          quoteQuery.data.items.map((i) => ({
-            itemName: i.itemName,
-            quantity: i.quantity,
-            unitPrice: i.unitPrice,
-          }))
-        );
+    if (quoteQuery.data) {
+      if ((quoteQuery.data as any).currency) {
+        setCurrency((quoteQuery.data as any).currency);
       }
+      loadQuote(
+        quoteQuery.data.clientName,
+        quoteQuery.data.customerAddress,
+        quoteQuery.data.vatRate,
+        quoteQuery.data.items.map((i) => ({
+          itemName: i.itemName,
+          quantity: i.quantity,
+          unitPrice: i.unitPrice,
+        })),
+      );
+      // When editing an existing quote, keep the saved quote number rather than a new random one.
+      if (typeof quoteQuery.data.quoteNumber === 'number') {
+        setSendQuoteNumber(quoteQuery.data.quoteNumber);
+      }
+    }
   }, [quoteQuery.data, loadQuote]);
 
   const createMutation = useMutation({
@@ -807,8 +811,8 @@ export function QuoteEditorPage() {
 
       {/* Valid until (between summary and attachments) */}
       <section className="mt-4 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6">
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <div className="sm:col-span-2">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:gap-3">
+          <div className="flex-1">
             <label className="mb-1.5 block text-xs font-medium text-slate-700">
               {t('validUntil')}
             </label>
@@ -819,6 +823,13 @@ export function QuoteEditorPage() {
               className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
             />
           </div>
+          <button
+            type="button"
+            onClick={() => setSendValidUntil('')}
+            className="mt-1 inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-medium text-slate-600 shadow-sm transition hover:bg-slate-50 sm:mt-0"
+          >
+            ×
+          </button>
         </div>
       </section>
 
