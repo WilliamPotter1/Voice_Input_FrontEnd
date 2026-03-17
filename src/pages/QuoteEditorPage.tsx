@@ -1036,6 +1036,7 @@ export function QuoteEditorPage() {
                       await sendQuote(quoteIdToUse, 'email', sendEmailTo.trim(), sendQuoteDate, sendValidUntil, num);
                       markQuoteSentLocally(quoteIdToUse);
                       toast.success(t('quoteSent'));
+                      navigate('/quotes');
                     } catch (err) {
                       toast.error(err instanceof Error ? err.message : t('quoteSendFailed'));
                     } finally {
@@ -1129,6 +1130,7 @@ export function QuoteEditorPage() {
                       window.open(url, '_blank', 'noopener,noreferrer');
                       markQuoteSentLocally(quoteIdToUse);
                       toast.success(t('sendWhatsAppComposeOpened'));
+                      navigate('/quotes');
                     }
                   } catch (err) {
                     toast.error(err instanceof Error ? err.message : t('quoteSendFailed'));
