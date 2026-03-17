@@ -348,6 +348,23 @@ export function QuoteEditorPage() {
                     return;
                   }
                   try {
+                    // First persist latest form data to the database
+                    const payload = {
+                      clientName: clientName.trim() || undefined,
+                      customerAddress: customerAddress.trim() || undefined,
+                      currency,
+                      vatRate,
+                      quoteNumber: sendQuoteNumber,
+                      quoteDate: sendQuoteDate,
+                      validUntil: sendValidUntil,
+                      items: items.map((i) => ({
+                        itemName: i.itemName.trim() || 'Item',
+                        quantity: i.quantity,
+                        unitPrice: i.unitPrice,
+                      })),
+                    };
+                    await updateQuote(id, payload);
+
                     const num = Math.max(1, Math.floor(Number(sendQuoteNumber)) || 1);
                     await downloadQuotePdf(id, sendQuoteDate, sendValidUntil, lang as string, num);
                     toast.success(t('pdfGenerated'));
@@ -955,7 +972,7 @@ export function QuoteEditorPage() {
             </div>
             <span className="inline-flex items-center justify-center px-2 py-1">
               <img
-                src="/images/send.jpg"
+                src="/images/send.png"
                 alt=""
                 className="h-18 w-auto object-contain"
               />
