@@ -271,7 +271,7 @@ export function QuoteEditorPage() {
             vatRate,
             quoteNumber: sendQuoteNumber,
             // quoteDate is no longer editable in UI; keep existing value on backend
-            validUntil: sendValidUntil || undefined,
+            validUntil: sendValidUntil === '' ? null : sendValidUntil,
             items: items.map((i) => ({
               itemName: i.itemName.trim() || 'Item',
               quantity: i.quantity,
@@ -347,7 +347,7 @@ export function QuoteEditorPage() {
               <button
                 type="button"
                 onClick={async () => {
-                  if (!sendQuoteDate || !sendValidUntil || !sendQuoteNumber) {
+                  if (!sendQuoteDate || !sendQuoteNumber) {
                     toast.error(t('pdfFailed'));
                     return;
                   }
@@ -359,7 +359,7 @@ export function QuoteEditorPage() {
                       currency,
                       vatRate,
                       quoteNumber: sendQuoteNumber,
-                      validUntil: sendValidUntil || undefined,
+                      validUntil: sendValidUntil === '' ? null : sendValidUntil,
                       items: items.map((i) => ({
                         itemName: i.itemName.trim() || 'Item',
                         quantity: i.quantity,
@@ -369,7 +369,7 @@ export function QuoteEditorPage() {
                     await updateQuote(id, payload);
 
                     const num = Math.max(1, Math.floor(Number(sendQuoteNumber)) || 1);
-                    await downloadQuotePdf(id, sendQuoteDate, sendValidUntil, lang as string, num);
+                    await downloadQuotePdf(id, sendQuoteDate, sendValidUntil || '', lang as string, num);
                     toast.success(t('pdfGenerated'));
                   } catch (e) {
                     toast.error(e instanceof Error ? e.message : t('pdfFailed'));
@@ -1015,7 +1015,7 @@ export function QuoteEditorPage() {
                           vatRate,
                           quoteNumber: sendQuoteNumber,
                           quoteDate: sendQuoteDate,
-                          validUntil: sendValidUntil || undefined,
+                          validUntil: sendValidUntil === '' ? null : sendValidUntil,
                           items: items.map((i) => ({
                             itemName: i.itemName.trim() || 'Item',
                             quantity: i.quantity,
@@ -1089,7 +1089,7 @@ export function QuoteEditorPage() {
                         vatRate,
                         quoteNumber: sendQuoteNumber,
                         quoteDate: sendQuoteDate,
-                        validUntil: sendValidUntil || undefined,
+                        validUntil: sendValidUntil === '' ? null : sendValidUntil,
                         items: items.map((i) => ({
                           itemName: i.itemName.trim() || 'Item',
                           quantity: i.quantity,

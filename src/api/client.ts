@@ -92,7 +92,7 @@ export interface QuotePayload {
   vatRate?: number;
   quoteNumber?: number;
   quoteDate?: string;
-  validUntil?: string;
+  validUntil?: string | null;
   items: QuoteItemInput[];
 }
 
