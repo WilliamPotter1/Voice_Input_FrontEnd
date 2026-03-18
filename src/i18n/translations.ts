@@ -46,6 +46,9 @@ export const translations = {
     // RegisterPage
     registerTitle: 'Konto erstellen',
     registerDesc: 'Erstellen Sie in Sekunden sprachgesteuerte Angebote.',
+    registerAcceptTerms: 'Ich akzeptiere die Allgemeinen Geschäftsbedingungen.',
+    registerAcceptPrivacy: 'Ich akzeptiere die Datenschutzerklärung.',
+    registerMustAccept: 'Bitte akzeptieren Sie die AGB und die Datenschutzerklärung, um fortzufahren.',
     creatingAccount: 'Konto wird erstellt…',
     createAccount: 'Konto erstellen',
     alreadyHaveAccount: 'Haben Sie bereits ein Konto?',
@@ -219,6 +222,9 @@ export const translations = {
 
     registerTitle: 'Create account',
     registerDesc: 'Start creating voice-powered quotes in seconds.',
+    registerAcceptTerms: 'I accept the terms and conditions.',
+    registerAcceptPrivacy: 'I accept the privacy policy.',
+    registerMustAccept: 'Please accept the terms and privacy policy to continue.',
     creatingAccount: 'Creating account…',
     createAccount: 'Create account',
     alreadyHaveAccount: 'Already have an account?',
@@ -387,6 +393,9 @@ export const translations = {
 
     registerTitle: 'Crea account',
     registerDesc: 'Inizia a creare preventivi vocali in pochi secondi.',
+    registerAcceptTerms: 'Accetto i termini e le condizioni.',
+    registerAcceptPrivacy: 'Accetto l’informativa sulla privacy.',
+    registerMustAccept: 'Accetta termini e privacy per continuare.',
     creatingAccount: 'Creazione account…',
     createAccount: 'Crea account',
     alreadyHaveAccount: 'Hai già un account?',
@@ -555,6 +564,9 @@ export const translations = {
 
     registerTitle: 'Créer un compte',
     registerDesc: 'Commencez à créer des devis vocaux en quelques secondes.',
+    registerAcceptTerms: 'J’accepte les conditions générales.',
+    registerAcceptPrivacy: 'J’accepte la politique de confidentialité.',
+    registerMustAccept: 'Veuillez accepter les conditions et la politique de confidentialité pour continuer.',
     creatingAccount: 'Création du compte…',
     createAccount: 'Créer un compte',
     alreadyHaveAccount: 'Vous avez déjà un compte ?',
@@ -723,6 +735,9 @@ export const translations = {
 
     registerTitle: 'Crear cuenta',
     registerDesc: 'Empieza a crear presupuestos por voz en segundos.',
+    registerAcceptTerms: 'Acepto los términos y condiciones.',
+    registerAcceptPrivacy: 'Acepto la política de privacidad.',
+    registerMustAccept: 'Acepte los términos y la política de privacidad para continuar.',
     creatingAccount: 'Creando cuenta…',
     createAccount: 'Crear cuenta',
     alreadyHaveAccount: '¿Ya tienes una cuenta?',

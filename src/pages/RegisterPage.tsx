@@ -13,9 +13,15 @@ export function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!acceptedTerms || !acceptedPrivacy) {
+      toast.error(t('registerMustAccept'));
+      return;
+    }
     if (password.length < 8) {
       toast.error(t('passwordTooShort'));
       return;
@@ -80,6 +86,26 @@ export function RegisterPage() {
               />
             </div>
             <p className="mt-1 text-xs text-slate-400">{t('passwordMinLength')}</p>
+          </div>
+          <div className="space-y-2 text-xs text-slate-600">
+            <label className="flex items-start gap-2">
+              <input
+                type="checkbox"
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+              />
+              <span>{t('registerAcceptTerms')}</span>
+            </label>
+            <label className="flex items-start gap-2">
+              <input
+                type="checkbox"
+                checked={acceptedPrivacy}
+                onChange={(e) => setAcceptedPrivacy(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+              />
+              <span>{t('registerAcceptPrivacy')}</span>
+            </label>
           </div>
           <button
             type="submit"
