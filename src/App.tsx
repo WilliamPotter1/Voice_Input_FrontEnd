@@ -7,6 +7,8 @@ import { RegisterPage } from './pages/RegisterPage';
 import { QuoteListPage } from './pages/QuoteListPage';
 import { QuoteEditorPage } from './pages/QuoteEditorPage';
 import { ProfilePage } from './pages/ProfilePage';
+import { TermsPage } from './pages/TermsPage';
+import { PrivacyPage } from './pages/PrivacyPage';
 
 function App() {
   return (
@@ -15,6 +17,8 @@ function App() {
         <Route index element={<VoiceInputPage />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="register" element={<RegisterPage />} />
+        <Route path="terms" element={<TermsPage />} />
+        <Route path="privacy" element={<PrivacyPage />} />
         <Route
           path="profile"
           element={

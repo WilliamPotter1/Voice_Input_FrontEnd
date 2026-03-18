@@ -95,7 +95,16 @@ export function RegisterPage() {
                 onChange={(e) => setAcceptedTerms(e.target.checked)}
                 className="mt-0.5 h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
               />
-              <span>{t('registerAcceptTerms')}</span>
+              <span>
+                <Link
+                  to="/terms"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="underline decoration-emerald-400 decoration-2 underline-offset-2 hover:text-emerald-700"
+                >
+                  {t('registerAcceptTerms')}
+                </Link>
+              </span>
             </label>
             <label className="flex items-start gap-2">
               <input
@@ -104,7 +113,16 @@ export function RegisterPage() {
                 onChange={(e) => setAcceptedPrivacy(e.target.checked)}
                 className="mt-0.5 h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
               />
-              <span>{t('registerAcceptPrivacy')}</span>
+              <span>
+                <Link
+                  to="/privacy"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="underline decoration-emerald-400 decoration-2 underline-offset-2 hover:text-emerald-700"
+                >
+                  {t('registerAcceptPrivacy')}
+                </Link>
+              </span>
             </label>
           </div>
           <button
