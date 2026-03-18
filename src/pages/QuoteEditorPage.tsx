@@ -375,6 +375,7 @@ export function QuoteEditorPage() {
                       currency,
                       vatRate,
                       quoteNumber: sendQuoteNumber,
+                      quoteDate: sendQuoteDate,
                       validUntil: sendValidUntil === '' ? null : sendValidUntil,
                       items: items.map((i) => ({
                         itemName: i.itemName.trim() || 'Item',
