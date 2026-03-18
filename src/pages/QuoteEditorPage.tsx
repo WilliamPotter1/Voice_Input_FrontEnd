@@ -281,7 +281,7 @@ export function QuoteEditorPage() {
           const payload = {
             clientName: clientName.trim() || undefined,
             customerAddress: customerAddress.trim() || undefined,
-            freeText: freeText.trim() || undefined,
+            freeText: freeText.trim() === '' ? null : freeText.trim(),
             currency,
             vatRate,
             quoteNumber: sendQuoteNumber,
@@ -371,7 +371,7 @@ export function QuoteEditorPage() {
                     const payload = {
                       clientName: clientName.trim() || undefined,
                       customerAddress: customerAddress.trim() || undefined,
-                    freeText: freeText.trim() || undefined,
+                      freeText: freeText.trim() === '' ? null : freeText.trim(),
                       currency,
                       vatRate,
                       quoteNumber: sendQuoteNumber,
@@ -1045,7 +1045,7 @@ export function QuoteEditorPage() {
                         const payload = {
                           clientName: clientName.trim() || undefined,
                           customerAddress: customerAddress.trim() || undefined,
-                          freeText: freeText.trim() || undefined,
+                          freeText: freeText.trim() === '' ? null : freeText.trim(),
                           currency,
                           vatRate,
                         quoteNumber: num,
@@ -1073,7 +1073,7 @@ export function QuoteEditorPage() {
                       const payload = {
                         clientName: clientName.trim() || undefined,
                         customerAddress: customerAddress.trim() || undefined,
-                        freeText: freeText.trim() || undefined,
+                        freeText: freeText.trim() === '' ? null : freeText.trim(),
                         currency,
                         vatRate,
                         quoteNumber: num,
@@ -1146,7 +1146,7 @@ export function QuoteEditorPage() {
                       const payload = {
                         clientName: clientName.trim() || undefined,
                         customerAddress: customerAddress.trim() || undefined,
-                        freeText: freeText.trim() || undefined,
+                      freeText: freeText.trim() === '' ? null : freeText.trim(),
                         currency,
                         vatRate,
                         quoteNumber: num,
@@ -1173,7 +1173,7 @@ export function QuoteEditorPage() {
                       const payload = {
                         clientName: clientName.trim() || undefined,
                         customerAddress: customerAddress.trim() || undefined,
-                        freeText: freeText.trim() || undefined,
+                      freeText: freeText.trim() === '' ? null : freeText.trim(),
                         currency,
                         vatRate,
                         quoteNumber: num,
