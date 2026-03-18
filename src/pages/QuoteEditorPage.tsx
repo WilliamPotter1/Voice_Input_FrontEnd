@@ -1064,7 +1064,15 @@ export function QuoteEditorPage() {
                       await updateQuote(quoteIdToUse, payload);
                       }
                       if (!quoteIdToUse) return;
-                    await sendQuote(quoteIdToUse, 'email', sendEmailTo.trim(), sendQuoteDate, normalizedValidUntil, num);
+                    await sendQuote(
+                      quoteIdToUse,
+                      'email',
+                      sendEmailTo.trim(),
+                      sendQuoteDate,
+                      normalizedValidUntil,
+                      num,
+                      (lang as string) || 'de',
+                    );
                       markQuoteSentLocally(quoteIdToUse);
                       toast.success(t('quoteSent'));
                       navigate('/quotes');

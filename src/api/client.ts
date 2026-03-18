@@ -424,11 +424,12 @@ export async function sendQuote(
   quoteDate: string,
   validUntil: string,
   quoteNumber: number,
+  lang: string,
 ): Promise<void> {
   const res = await fetchApi(apiUrl(`/quotes/${quoteId}/send`), {
     method: 'POST',
     headers: getAuthJsonHeaders(),
-    body: JSON.stringify({ channel, recipient, quoteDate, validUntil, quoteNumber }),
+    body: JSON.stringify({ channel, recipient, quoteDate, validUntil, quoteNumber, lang }),
   });
   const body = await res.json().catch(() => ({}));
   if (!res.ok) {
