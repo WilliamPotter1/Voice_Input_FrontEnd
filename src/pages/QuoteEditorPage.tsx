@@ -134,6 +134,7 @@ export function QuoteEditorPage() {
   const [sendQuoteNumber, setSendQuoteNumber] = useState(randomQuoteNo);
   const [sendQuoteDate] = useState(todayISO);
   const [sendValidUntil, setSendValidUntil] = useState(plus30Days);
+  const [freeText, setFreeText] = useState('');
   const [sendingEmail, setSendingEmail] = useState(false);
   const [openingWhatsapp, setOpeningWhatsapp] = useState(false);
 
@@ -232,6 +233,7 @@ export function QuoteEditorPage() {
         })),
       );
       setSendValidUntil(normalizeDateToInput((quoteQuery.data as any).validUntil));
+      setFreeText(((quoteQuery.data as any).freeText as string | null) ?? '');
       // When editing an existing quote, keep the saved quote number rather than a new random one.
       if (typeof quoteQuery.data.quoteNumber === 'number') {
         setSendQuoteNumber(quoteQuery.data.quoteNumber);
@@ -279,6 +281,7 @@ export function QuoteEditorPage() {
           const payload = {
             clientName: clientName.trim() || undefined,
             customerAddress: customerAddress.trim() || undefined,
+            freeText: freeText.trim() || undefined,
             currency,
             vatRate,
             quoteNumber: sendQuoteNumber,
@@ -368,6 +371,7 @@ export function QuoteEditorPage() {
                     const payload = {
                       clientName: clientName.trim() || undefined,
                       customerAddress: customerAddress.trim() || undefined,
+                    freeText: freeText.trim() || undefined,
                       currency,
                       vatRate,
                       quoteNumber: sendQuoteNumber,
@@ -848,6 +852,23 @@ export function QuoteEditorPage() {
         </div>
       </section>
 
+      {/* Free text under valid-until (printed under totals in PDF) */}
+      <section className="mt-4 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6">
+        <label className="mb-2 block text-sm font-medium text-slate-700">
+          {t('quoteFreeText') ?? 'Additional text for PDF'}
+        </label>
+        <textarea
+          value={freeText}
+          onChange={(e) => setFreeText(e.target.value)}
+          rows={3}
+          className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+          placeholder={t('quoteFreeTextPlaceholder') ?? ''}
+        />
+        <p className="mt-1 text-xs text-slate-500">
+          {t('quoteFreeTextHint') ?? 'Shown below the totals section in the PDF.'}
+        </p>
+      </section>
+
       {/* Attachments */}
       <section className="mt-4 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -1024,6 +1045,7 @@ export function QuoteEditorPage() {
                         const payload = {
                           clientName: clientName.trim() || undefined,
                           customerAddress: customerAddress.trim() || undefined,
+                          freeText: freeText.trim() || undefined,
                           currency,
                           vatRate,
                         quoteNumber: num,
@@ -1051,6 +1073,7 @@ export function QuoteEditorPage() {
                       const payload = {
                         clientName: clientName.trim() || undefined,
                         customerAddress: customerAddress.trim() || undefined,
+                        freeText: freeText.trim() || undefined,
                         currency,
                         vatRate,
                         quoteNumber: num,
@@ -1123,6 +1146,7 @@ export function QuoteEditorPage() {
                       const payload = {
                         clientName: clientName.trim() || undefined,
                         customerAddress: customerAddress.trim() || undefined,
+                        freeText: freeText.trim() || undefined,
                         currency,
                         vatRate,
                         quoteNumber: num,
@@ -1149,6 +1173,7 @@ export function QuoteEditorPage() {
                       const payload = {
                         clientName: clientName.trim() || undefined,
                         customerAddress: customerAddress.trim() || undefined,
+                        freeText: freeText.trim() || undefined,
                         currency,
                         vatRate,
                         quoteNumber: num,

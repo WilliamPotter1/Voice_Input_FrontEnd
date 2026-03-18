@@ -77,6 +77,8 @@ function splitStreetAndCity(full?: string | null): { street: string; city: strin
     const [first, second] = parts;
     if (/^\d{5}\b/.test(second)) return { street: first, city: second };
     if (/^\d{5}\b/.test(first)) return { street: second, city: first };
+    // If no ZIP digits are present, assume "street, city".
+    return { street: first, city: second };
   }
 
   // Fallback: split on "-" separators.

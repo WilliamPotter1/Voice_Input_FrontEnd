@@ -88,6 +88,7 @@ export interface QuoteItem extends QuoteItemInput {
 export interface QuotePayload {
   clientName?: string;
   customerAddress?: string;
+  freeText?: string | null;
   currency?: string;
   vatRate?: number;
   quoteNumber?: number;
@@ -100,6 +101,7 @@ export interface QuoteSummary {
   id: string;
   clientName: string | null;
   customerAddress: string | null;
+  freeText: string | null;
   currency: string | null;
   subtotal: number;
   vat: number;
