@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { FileText, Pencil, Trash2, Plus, Loader2, Download, CheckCircle2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { listQuotes, deleteQuote, downloadQuotePdf } from '../api/client';
+import { listQuotes, deleteQuote, downloadQuotePdf, getQuote } from '../api/client';
 import { useTranslation } from '../i18n/useTranslation';
 
 function formatMoney(n: number): string {
@@ -24,7 +24,9 @@ function formatDate(iso: string): string {
 export function QuoteListPage() {
   const { t, lang } = useTranslation();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [sentMap, setSentMap] = useState<Record<string, string>>({});
+  const [loadingEditId, setLoadingEditId] = useState<string | null>(null);
   const { data: quotes, isLoading } = useQuery({
     queryKey: ['quotes'],
     queryFn: listQuotes,
@@ -180,11 +182,32 @@ export function QuoteListPage() {
                 </button>
                 <Link
                   to={`/quotes/${q.id}`}
-                  className="flex size-10 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
-                  aria-label={t('editQuote')}
+                  className="sr-only"
                 >
-                  <Pencil className="size-5" />
+                  {t('editQuote')}
                 </Link>
+                <button
+                  type="button"
+                  disabled={loadingEditId === q.id}
+                  onClick={async () => {
+                    setLoadingEditId(q.id);
+                    try {
+                      // Fetch from DB first, then prime cache so QuoteEditorPage opens instantly.
+                      const detail = await getQuote(q.id);
+                      queryClient.setQueryData(['quote', q.id], detail);
+                      navigate(`/quotes/${q.id}`);
+                    } catch (e) {
+                      toast.error(e instanceof Error ? e.message : t('pdfFailed'));
+                    } finally {
+                      setLoadingEditId((cur) => (cur === q.id ? null : cur));
+                    }
+                  }}
+                  className="flex size-10 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 disabled:opacity-60"
+                  aria-label={t('editQuote')}
+                  title={t('editQuote')}
+                >
+                  {loadingEditId === q.id ? <Loader2 className="size-5 animate-spin" /> : <Pencil className="size-5" />}
+                </button>
                 <button
                   type="button"
                   onClick={() => {
