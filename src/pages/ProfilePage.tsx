@@ -13,6 +13,7 @@ interface ProfileFormState {
   websiteUrl: string;
   companyName: string;
   companyAddress: string;
+  companyCity: string;
   bankName: string;
   blz: string;
   kto: string;
@@ -65,6 +66,39 @@ function Field({
   );
 }
 
+function splitStreetAndCity(full?: string | null): { street: string; city: string } {
+  if (!full) return { street: '', city: '' };
+  const s = full.trim();
+  if (!s) return { street: '', city: '' };
+
+  // Prefer "street, ZIP City" style.
+  const parts = s.split(',').map((p) => p.trim()).filter(Boolean);
+  if (parts.length === 2) {
+    const [first, second] = parts;
+    if (/^\d{5}\b/.test(second)) return { street: first, city: second };
+    if (/^\d{5}\b/.test(first)) return { street: second, city: first };
+  }
+
+  // Fallback: split on "-" separators.
+  const dashParts = s.split(/-/).map((p) => p.trim()).filter(Boolean);
+  if (dashParts.length === 2) {
+    const [left, right] = dashParts;
+    if (/^\d{5}\b/.test(left)) return { street: right, city: left };
+    if (/^\d{5}\b/.test(right)) return { street: left, city: right };
+  }
+
+  // If string starts with ZIP, treat leading "ZIP City, rest" as city.
+  const zipCityMatch = s.match(/^(\d{5}\s+\S+(?:\s+\S+)*)(?:,\s*(.*))?$/);
+  if (zipCityMatch) {
+    const city = zipCityMatch[1];
+    const street = zipCityMatch[2] ?? '';
+    return { street: street.trim(), city: city.trim() };
+  }
+
+  // Otherwise treat whole as street.
+  return { street: s, city: '' };
+}
+
 export function ProfilePage() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -82,6 +116,7 @@ export function ProfilePage() {
     websiteUrl: '',
     companyName: '',
     companyAddress: '',
+    companyCity: '',
     bankName: '',
     blz: '',
     kto: '',
@@ -97,13 +132,18 @@ export function ProfilePage() {
   useEffect(() => {
     if (profileQuery.data && !formLoaded) {
       const p = profileQuery.data;
+      const legacyAddress = p.companyAddress ?? '';
+      const hasCity = (p.companyCity ?? '').trim().length > 0;
+      const split = !hasCity ? splitStreetAndCity(legacyAddress) : { street: legacyAddress, city: '' };
+
       setForm({
         name: p.name,
         phone: p.phone,
         taxRate: p.taxRate != null ? String(p.taxRate) : '',
         websiteUrl: p.websiteUrl,
         companyName: p.companyName,
-        companyAddress: p.companyAddress,
+        companyAddress: split.street,
+        companyCity: hasCity ? p.companyCity : split.city,
         bankName: p.bankName,
         blz: p.blz,
         kto: p.kto,
@@ -144,6 +184,7 @@ export function ProfilePage() {
         websiteUrl: form.websiteUrl,
         companyName: form.companyName,
         companyAddress: form.companyAddress,
+        companyCity: form.companyCity,
         bankName: form.bankName,
         blz: form.blz,
         kto: form.kto,
@@ -267,7 +308,8 @@ export function ProfilePage() {
       <Section title={t('profileSectionCompany')}>
         <Field label={t('profileCompanyName')} value={form.companyName} onChange={set('companyName')} />
         <Field label={t('profileWebsiteOptional')} value={form.websiteUrl} onChange={set('websiteUrl')} type="url" />
-        <Field label={t('profileCompanyAddress')} value={form.companyAddress} onChange={set('companyAddress')} full />
+        <Field label={t('profileCompanyCity')} value={form.companyCity} onChange={set('companyCity')} />
+        <Field label={t('profileCompanyAddress')} value={form.companyAddress} onChange={set('companyAddress')} />
       </Section>
 
       {/* Bank */}

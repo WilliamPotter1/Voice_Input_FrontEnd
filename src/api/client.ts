@@ -282,6 +282,7 @@ export interface UserProfile {
   websiteUrl: string;
   companyName: string;
   companyAddress: string;
+  companyCity: string;
   bankName: string;
   blz: string;
   kto: string;
@@ -298,6 +299,7 @@ const REQUIRED_PROFILE_FIELDS: (keyof UserProfile)[] = [
   'name',
   'companyName',
   'companyAddress',
+  'companyCity',
   'bankName',
   'bic',
   'taxNumber',
