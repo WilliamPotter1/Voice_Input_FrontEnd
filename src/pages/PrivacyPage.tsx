@@ -3,8 +3,8 @@ export function PrivacyPage() {
     <div className="mx-auto max-w-4xl space-y-4">
       {/* German version */}
       <div className="mt-2 space-y-8 rounded-2xl border border-slate-200 bg-white p-6 text-sm leading-relaxed text-slate-800 shadow-sm">
-        <header className="space-y-1">
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900">Datenschutzerklärung für awodo24.com</h1>
+        <header className="min-w-0 space-y-1">
+            <h1 className="break-words hyphens-auto text-2xl font-bold leading-tight tracking-tight text-slate-900 sm:text-3xl">Datenschutzerklärung für awodo24.com</h1>
             <div className="text-sm text-slate-700">
               <p>
                 <span className="font-semibold">Stand:</span> 17.03.2026
@@ -162,8 +162,8 @@ export function PrivacyPage() {
 
       {/* English version */}
       <div className="mt-6 space-y-8 rounded-2xl border border-slate-200 bg-white p-6 text-sm leading-relaxed text-slate-800 shadow-sm">
-        <header className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Privacy Policy for awodo24.com</h1>
+        <header className="min-w-0 space-y-1">
+          <h1 className="break-words hyphens-auto text-2xl font-bold leading-tight tracking-tight text-slate-900 sm:text-3xl">Privacy Policy for awodo24.com</h1>
           <div className="text-sm text-slate-700">
             <p>
               <span className="font-semibold">Effective Date:</span> 17.03.2026

@@ -4,8 +4,8 @@ export function TermsPage() {
       {/* Main card */}
       <div className="mt-2 space-y-8 rounded-2xl border border-slate-200 bg-white p-6 text-sm leading-relaxed text-slate-800 shadow-sm">
         {/* 1. Geltungsbereich */}
-        <header className="space-y-1">
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900">
+        <header className="min-w-0 space-y-1">
+        <h1 className="break-words hyphens-auto text-2xl font-bold leading-tight tracking-tight text-slate-900 sm:text-3xl">
           Allgemeine Geschäftsbedingungen (AGB) – SaaS‑App
         </h1>
         <div className="text-sm text-slate-700">
@@ -192,8 +192,8 @@ export function TermsPage() {
 
       {/* English version below German */}
       <div className="mt-6 space-y-8 rounded-2xl border border-slate-200 bg-white p-6 text-sm leading-relaxed text-slate-800 shadow-sm">
-        <header className="space-y-1">
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900">Terms &amp; Conditions (T&amp;C) – SaaS App</h1>
+        <header className="min-w-0 space-y-1">
+        <h1 className="break-words hyphens-auto text-2xl font-bold leading-tight tracking-tight text-slate-900 sm:text-3xl">Terms &amp; Conditions (T&amp;C) – SaaS App</h1>
           <div className="text-sm text-slate-700">
             <p>
               <span className="font-semibold">Version:</span> 17.03.2026
