@@ -17,7 +17,7 @@ export function TermsPage() {
           </p>
         </div>
         </header>
-        
+
         <section className="space-y-2">
           <h2 className="text-lg font-semibold text-slate-900">1. Geltungsbereich</h2>
           <div className="h-px w-full bg-slate-200" />
@@ -380,17 +380,6 @@ export function TermsPage() {
             <li>Customer data export obligations on contract termination</li>
             <li>International usage clauses</li>
           </ul>
-        </section>
-                
-        <section className="mt-4 space-y-2 rounded border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600">
-          <p>
-            Wenn du willst, kann ich jetzt direkt eine fertige Word-Vorlage erstellen, die DE/EN auf zwei Spalten
-            nebeneinander hat, inkl. Tarif-Tabellen, Häkchen-Systemen und sauberer Formatierung, sodass du sie direkt
-            auf Website, PDF oder Mail nutzen kannst.
-          </p>
-          <p>Willst du, dass ich das mache?</p>
-          <p>Du erhältst intelligentere Reaktionen, kannst Dateien und Bilder hochladen und vieles mehr.</p>
-          <p className="font-medium text-slate-700">Anmelden · Kostenlos registrieren</p>
         </section>
       </div>
     </div>
