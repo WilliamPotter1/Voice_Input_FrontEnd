@@ -127,7 +127,13 @@ export function RegisterPage() {
           </div>
           <button
             type="submit"
-            disabled={loading}
+            disabled={
+              loading ||
+              !acceptedTerms ||
+              !acceptedPrivacy ||
+              email.trim() === '' ||
+              password.trim().length < 8
+            }
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-3 font-medium text-white shadow-sm transition hover:bg-emerald-700 disabled:opacity-60"
           >
             {loading ? (
