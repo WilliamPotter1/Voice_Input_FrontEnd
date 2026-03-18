@@ -1,8 +1,10 @@
 export function TermsPage() {
   return (
     <div className="mx-auto max-w-4xl space-y-4">
-      {/* Header (title + meta info) */}
-      <header className="space-y-1">
+      {/* Main card */}
+      <div className="mt-2 space-y-8 rounded-2xl border border-slate-200 bg-white p-6 text-sm leading-relaxed text-slate-800 shadow-sm">
+        {/* 1. Geltungsbereich */}
+        <header className="space-y-1">
         <h1 className="text-3xl font-bold tracking-tight text-slate-900">
           Allgemeine Geschäftsbedingungen (AGB) – SaaS‑App
         </h1>
@@ -14,11 +16,8 @@ export function TermsPage() {
             <span className="font-semibold">Anbieter:</span> awodo24.com
           </p>
         </div>
-      </header>
-
-      {/* Main card */}
-      <div className="mt-2 space-y-8 rounded-2xl border border-slate-200 bg-white p-6 text-sm leading-relaxed text-slate-800 shadow-sm">
-        {/* 1. Geltungsbereich */}
+        </header>
+        
         <section className="space-y-2">
           <h2 className="text-lg font-semibold text-slate-900">1. Geltungsbereich</h2>
           <div className="h-px w-full bg-slate-200" />
