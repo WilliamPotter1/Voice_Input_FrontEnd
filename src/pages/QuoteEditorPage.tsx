@@ -330,7 +330,7 @@ export function QuoteEditorPage() {
               {isEdit ? t('editQuote') : t('newQuote')}
             </h1>
             <p className="text-sm text-slate-500">
-              {isEdit ? t('updateItemsTotals') : t('addClientItems')}
+              {!isEdit ? t('addClientItems') : null}
             </p>
           </div>
         </div>
@@ -446,23 +446,28 @@ export function QuoteEditorPage() {
             <label className="mb-2 block text-sm font-medium text-slate-700">
               {t('vatRate')}
             </label>
-            <input
-              type="number"
-              min={0}
-              max={1}
-              step={0.01}
-              value={vatRate}
-              onChange={(e) => {
-                const v = Number(e.target.value);
-                if (Number.isFinite(v)) {
-                  setVatRate(Math.min(1, Math.max(0, v)));
-                } else {
-                  setVatRate(0);
-                }
-              }}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
-            />
-            <p className="mt-1 text-xs text-slate-500">{t('vatRateHint')}</p>
+            <div className="relative">
+              <input
+                type="number"
+                min={0}
+                max={100}
+                step={0.1}
+                value={Number.isFinite(vatRate) ? vatRate * 100 : 0}
+                onChange={(e) => {
+                  const v = Number(e.target.value);
+                  if (Number.isFinite(v)) {
+                    // Store vatRate as decimal (0.19); UI shows percent (19).
+                    setVatRate(Math.min(1, Math.max(0, v / 100)));
+                  } else {
+                    setVatRate(0);
+                  }
+                }}
+                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 pr-10 text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+              />
+              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-500">
+                %
+              </span>
+            </div>
           </div>
 
           {/* Customer address */}
@@ -865,9 +870,6 @@ export function QuoteEditorPage() {
           className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
           placeholder={t('quoteFreeTextPlaceholder') ?? ''}
         />
-        <p className="mt-1 text-xs text-slate-500">
-          {t('quoteFreeTextHint') ?? 'Shown below the totals section in the PDF.'}
-        </p>
       </section>
 
       {/* Attachments */}
@@ -1106,7 +1108,7 @@ export function QuoteEditorPage() {
                       setSendingEmail(false);
                     }
                   }}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-white px-4 py-2 text-xs font-medium text-emerald-800 shadow-md transition hover:bg-emerald-50 disabled:opacity-60 w-full sm:w-auto"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-white px-4 py-2 text-xs font-medium text-emerald-800 shadow-md transition hover:bg-emerald-50 disabled:opacity-60 w-40 sm:w-40"
                 >
                   {sendingEmail ? (
                     <Loader2 className="size-3 animate-spin" />
@@ -1220,7 +1222,7 @@ export function QuoteEditorPage() {
                     setOpeningWhatsapp(false);
                   }
                 }}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-white px-4 py-2 text-xs font-medium text-emerald-800 shadow-md transition hover:bg-emerald-50 disabled:opacity-60 w-full sm:w-auto"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-white px-4 py-2 text-xs font-medium text-emerald-800 shadow-md transition hover:bg-emerald-50 disabled:opacity-60 w-40 sm:w-40"
                 >
                   {openingWhatsapp ? (
                     <Loader2 className="size-3 animate-spin" />

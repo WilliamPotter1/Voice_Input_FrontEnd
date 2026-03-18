@@ -27,6 +27,14 @@ export function QuoteListPage() {
   const navigate = useNavigate();
   const [sentMap, setSentMap] = useState<Record<string, string>>({});
   const [loadingEditId, setLoadingEditId] = useState<string | null>(null);
+  const quoteNrLabelByLang: Record<string, string> = {
+    de: 'Angebot-Nr.:',
+    en: 'Quote No.:',
+    it: 'Preventivo n.:',
+    fr: 'Devis n°:',
+    es: 'Presupuesto n.°:',
+  };
+  const quoteNrLabel = quoteNrLabelByLang[lang] ?? quoteNrLabelByLang.de;
   const { data: quotes, isLoading } = useQuery({
     queryKey: ['quotes'],
     queryFn: listQuotes,
@@ -118,7 +126,11 @@ export function QuoteListPage() {
           >
             <div className="min-w-0 flex-1">
               <p className="font-semibold text-slate-900">
-                {q.clientName || t('quote')}
+                {typeof q.quoteNumber === 'number' && q.clientName
+                  ? `${quoteNrLabel} ${q.quoteNumber} ${q.clientName}`
+                  : typeof q.quoteNumber === 'number'
+                    ? `${quoteNrLabel} ${q.quoteNumber}`
+                    : q.clientName || t('quote')}
               </p>
               <p className="mt-0.5 text-sm text-slate-500 flex flex-wrap items-center gap-x-2 gap-y-0.5">
                 <span>{formatDate(q.createdAt)}</span>
