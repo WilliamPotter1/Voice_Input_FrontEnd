@@ -1,8 +1,4 @@
-import { useTranslation } from '../i18n/useTranslation';
-
 export function TermsPage() {
-  const { t } = useTranslation(); // kept for future i18n, not strictly needed here
-
   return (
     <div className="mx-auto max-w-4xl space-y-4">
       {/* Header (title + meta info) */}

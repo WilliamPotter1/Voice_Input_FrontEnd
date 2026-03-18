@@ -1,8 +1,4 @@
-import { useTranslation } from '../i18n/useTranslation';
-
 export function PrivacyPage() {
-  const { t } = useTranslation();
-
   return (
     <div className="mx-auto max-w-4xl space-y-4">
       {/* German version */}
