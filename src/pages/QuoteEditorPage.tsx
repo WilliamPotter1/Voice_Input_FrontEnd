@@ -445,8 +445,8 @@ export function QuoteEditorPage() {
             />
           </div>
 
-          {/* VAT rate */}
-          <div className="order-3 sm:order-2">
+          {/* VAT rate (mobile: below city) */}
+          <div className="order-4 sm:order-2">
             <label className="mb-2 block text-sm font-medium text-slate-700">
               {t('vatRate')}
             </label>
@@ -474,19 +474,8 @@ export function QuoteEditorPage() {
             </div>
           </div>
 
-          {/* Customer address: street and city */}
+        {/* Customer address: city and street */}
           <div className="order-2 sm:order-3">
-            <label className="mb-2 block text-sm font-medium text-slate-700">
-              {t('customerStreet')}
-            </label>
-            <input
-              type="text"
-              value={customerStreet}
-              onChange={(e) => setCustomerStreet(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
-            />
-          </div>
-          <div className="order-3 sm:order-4">
             <label className="mb-2 block text-sm font-medium text-slate-700">
               {t('customerCity')}
             </label>
@@ -494,6 +483,17 @@ export function QuoteEditorPage() {
               type="text"
               value={customerCity}
               onChange={(e) => setCustomerCity(e.target.value)}
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+            />
+          </div>
+          <div className="order-3 sm:order-4">
+            <label className="mb-2 block text-sm font-medium text-slate-700">
+              {t('customerStreet')}
+            </label>
+            <input
+              type="text"
+              value={customerStreet}
+              onChange={(e) => setCustomerStreet(e.target.value)}
               className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
             />
           </div>
@@ -680,7 +680,7 @@ export function QuoteEditorPage() {
                     updateItem(item.id, { itemName: makeItemName(e.target.value, unit) })
                   }
                   placeholder={t('description')}
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 sm:text-sm"
                 />
                 <div className="grid grid-cols-4 gap-2">
                   <div>
@@ -709,7 +709,7 @@ export function QuoteEditorPage() {
                           [item.id]: numeric === 0 ? '' : String(numeric),
                         }));
                       }}
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 sm:text-sm"
                     />
                   </div>
                   <div>
@@ -723,7 +723,7 @@ export function QuoteEditorPage() {
                         updateItem(item.id, { itemName: makeItemName(baseName, e.target.value) })
                       }
                       placeholder={t('unit')}
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 sm:text-sm"
                     />
                   </div>
                   <div>
@@ -752,7 +752,7 @@ export function QuoteEditorPage() {
                           [item.id]: numeric === 0 ? '' : String(numeric),
                         }));
                       }}
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 sm:text-sm"
                     />
                   </div>
                   <div>

@@ -9,17 +9,39 @@ function makeId() {
   return `item-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
-/** Split combined "street, city" (or "street, ZIP city") into street and city for form display. */
+/** Split combined customer address into street and city for form display. Mirrors ProfilePage logic. */
 export function splitCustomerAddress(full: string | null | undefined): { street: string; city: string } {
   if (!full) return { street: '', city: '' };
   const s = full.trim();
   if (!s) return { street: '', city: '' };
+
+  // Prefer "street, ZIP City" style.
   const parts = s.split(',').map((p) => p.trim()).filter(Boolean);
-  if (parts.length >= 2) {
-    const last = parts[parts.length - 1];
-    const street = parts.slice(0, -1).join(', ');
-    return { street, city: last };
+  if (parts.length === 2) {
+    const [first, second] = parts;
+    if (/^\d{5}\b/.test(second)) return { street: first, city: second };
+    if (/^\d{5}\b/.test(first)) return { street: second, city: first };
+    // If no ZIP digits are present, assume "street, city".
+    return { street: first, city: second };
   }
+
+  // Fallback: split on "-" separators.
+  const dashParts = s.split(/-/).map((p) => p.trim()).filter(Boolean);
+  if (dashParts.length === 2) {
+    const [left, right] = dashParts;
+    if (/^\d{5}\b/.test(left)) return { street: right, city: left };
+    if (/^\d{5}\b/.test(right)) return { street: left, city: right };
+  }
+
+  // If string starts with ZIP, treat leading "ZIP City, rest" as city.
+  const zipCityMatch = s.match(/^(\d{5}\s+\S+(?:\s+\S+)*)(?:,\s*(.*))?$/);
+  if (zipCityMatch) {
+    const city = zipCityMatch[1];
+    const street = zipCityMatch[2] ?? '';
+    return { street: street.trim(), city: city.trim() };
+  }
+
+  // Otherwise treat whole as street.
   return { street: s, city: '' };
 }
 
