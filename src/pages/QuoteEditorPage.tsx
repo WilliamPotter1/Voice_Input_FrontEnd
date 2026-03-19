@@ -635,7 +635,7 @@ export function QuoteEditorPage() {
                     />
                   </td>
                   <td className="px-4 py-3">
-                    <div className="flex h-[40px] items-center justify-end rounded-lg bg-slate-50 px-3 text-xs font-semibold sm:text-sm tabular-nums text-slate-700 whitespace-nowrap overflow-hidden text-ellipsis">
+                    <div className="flex items-center justify-end rounded-lg bg-slate-50 px-3 py-2 text-xs font-semibold sm:text-sm tabular-nums text-slate-700 whitespace-nowrap overflow-hidden text-ellipsis">
                       {formatMoney(item.quantity * item.unitPrice, currency)}
                     </div>
                   </td>
