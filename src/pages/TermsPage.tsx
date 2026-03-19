@@ -22,8 +22,8 @@ export function TermsPage() {
           <h2 className="text-lg font-semibold text-slate-900">1. Geltungsbereich</h2>
           <div className="h-px w-full bg-slate-200" />
           <p>
-            1.1 Diese AGB gelten für alle Verträge zwischen dem Anbieter und Nutzern der SaaS-Plattform{' '}
-            <span className="font-semibold">awodo24.com</span> („Kunde“).
+            1.1 Diese AGB gelten für alle Verträge zwischen dem Anbieter der SaaS-Plattform{' '}
+            <span className="font-semibold">awodo24.com</span> („Anbieter“) und Nutzern („Kunde“).
           </p>
           <p>
             1.2 Abweichende oder ergänzende Bedingungen des Kunden werden nur wirksam, wenn sie vom Anbieter
@@ -69,7 +69,7 @@ export function TermsPage() {
               </thead>
               <tbody>
                 <tr>
-                  <td className="border-b border-slate-100 px-3 py-2 font-medium">Startklar</td>
+                  <td className="border-b border-slate-100 px-3 py-2 font-medium">Basis+</td>
                   <td className="border-b border-slate-100 px-3 py-2">bis 50</td>
                   <td className="border-b border-slate-100 px-3 py-2">1</td>
                   <td className="border-b border-slate-100 px-3 py-2">
@@ -78,7 +78,7 @@ export function TermsPage() {
                   <td className="border-b border-slate-100 px-3 py-2">€29</td>
                 </tr>
                 <tr className="bg-slate-50/60">
-                  <td className="border-b border-slate-100 px-3 py-2 font-medium">Werkstatt-Profi</td>
+                  <td className="border-b border-slate-100 px-3 py-2 font-medium">Premium</td>
                   <td className="border-b border-slate-100 px-3 py-2">bis 250</td>
                   <td className="border-b border-slate-100 px-3 py-2">bis 5</td>
                   <td className="border-b border-slate-100 px-3 py-2">
@@ -87,7 +87,7 @@ export function TermsPage() {
                   <td className="border-b border-slate-100 px-3 py-2">€69</td>
                 </tr>
                 <tr>
-                  <td className="px-3 py-2 font-medium">Meisterklasse</td>
+                  <td className="px-3 py-2 font-medium">Platinum</td>
                   <td className="px-3 py-2">unbegrenzt</td>
                   <td className="px-3 py-2">unbegrenzt</td>
                   <td className="px-3 py-2">
@@ -222,7 +222,7 @@ export function TermsPage() {
           <div className="h-px w-full bg-slate-200" />
           <p>
             2.1 The Provider offers a Software-as-a-Service (SaaS) solution that enables users to create, manage, and
-            send offers.
+            send quotes.
           </p>
           <p>2.2 Access is provided via web and mobile applications.</p>
         </section>
@@ -252,16 +252,16 @@ export function TermsPage() {
               </thead>
               <tbody>
                 <tr>
-                  <td className="border-b border-slate-100 px-3 py-2 font-medium">Starter</td>
+                  <td className="border-b border-slate-100 px-3 py-2 font-medium">Basis+</td>
                   <td className="border-b border-slate-100 px-3 py-2">up to 50</td>
                   <td className="border-b border-slate-100 px-3 py-2">1</td>
                   <td className="border-b border-slate-100 px-3 py-2">
-                    Basic features: offer creation, PDF export, email/WhatsApp sending
+                    Basic features: quote creation, PDF export, email/WhatsApp sending
                   </td>
                   <td className="border-b border-slate-100 px-3 py-2">€29</td>
                 </tr>
                 <tr className="bg-slate-50/60">
-                  <td className="border-b border-slate-100 px-3 py-2 font-medium">Professional</td>
+                  <td className="border-b border-slate-100 px-3 py-2 font-medium">Premium</td>
                   <td className="border-b border-slate-100 px-3 py-2">up to 250</td>
                   <td className="border-b border-slate-100 px-3 py-2">up to 5</td>
                   <td className="border-b border-slate-100 px-3 py-2">
@@ -276,7 +276,7 @@ export function TermsPage() {
                   <td className="px-3 py-2">
                     All features + Platinum features, personal support, early access to new features
                   </td>
-                  <td className="px-3 py-2">individual</td>
+                  <td className="px-3 py-2">Individual</td>
                 </tr>
               </tbody>
             </table>
