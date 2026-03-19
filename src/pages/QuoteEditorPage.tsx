@@ -461,7 +461,7 @@ export function QuoteEditorPage() {
             <label className="mb-2 block text-sm font-medium text-slate-700">
               {t('vatRate')}
             </label>
-            <div className="relative">
+            <div className="flex items-center gap-1">
               <input
                 type="text"
                 inputMode="decimal"
@@ -480,9 +480,9 @@ export function QuoteEditorPage() {
                   setVatRate(rounded / 100);
                   setVatRateInput(null);
                 }}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 pr-10 text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
               />
-              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-500">
+              <span className="text-xs text-slate-500">
                 %
               </span>
             </div>
@@ -1066,6 +1066,13 @@ export function QuoteEditorPage() {
                   type="button"
                   disabled={sendingEmail || !sendEmailTo.trim()}
                   onClick={async () => {
+                    const email = sendEmailTo.trim();
+                    // Basic but stricter email format check before sending.
+                    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailPattern.test(email)) {
+                      toast.error(t('invalidEmail'));
+                      return;
+                    }
                     if (!sendQuoteDate) return;
                     const num = Math.max(1, Math.floor(Number(sendQuoteNumber)) || 1);
                   const normalizedValidUntil = normalizeDateToInput(sendValidUntil);
