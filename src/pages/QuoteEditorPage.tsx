@@ -18,7 +18,7 @@ import {
   type QuoteItemInput,
   type QuoteAttachment,
 } from '../api/client';
-import { useQuoteFormStore, useQuoteTotals } from '../stores/quoteFormStore';
+import { useQuoteFormStore, useQuoteTotals, type QuoteFormItem } from '../stores/quoteFormStore';
 import { useTranslation } from '../i18n/useTranslation';
 // ExportPdfModal no longer used; export happens inline with stored fields
 
@@ -155,11 +155,11 @@ export function QuoteEditorPage() {
     removeItem,
     loadQuote,
     reset,
-  } = useQuoteFormStore();
+  } = useQuoteFormStore() as any;
   const customerAddressCombined = [customerStreet, customerCity].map((s) => s.trim()).filter(Boolean).join(', ');
   const { subtotal, vat, total } = useQuoteTotals();
 
-  const itemIds = items.map((it) => it.id).join(',');
+  const itemIds = items.map((it: QuoteFormItem) => it.id).join(',');
   useEffect(() => {
     const qtyNext: Record<string, string> = {};
     const priceNext: Record<string, string> = {};
@@ -291,7 +291,7 @@ export function QuoteEditorPage() {
             quoteNumber: sendQuoteNumber,
             // quoteDate is no longer editable in UI; keep existing value on backend
             validUntil: normalizedValidUntil === '' ? null : normalizedValidUntil,
-            items: items.map((i) => ({
+            items: items.map((i: QuoteFormItem) => ({
               itemName: i.itemName.trim() || 'Item',
               quantity: i.quantity,
               unitPrice: i.unitPrice,
@@ -381,7 +381,7 @@ export function QuoteEditorPage() {
                       quoteNumber: sendQuoteNumber,
                       quoteDate: sendQuoteDate,
                       validUntil: sendValidUntil === '' ? null : sendValidUntil,
-                      items: items.map((i) => ({
+                      items: items.map((i: QuoteFormItem) => ({
                         itemName: i.itemName.trim() || 'Item',
                         quantity: i.quantity,
                         unitPrice: i.unitPrice,
@@ -559,7 +559,7 @@ export function QuoteEditorPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {items.map((item) => {
+              {items.map((item: QuoteFormItem) => {
                 const unit = getUnitFromItemName(item.itemName);
                 const baseName = getBaseNameFromItemName(item.itemName);
                 return (
@@ -656,7 +656,7 @@ export function QuoteEditorPage() {
 
         {/* Mobile cards */}
         <div className="divide-y divide-slate-100 sm:hidden">
-          {items.map((item, idx) => {
+          {items.map((item: QuoteFormItem, idx: number) => {
             const unit = getUnitFromItemName(item.itemName);
             const baseName = getBaseNameFromItemName(item.itemName);
             return (
@@ -1069,7 +1069,7 @@ export function QuoteEditorPage() {
                         quoteNumber: num,
                           quoteDate: sendQuoteDate,
                         validUntil: normalizedValidUntil === '' ? null : normalizedValidUntil,
-                          items: items.map((i) => ({
+                          items: items.map((i: QuoteFormItem) => ({
                             itemName: i.itemName.trim() || 'Item',
                             quantity: i.quantity,
                             unitPrice: i.unitPrice,
@@ -1096,7 +1096,7 @@ export function QuoteEditorPage() {
                         vatRate,
                         quoteNumber: num,
                         validUntil: normalizedValidUntil === '' ? null : normalizedValidUntil,
-                        items: items.map((i) => ({
+                        items: items.map((i: QuoteFormItem) => ({
                           itemName: i.itemName.trim() || 'Item',
                           quantity: i.quantity,
                           unitPrice: i.unitPrice,
@@ -1170,7 +1170,7 @@ export function QuoteEditorPage() {
                         quoteNumber: num,
                         quoteDate: sendQuoteDate,
                         validUntil: normalizedValidUntil === '' ? null : normalizedValidUntil,
-                        items: items.map((i) => ({
+                        items: items.map((i: QuoteFormItem) => ({
                           itemName: i.itemName.trim() || 'Item',
                           quantity: i.quantity,
                           unitPrice: i.unitPrice,
@@ -1196,7 +1196,7 @@ export function QuoteEditorPage() {
                         vatRate,
                         quoteNumber: num,
                         validUntil: normalizedValidUntil === '' ? null : normalizedValidUntil,
-                        items: items.map((i) => ({
+                        items: items.map((i: QuoteFormItem) => ({
                           itemName: i.itemName.trim() || 'Item',
                           quantity: i.quantity,
                           unitPrice: i.unitPrice,

@@ -9,15 +9,31 @@ function makeId() {
   return `item-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
+/** Split combined "street, city" (or "street, ZIP city") into street and city for form display. */
+export function splitCustomerAddress(full: string | null | undefined): { street: string; city: string } {
+  if (!full) return { street: '', city: '' };
+  const s = full.trim();
+  if (!s) return { street: '', city: '' };
+  const parts = s.split(',').map((p) => p.trim()).filter(Boolean);
+  if (parts.length >= 2) {
+    const last = parts[parts.length - 1];
+    const street = parts.slice(0, -1).join(', ');
+    return { street, city: last };
+  }
+  return { street: s, city: '' };
+}
+
 interface QuoteFormState {
   quoteId: string | null;
   clientName: string;
-  customerAddress: string;
+  customerStreet: string;
+  customerCity: string;
   vatRate: number;
   items: QuoteFormItem[];
   setQuoteId: (id: string | null) => void;
   setClientName: (name: string) => void;
-  setCustomerAddress: (address: string) => void;
+  setCustomerStreet: (street: string) => void;
+  setCustomerCity: (city: string) => void;
   setVatRate: (rate: number) => void;
   setItems: (items: QuoteFormItem[]) => void;
   addItem: (item?: Partial<QuoteItemInput>) => void;
@@ -37,7 +53,8 @@ const defaultItem = (): QuoteFormItem => ({
 const initialState = {
   quoteId: null,
   clientName: '',
-  customerAddress: '',
+  customerStreet: '',
+  customerCity: '',
   vatRate: 0.19,
   items: [defaultItem()],
 };
@@ -46,7 +63,8 @@ export const useQuoteFormStore = create<QuoteFormState>((set) => ({
   ...initialState,
   setQuoteId: (quoteId) => set({ quoteId }),
   setClientName: (clientName) => set({ clientName }),
-  setCustomerAddress: (customerAddress) => set({ customerAddress }),
+  setCustomerStreet: (customerStreet) => set({ customerStreet }),
+  setCustomerCity: (customerCity) => set({ customerCity }),
   setVatRate: (vatRate) => set({ vatRate }),
   setItems: (items) => set({ items }),
   addItem: (item) =>
@@ -66,14 +84,18 @@ export const useQuoteFormStore = create<QuoteFormState>((set) => ({
         : [defaultItem()],
     })),
   loadQuote: (clientName, customerAddress, vatRate, items) =>
-    set({
-      clientName: clientName ?? '',
-      customerAddress: customerAddress ?? '',
-      vatRate,
-      items:
-        items.length > 0
-          ? items.map((it) => ({ ...it, id: makeId() }))
-          : [defaultItem()],
+    set(() => {
+      const { street, city } = splitCustomerAddress(customerAddress);
+      return {
+        clientName: clientName ?? '',
+        customerStreet: street,
+        customerCity: city,
+        vatRate,
+        items:
+          items.length > 0
+            ? items.map((it) => ({ ...it, id: makeId() }))
+            : [defaultItem()],
+      };
     }),
   reset: () => set(initialState),
 }));
