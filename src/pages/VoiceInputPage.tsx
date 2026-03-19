@@ -197,9 +197,6 @@ export function VoiceInputPage() {
 
       {isAuthenticated ? (
         <section className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">
-          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-500">
-            {t('addAudio')}
-          </h2>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-stretch">
             <button
               type="button"
@@ -237,9 +234,6 @@ export function VoiceInputPage() {
         </section>
       ) : (
         <section className="rounded-2xl border border-amber-100 bg-amber-50/60 p-6 text-center shadow-sm sm:text-left">
-          <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-amber-700">
-            {t('addAudio')}
-          </h2>
           <p className="text-sm text-amber-700">
             {t('signInToCreate')}
           </p>
