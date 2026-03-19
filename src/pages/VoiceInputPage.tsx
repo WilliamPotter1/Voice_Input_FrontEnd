@@ -23,7 +23,7 @@ const LANGUAGES = [
 ] as const;
 
 const ALLOWED_ACCEPT = 'audio/mpeg,audio/mp3,audio/wav,audio/mp4,audio/x-m4a,audio/m4a,audio/webm';
-const MAX_FILE_MB = 25;
+const MAX_FILE_MB = 5;
 
 export function VoiceInputPage() {
   const { t } = useTranslation();
@@ -233,7 +233,7 @@ export function VoiceInputPage() {
           </p>
         </section>
       ) : (
-        <section className="rounded-2xl border border-amber-100 bg-amber-50/60 p-6 text-center shadow-sm sm:text-left">
+        <section className="rounded-2xl border border-white-100 bg-white-50/60 p-6 text-center shadow-sm sm:text-left">
           <div className="mt-4 flex flex-col gap-3 sm:flex-row">
             <button
               type="button"
