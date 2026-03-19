@@ -759,7 +759,7 @@ export function QuoteEditorPage() {
                     <label className="mb-1 block text-[10px] font-medium text-slate-500 whitespace-nowrap">
                       {`${t('total')} (${getCurrencySymbol(currency)})`}
                     </label>
-                    <div className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold sm:text-sm tabular-nums text-slate-700 overflow-hidden text-ellipsis whitespace-nowrap text-right">
+                    <div className="flex w-full items-center rounded-lg bg-slate-50 px-3 py-2 text-xs font-semibold sm:text-sm tabular-nums text-slate-700 overflow-hidden text-ellipsis whitespace-nowrap">
                       {formatMoney(item.quantity * item.unitPrice, currency)}
                     </div>
                   </div>
