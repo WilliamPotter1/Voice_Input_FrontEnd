@@ -233,7 +233,7 @@ export function VoiceInputPage() {
           </p>
         </section>
       ) : (
-        <section className="rounded-2xl border bg-white-50/60 p-6 text-center shadow-sm sm:text-left">
+        <section className="rounded-2xl border border-slate-200/80 bg-white-50/60 p-6 text-center shadow-sm sm:text-left">
           <div className="mt-4 flex flex-col gap-3 sm:flex-row">
             <button
               type="button"
