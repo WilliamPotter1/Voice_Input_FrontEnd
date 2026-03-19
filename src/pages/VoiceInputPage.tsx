@@ -234,14 +234,11 @@ export function VoiceInputPage() {
         </section>
       ) : (
         <section className="rounded-2xl border border-amber-100 bg-amber-50/60 p-6 text-center shadow-sm sm:text-left">
-          <p className="text-sm text-amber-700">
-            {t('signInToCreate')}
-          </p>
           <div className="mt-4 flex flex-col gap-3 sm:flex-row">
             <button
               type="button"
               onClick={() => navigate('/login')}
-              className="inline-flex items-center justify-center rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-amber-700"
+              className="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700"
             >
               {t('signIn')}
             </button>
