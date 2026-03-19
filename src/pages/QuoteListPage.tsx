@@ -169,14 +169,14 @@ export function QuoteListPage() {
                 <button
                   type="button"
                   onClick={async () => {
-                    if (!q.quoteDate || !q.quoteNumber) {
+                    if (!q.quoteNumber) {
                       toast.error(t('pdfFailed'));
                       return;
                     }
                     try {
                       await downloadQuotePdf(
                         q.id,
-                        q.quoteDate.slice(0, 10),
+                        new Date().toISOString().slice(0, 10),
                         q.validUntil?.slice(0, 10) ?? '',
                         lang as string,
                         q.quoteNumber,
