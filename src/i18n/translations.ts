@@ -54,7 +54,7 @@ export const translations = {
     privacyTitle: 'Datenschutzerklärung',
     privacyIntro: 'Hier finden Sie die vollständige Datenschutzerklärung zu Verarbeitung und Schutz Ihrer Daten.',
     creatingAccount: 'Konto wird erstellt…',
-    createAccount: 'registrieren',
+    createAccount: 'Registrieren',
     alreadyHaveAccount: 'Haben Sie bereits ein Konto?',
     passwordMinLength: 'Mindestens 8 Zeichen',
     passwordTooShort: 'Passwort muss mindestens 8 Zeichen lang sein',
