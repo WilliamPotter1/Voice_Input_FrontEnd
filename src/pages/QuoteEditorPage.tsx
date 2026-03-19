@@ -1123,14 +1123,14 @@ export function QuoteEditorPage() {
                       setSendingEmail(false);
                     }
                   }}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-white px-4 py-2 text-xs font-medium text-emerald-800 shadow-md transition hover:bg-emerald-50 disabled:opacity-60 w-40 sm:w-40"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs font-medium text-emerald-800 shadow-md transition hover:bg-emerald-50 disabled:opacity-60 w-28 sm:w-32"
                 >
                   {sendingEmail ? (
                     <Loader2 className="size-3 animate-spin" />
                   ) : (
                     <img src="/images/email.png" alt="" className="size-4 shrink-0 object-contain" />
                   )}
-                  <span>{t('sendByEmail')}</span>
+                  <span className="text-[10px] sm:text-xs">{t('sendByEmail')}</span>
                 </button>
               </div>
             </div>
@@ -1248,14 +1248,14 @@ export function QuoteEditorPage() {
                     setOpeningWhatsapp(false);
                   }
                 }}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-white px-4 py-2 text-xs font-medium text-emerald-800 shadow-md transition hover:bg-emerald-50 disabled:opacity-60 w-40 sm:w-40"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs font-medium text-emerald-800 shadow-md transition hover:bg-emerald-50 disabled:opacity-60 w-28 sm:w-32"
                 >
                   {openingWhatsapp ? (
                     <Loader2 className="size-3 animate-spin" />
                   ) : (
                     <img src="/images/whatsapp.jpg" alt="" className="size-4 shrink-0 object-contain" />
                   )}
-                  <span>{t('sendByWhatsapp')}</span>
+                  <span className="text-[10px] sm:text-xs">{t('sendByWhatsapp')}</span>
                 </button>
               </div>
             </div>
