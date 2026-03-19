@@ -1173,7 +1173,7 @@ export function QuoteEditorPage() {
               <div className="flex justify-end">
                 <button
                   type="button"
-                  disabled={openingWhatsapp || !sendWhatsappTo.trim()}
+                  disabled={openingWhatsapp}
                   onClick={async () => {
                   if (!sendQuoteDate) return;
                   const num = Math.max(1, Math.floor(Number(sendQuoteNumber)) || 1);
@@ -1254,15 +1254,13 @@ export function QuoteEditorPage() {
                     }
                     const body = lines.join('\n');
                     const phone = sendWhatsappTo.trim().replace(/\D/g, '');
-                    if (!phone) {
-                      toast.error(t('quoteSendFailed'));
-                    } else {
-                      const url = `https://wa.me/${phone}?text=${encodeURIComponent(body)}`;
-                      window.open(url, '_blank', 'noopener,noreferrer');
-                      markQuoteSentLocally(quoteIdToUse);
-                      toast.success(t('sendWhatsAppComposeOpened'));
-                      navigate('/quotes');
-                    }
+                    const url = phone
+                      ? `https://wa.me/${phone}?text=${encodeURIComponent(body)}`
+                      : `https://wa.me/?text=${encodeURIComponent(body)}`;
+                    window.open(url, '_blank', 'noopener,noreferrer');
+                    markQuoteSentLocally(quoteIdToUse);
+                    toast.success(t('sendWhatsAppComposeOpened'));
+                    navigate('/quotes');
                   } catch (err) {
                     toast.error(err instanceof Error ? err.message : t('quoteSendFailed'));
                   } finally {
