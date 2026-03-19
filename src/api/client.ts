@@ -206,6 +206,17 @@ export async function listQuotes(): Promise<QuoteSummary[]> {
   return res.json();
 }
 
+export async function getNextQuoteNumber(): Promise<number> {
+  const quotes = await listQuotes();
+  const max = quotes.reduce((acc, q) => {
+    if (typeof q.quoteNumber === 'number' && Number.isFinite(q.quoteNumber) && q.quoteNumber > acc) {
+      return q.quoteNumber;
+    }
+    return acc;
+  }, 0);
+  return max + 1;
+}
+
 export async function getQuote(id: string): Promise<QuoteDetail> {
   const res = await fetchApi(apiUrl(`/quotes/${id}`), { headers: getAuthHeaders() });
   if (!res.ok) {

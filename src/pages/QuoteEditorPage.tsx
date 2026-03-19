@@ -15,6 +15,7 @@ import {
   getQuoteSendLinks,
   sendQuote,
   downloadQuotePdf,
+  getNextQuoteNumber,
   type QuoteItemInput,
   type QuoteAttachment,
 } from '../api/client';
@@ -84,8 +85,8 @@ function normalizeDateToInput(value: string | null | undefined): string {
   return '';
 }
 
-function randomQuoteNo(): number {
-  return Math.floor(Math.random() * 99) + 1;
+function randomQuoteNo(): Promise<number> {
+  return getNextQuoteNumber().catch(() => 1);
 }
 
 function markQuoteSentLocally(quoteId: string) {
@@ -133,12 +134,21 @@ export function QuoteEditorPage() {
   // Inline send controls
   const [sendEmailTo, setSendEmailTo] = useState('');
   const [sendWhatsappTo, setSendWhatsappTo] = useState('');
-  const [sendQuoteNumber, setSendQuoteNumber] = useState(randomQuoteNo);
+  const [sendQuoteNumber, setSendQuoteNumber] = useState(1);
   const [sendQuoteDate] = useState(todayISO);
   const [sendValidUntil, setSendValidUntil] = useState(plus30Days);
   const [freeText, setFreeText] = useState('');
   const [sendingEmail, setSendingEmail] = useState(false);
   const [openingWhatsapp, setOpeningWhatsapp] = useState(false);
+
+  // For new quotes, prefill quote number as (max existing quoteNumber) + 1
+  useEffect(() => {
+    if (!isEdit && !id) {
+      randomQuoteNo().then((n) => {
+        setSendQuoteNumber(n);
+      });
+    }
+  }, [isEdit, id]);
 
   const {
     clientName,
