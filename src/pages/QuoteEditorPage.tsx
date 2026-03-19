@@ -1255,7 +1255,7 @@ export function QuoteEditorPage() {
                   ) : (
                     <img src="/images/whatsapp.jpg" alt="" className="size-4 shrink-0 object-contain" />
                   )}
-                  <span className="text-[10px] sm:text-xs">{t('sendByWhatsapp')}</span>
+                  <span className="text-[10px] sm:text-xs whitespace-nowrap">{t('sendByWhatsapp')}</span>
                 </button>
               </div>
             </div>
