@@ -169,7 +169,7 @@ export function QuoteListPage() {
                 <button
                   type="button"
                   onClick={async () => {
-                    if (!q.quoteDate || !q.validUntil || !q.quoteNumber) {
+                    if (!q.quoteDate || !q.quoteNumber) {
                       toast.error(t('pdfFailed'));
                       return;
                     }
@@ -177,7 +177,7 @@ export function QuoteListPage() {
                       await downloadQuotePdf(
                         q.id,
                         q.quoteDate.slice(0, 10),
-                        q.validUntil.slice(0, 10),
+                        q.validUntil?.slice(0, 10) ?? '',
                         lang as string,
                         q.quoteNumber,
                       );

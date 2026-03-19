@@ -241,7 +241,6 @@ export function ProfilePage() {
           <h1 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
             {t('profileTitle')}
           </h1>
-          <p className="text-sm text-slate-500">{t('profileDesc')}</p>
         </div>
         <button
           type="button"

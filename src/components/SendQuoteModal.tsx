@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { getQuoteSendLinks } from '../api/client';
+import { getQuote, getProfile, getQuoteSendLinks } from '../api/client';
 import { useTranslation } from '../i18n/useTranslation';
 
 function todayISO(): string {
@@ -70,7 +70,20 @@ export function SendQuoteModal({
         num,
         lang,
       );
-      const intro = t('sendEmailBodyLinksIntro') as string;
+      // Make the first line match the email subject format
+      // e.g. "Badur Estrich - Angebot-Nr.: 62 Heinrich Heinrichs".
+      const [profile, quoteDetail] = await Promise.all([getProfile(), getQuote(quoteId)]);
+      const companyLabel = (profile.companyName ?? 'Firma').trim();
+      const clientLabel = (quoteDetail.clientName ?? '').trim();
+      const quoteNrLabelByLang: Record<string, string> = {
+        de: 'Angebot-Nr.:',
+        en: 'Quote No.:',
+        it: 'Preventivo n.:',
+        fr: 'Devis n°:',
+        es: 'Presupuesto n.°:',
+      };
+      const quoteNrLabel = quoteNrLabelByLang[lang] ?? quoteNrLabelByLang.de;
+      const intro = `${companyLabel} - ${quoteNrLabel} ${num} ${clientLabel}`.trim();
       const pdfLabel = t('sendEmailPdfLabel') as string;
       const attachmentsLabel = t('sendEmailAttachmentsLabel') as string;
       const bodyLines = [intro, '', pdfLabel, pdfUrl];
@@ -102,7 +115,19 @@ export function SendQuoteModal({
         num,
         lang,
       );
-      const intro = t('sendEmailBodyLinksIntro') as string;
+      // Make the first line match the email subject format
+      const [profile, quoteDetail] = await Promise.all([getProfile(), getQuote(quoteId)]);
+      const companyLabel = (profile.companyName ?? 'Firma').trim();
+      const clientLabel = (quoteDetail.clientName ?? '').trim();
+      const quoteNrLabelByLang: Record<string, string> = {
+        de: 'Angebot-Nr.:',
+        en: 'Quote No.:',
+        it: 'Preventivo n.:',
+        fr: 'Devis n°:',
+        es: 'Presupuesto n.°:',
+      };
+      const quoteNrLabel = quoteNrLabelByLang[lang] ?? quoteNrLabelByLang.de;
+      const intro = `${companyLabel} - ${quoteNrLabel} ${num} ${clientLabel}`.trim();
       const pdfLabel = t('sendEmailPdfLabel') as string;
       const attachmentsLabel = t('sendEmailAttachmentsLabel') as string;
       const bodyLines = [intro, '', pdfLabel, pdfUrl];

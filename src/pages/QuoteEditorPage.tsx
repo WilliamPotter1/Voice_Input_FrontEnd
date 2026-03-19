@@ -7,6 +7,7 @@ import {
   createQuote,
   updateQuote,
   getQuote,
+  getProfile,
   listQuoteAttachments,
   uploadQuoteAttachment,
   deleteQuoteAttachment,
@@ -140,12 +141,14 @@ export function QuoteEditorPage() {
 
   const {
     clientName,
-    customerAddress,
+    customerStreet,
+    customerCity,
     vatRate,
     items,
     setQuoteId,
     setClientName,
-    setCustomerAddress,
+    setCustomerStreet,
+    setCustomerCity,
     setVatRate,
     addItem,
     updateItem,
@@ -153,6 +156,7 @@ export function QuoteEditorPage() {
     loadQuote,
     reset,
   } = useQuoteFormStore();
+  const customerAddressCombined = [customerStreet, customerCity].map((s) => s.trim()).filter(Boolean).join(', ');
   const { subtotal, vat, total } = useQuoteTotals();
 
   const itemIds = items.map((it) => it.id).join(',');
@@ -280,7 +284,7 @@ export function QuoteEditorPage() {
           const normalizedValidUntil = normalizeDateToInput(sendValidUntil);
           const payload = {
             clientName: clientName.trim() || undefined,
-            customerAddress: customerAddress.trim() || undefined,
+            customerAddress: customerAddressCombined || undefined,
             freeText: freeText.trim() === '' ? null : freeText.trim(),
             currency,
             vatRate,
@@ -370,7 +374,7 @@ export function QuoteEditorPage() {
                     // First persist latest form data to the database
                     const payload = {
                       clientName: clientName.trim() || undefined,
-                      customerAddress: customerAddress.trim() || undefined,
+                      customerAddress: customerAddressCombined || undefined,
                       freeText: freeText.trim() === '' ? null : freeText.trim(),
                       currency,
                       vatRate,
@@ -470,15 +474,26 @@ export function QuoteEditorPage() {
             </div>
           </div>
 
-          {/* Customer address */}
-          <div className="order-2 sm:order-3 sm:col-span-2">
+          {/* Customer address: street and city */}
+          <div className="order-2 sm:order-3">
             <label className="mb-2 block text-sm font-medium text-slate-700">
-              {t('customerAddress')}
+              {t('customerStreet')}
             </label>
             <input
               type="text"
-              value={customerAddress}
-              onChange={(e) => setCustomerAddress(e.target.value)}
+              value={customerStreet}
+              onChange={(e) => setCustomerStreet(e.target.value)}
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+            />
+          </div>
+          <div className="order-3 sm:order-4">
+            <label className="mb-2 block text-sm font-medium text-slate-700">
+              {t('customerCity')}
+            </label>
+            <input
+              type="text"
+              value={customerCity}
+              onChange={(e) => setCustomerCity(e.target.value)}
               className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
             />
           </div>
@@ -555,7 +570,7 @@ export function QuoteEditorPage() {
                       value={baseName}
                       onChange={(e) => updateItem(item.id, { itemName: makeItemName(e.target.value, unit) })}
                       placeholder={t('description')}
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 sm:text-sm"
                     />
                   </td>
                   <td className="px-4 py-3">
@@ -564,7 +579,7 @@ export function QuoteEditorPage() {
                       value={unit}
                       onChange={(e) => updateItem(item.id, { itemName: makeItemName(baseName, e.target.value) })}
                       placeholder={t('unit')}
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 sm:text-sm"
                     />
                   </td>
                   <td className="px-4 py-3">
@@ -590,7 +605,7 @@ export function QuoteEditorPage() {
                           [item.id]: numeric === 0 ? '' : String(numeric),
                         }));
                       }}
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 sm:text-sm"
                     />
                   </td>
                   <td className="px-4 py-3">
@@ -616,7 +631,7 @@ export function QuoteEditorPage() {
                           [item.id]: numeric === 0 ? '' : String(numeric),
                         }));
                       }}
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 sm:text-sm"
                     />
                   </td>
                   <td className="px-4 py-3">
@@ -1012,7 +1027,7 @@ export function QuoteEditorPage() {
               <img
                 src="/images/send.png"
                 alt=""
-                className="h-18 w-auto object-contain"
+                className="h-25 w-auto object-contain"
               />
             </span>
           </div>
@@ -1047,7 +1062,7 @@ export function QuoteEditorPage() {
                         // Save quote first
                         const payload = {
                           clientName: clientName.trim() || undefined,
-                          customerAddress: customerAddress.trim() || undefined,
+                          customerAddress: customerAddressCombined || undefined,
                           freeText: freeText.trim() === '' ? null : freeText.trim(),
                           currency,
                           vatRate,
@@ -1075,7 +1090,7 @@ export function QuoteEditorPage() {
                       // Persist latest edits before generating/sending PDF
                       const payload = {
                         clientName: clientName.trim() || undefined,
-                        customerAddress: customerAddress.trim() || undefined,
+                        customerAddress: customerAddressCombined || undefined,
                         freeText: freeText.trim() === '' ? null : freeText.trim(),
                         currency,
                         vatRate,
@@ -1148,7 +1163,7 @@ export function QuoteEditorPage() {
                     if (!quoteIdToUse) {
                       const payload = {
                         clientName: clientName.trim() || undefined,
-                        customerAddress: customerAddress.trim() || undefined,
+                        customerAddress: customerAddressCombined || undefined,
                       freeText: freeText.trim() === '' ? null : freeText.trim(),
                         currency,
                         vatRate,
@@ -1175,7 +1190,7 @@ export function QuoteEditorPage() {
                       // Persist latest edits before generating/sending PDF
                       const payload = {
                         clientName: clientName.trim() || undefined,
-                        customerAddress: customerAddress.trim() || undefined,
+                        customerAddress: customerAddressCombined || undefined,
                       freeText: freeText.trim() === '' ? null : freeText.trim(),
                         currency,
                         vatRate,
@@ -1197,7 +1212,18 @@ export function QuoteEditorPage() {
                         num,
                         (lang as string) || 'de',
                       );
-                    const intro = t('sendEmailBodyLinksIntro') as string;
+                    const profile = await getProfile();
+                    const companyLabel = (profile.companyName ?? 'Firma').trim();
+                    const clientLabel = (clientName ?? '').trim();
+                    const quoteNrLabelByLang: Record<string, string> = {
+                      de: 'Angebot-Nr.:',
+                      en: 'Quote No.',
+                      it: 'Preventivo n.',
+                      fr: 'Devis n°',
+                      es: 'Presupuesto n.°',
+                    };
+                    const quoteNrLabel = quoteNrLabelByLang[lang] ?? quoteNrLabelByLang.de;
+                    const intro = `${companyLabel} - ${quoteNrLabel} ${num} ${clientLabel}`.trim();
                     const pdfLabel = t('sendEmailPdfLabel') as string;
                     const attachmentsLabel = t('sendEmailAttachmentsLabel') as string;
                     const lines: string[] = [intro, '', pdfLabel, pdfUrl];
