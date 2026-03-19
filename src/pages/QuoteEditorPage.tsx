@@ -128,6 +128,7 @@ export function QuoteEditorPage() {
   const [pendingAttachments, setPendingAttachments] = useState<File[]>([]);
   const [quantityInputs, setQuantityInputs] = useState<Record<string, string>>({});
   const [unitPriceInputs, setUnitPriceInputs] = useState<Record<string, string>>({});
+  const [vatRateInput, setVatRateInput] = useState<string | null>(null);
 
   // Inline send controls
   const [sendEmailTo, setSendEmailTo] = useState('');
@@ -452,19 +453,22 @@ export function QuoteEditorPage() {
             </label>
             <div className="relative">
               <input
-                type="number"
-                min={0}
-                max={100}
-                step={0.1}
-                value={Number.isFinite(vatRate) ? vatRate * 100 : 0}
-                onChange={(e) => {
-                  const v = Number(e.target.value);
-                  if (Number.isFinite(v)) {
-                    // Store vatRate as decimal (0.19); UI shows percent (19).
-                    setVatRate(Math.min(1, Math.max(0, v / 100)));
-                  } else {
-                    setVatRate(0);
-                  }
+                type="text"
+                inputMode="decimal"
+                value={
+                  vatRateInput ??
+                  (Number.isFinite(vatRate) ? String(Number((vatRate * 100).toFixed(2))) : '')
+                }
+                onChange={(e) => setVatRateInput(e.target.value)}
+                onBlur={(e) => {
+                  const raw = e.target.value.replace(',', '.');
+                  const normalized = raw === '' ? '' : raw.startsWith('.') ? `0${raw}` : raw;
+                  const v = Number(normalized);
+                  const numeric = Number.isFinite(v) && v >= 0 ? v : 0;
+                  const clamped = Math.min(100, numeric);
+                  const rounded = Number(clamped.toFixed(2));
+                  setVatRate(rounded / 100);
+                  setVatRateInput(null);
                 }}
                 className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 pr-10 text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
               />
