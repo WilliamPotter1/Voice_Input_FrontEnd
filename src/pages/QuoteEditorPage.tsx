@@ -1254,12 +1254,45 @@ export function QuoteEditorPage() {
                     }
                     const body = lines.join('\n');
                     const phone = sendWhatsappTo.trim().replace(/\D/g, '');
-                    const url = phone
-                      ? `https://wa.me/${phone}?text=${encodeURIComponent(body)}`
-                      : `https://wa.me/?text=${encodeURIComponent(body)}`;
-                    window.open(url, '_blank', 'noopener,noreferrer');
+
+                    if (phone) {
+                      const url = `https://wa.me/${phone}?text=${encodeURIComponent(body)}`;
+                      window.open(url, '_blank', 'noopener,noreferrer');
+                    } else {
+                      // No phone number: copy message to clipboard and open WhatsApp without pre-filled text.
+                      const copyTextToClipboard = async (text: string) => {
+                        try {
+                          await navigator.clipboard.writeText(text);
+                          return true;
+                        } catch {
+                          // Fallback for browsers that block clipboard access.
+                          try {
+                            const textarea = document.createElement('textarea');
+                            textarea.value = text;
+                            textarea.style.position = 'fixed';
+                            textarea.style.left = '-9999px';
+                            document.body.appendChild(textarea);
+                            textarea.focus();
+                            textarea.select();
+                            const ok = document.execCommand('copy');
+                            document.body.removeChild(textarea);
+                            return ok;
+                          } catch {
+                            return false;
+                          }
+                        }
+                      };
+
+                      const copied = await copyTextToClipboard(body);
+                      window.open('https://wa.me/', '_blank', 'noopener,noreferrer');
+                      if (copied) {
+                        console.log('whatsappMessageCopied');
+                      } else {
+                        console.log('sendWhatsAppComposeOpened');
+                      }
+                    }
                     markQuoteSentLocally(quoteIdToUse);
-                    toast.success(t('sendWhatsAppComposeOpened'));
+                    if (phone) toast.success(t('sendWhatsAppComposeOpened'));
                     navigate('/quotes');
                   } catch (err) {
                     toast.error(err instanceof Error ? err.message : t('quoteSendFailed'));
