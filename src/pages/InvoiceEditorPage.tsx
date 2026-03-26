@@ -19,6 +19,41 @@ function toInputDate(iso: string | null | undefined): string {
   return iso.slice(0, 10);
 }
 
+function getUnitFromItemName(name: string): string {
+  const match = name.match(/\(([^)]+)\)\s*$/);
+  return match ? match[1].trim() : '';
+}
+
+function getBaseNameFromItemName(name: string): string {
+  const match = name.match(/\(([^)]+)\)\s*$/);
+  return match ? name.slice(0, match.index).trim() : name.trim();
+}
+
+function makeItemName(base: string, unit: string): string {
+  const cleanBase = base.trim() || 'Item';
+  const cleanUnit = unit.trim();
+  return cleanUnit ? `${cleanBase} (${cleanUnit})` : cleanBase;
+}
+
+function getCurrencySymbol(code: string | null | undefined): string {
+  const c = (code || 'EUR').toUpperCase();
+  if (c === 'EUR') return '€';
+  if (c === 'USD') return '$';
+  if (c === 'CHF') return 'CHF';
+  if (c === 'GBP') return '£';
+  return c;
+}
+
+function formatMoney(n: number, currency: string): string {
+  const safeCurrency = currency && currency.length === 3 ? currency.toUpperCase() : 'EUR';
+  return new Intl.NumberFormat(undefined, {
+    style: 'currency',
+    currency: safeCurrency,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(n);
+}
+
 export function InvoiceEditorPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -317,113 +352,163 @@ export function InvoiceEditorPage() {
         )}
       </section>
 
-      <section className="w-full rounded-2xl border border-emerald-300 bg-emerald-50/90 p-5 shadow-md sm:p-6 lg:max-w-xl">
-        <h3 className="text-sm font-semibold text-emerald-900 tracking-wide">{t('sendQuoteTitle')}</h3>
-        <div className="mt-4 border-t border-emerald-200/70 pt-4 space-y-4">
-          <div className="grid items-end gap-2 grid-cols-[minmax(0,1.8fr)_auto]">
-            <div>
-              <label className="mb-1.5 block text-xs font-medium text-slate-700">{t('emailAddress')}</label>
-              <input
-                type="email"
-                value={sendEmailTo}
-                onChange={(e) => setSendEmailTo(e.target.value)}
-                className="w-full rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs"
-              />
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                const subject = `${t('invoiceNo')} ${invoiceNumber || ''} ${clientName || ''}`.trim();
-                const body = `${t('invoice')}: ${clientName || ''}\n${t('total')}: ${total.toFixed(2)} ${currency}`;
-                window.location.href = `mailto:${encodeURIComponent(sendEmailTo.trim())}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-              }}
-              disabled={!sendEmailTo.trim()}
-              className="inline-flex items-center justify-center rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs font-medium text-emerald-800 disabled:opacity-60 w-28 sm:w-32"
-            >
-              {t('sendByEmail')}
-            </button>
-          </div>
-          <div className="grid items-end gap-2 grid-cols-[minmax(0,1.8fr)_auto]">
-            <div>
-              <label className="mb-1.5 block text-xs font-medium text-slate-700 whitespace-nowrap">{t('whatsappNumber')}</label>
-              <input
-                type="tel"
-                value={sendWhatsappTo}
-                onChange={(e) => setSendWhatsappTo(e.target.value)}
-                className="w-full rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs"
-              />
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                const phone = sendWhatsappTo.trim().replace(/\D/g, '');
-                const msg = `${t('invoiceNo')} ${invoiceNumber || ''} ${clientName || ''}\n${t('total')}: ${total.toFixed(2)} ${currency}`;
-                window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener,noreferrer');
-              }}
-              disabled={!sendWhatsappTo.trim()}
-              className="inline-flex items-center justify-center rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs font-medium text-emerald-800 disabled:opacity-60 w-28 sm:w-32"
-            >
-              {t('sendByWhatsapp')}
-            </button>
-          </div>
+      <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
+        <div className="hidden sm:block">
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className="border-b border-slate-200 bg-slate-50/80">
+                <th className="px-4 py-3.5 text-xs font-semibold leading-tight text-slate-700">{t('item')}</th>
+                <th className="w-28 px-4 py-3.5 text-xs font-semibold leading-tight text-slate-700">{t('unit')}</th>
+                <th className="w-24 px-4 py-3.5 text-xs font-semibold leading-tight text-slate-700">{t('qty')}</th>
+                <th className="w-32 px-4 py-3.5 text-xs font-semibold leading-tight text-slate-700">{`${t('unitPrice')} (${getCurrencySymbol(currency)})`}</th>
+                <th className="w-32 px-4 py-3.5 text-xs font-semibold leading-tight text-slate-700">{`${t('total')} (${getCurrencySymbol(currency)})`}</th>
+                <th className="w-14 px-4 py-3.5" />
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {items.map((it, idx) => {
+                const unit = getUnitFromItemName(it.itemName);
+                const baseName = getBaseNameFromItemName(it.itemName);
+                return (
+                  <tr key={idx} className="transition hover:bg-slate-50/50">
+                    <td className="px-4 py-3">
+                      <input
+                        type="text"
+                        value={baseName}
+                        onChange={(e) =>
+                          setItems((prev) => prev.map((row, i) => (i === idx ? { ...row, itemName: makeItemName(e.target.value, unit) } : row)))
+                        }
+                        placeholder={t('description')}
+                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 sm:text-sm"
+                      />
+                    </td>
+                    <td className="px-4 py-3">
+                      <input
+                        type="text"
+                        value={unit}
+                        onChange={(e) =>
+                          setItems((prev) => prev.map((row, i) => (i === idx ? { ...row, itemName: makeItemName(baseName, e.target.value) } : row)))
+                        }
+                        placeholder={t('unit')}
+                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 sm:text-sm"
+                      />
+                    </td>
+                    <td className="px-4 py-3">
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={it.quantity}
+                        onChange={(e) =>
+                          setItems((prev) => prev.map((row, i) => (i === idx ? { ...row, quantity: Number(e.target.value) } : row)))
+                        }
+                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 sm:text-sm"
+                      />
+                    </td>
+                    <td className="px-4 py-3">
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={it.unitPrice}
+                        onChange={(e) =>
+                          setItems((prev) => prev.map((row, i) => (i === idx ? { ...row, unitPrice: Number(e.target.value) } : row)))
+                        }
+                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 sm:text-sm"
+                      />
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold sm:text-sm tabular-nums text-slate-700 text-right whitespace-nowrap overflow-hidden text-ellipsis">
+                        {formatMoney(it.quantity * it.unitPrice, currency)}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <button
+                        type="button"
+                        onClick={() => setItems((prev) => (prev.length > 1 ? prev.filter((_, i) => i !== idx) : prev))}
+                        className="flex size-9 items-center justify-center rounded-lg text-slate-400 transition hover:bg-red-50 hover:text-red-600"
+                      >
+                        <Trash2 className="size-4" />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
-      </section>
-
-      <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-base font-semibold text-slate-900">{t('item')}</h2>
+        <div className="divide-y divide-slate-100 sm:hidden">
+          {items.map((it, idx) => {
+            const unit = getUnitFromItemName(it.itemName);
+            const baseName = getBaseNameFromItemName(it.itemName);
+            return (
+              <div key={idx} className="space-y-3 p-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">#{idx + 1}</span>
+                  <button
+                    type="button"
+                    onClick={() => setItems((prev) => (prev.length > 1 ? prev.filter((_, i) => i !== idx) : prev))}
+                    className="flex size-8 items-center justify-center rounded-lg text-slate-400 transition hover:bg-red-50 hover:text-red-600"
+                  >
+                    <Trash2 className="size-4" />
+                  </button>
+                </div>
+                <input
+                  type="text"
+                  value={baseName}
+                  onChange={(e) => setItems((prev) => prev.map((row, i) => (i === idx ? { ...row, itemName: makeItemName(e.target.value, unit) } : row)))}
+                  placeholder={t('description')}
+                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 sm:text-sm"
+                />
+                <div className="grid grid-cols-4 gap-2">
+                  <div>
+                    <label className="mb-1 block text-[10px] font-medium text-slate-500 whitespace-nowrap">{t('qty')}</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={it.quantity}
+                      onChange={(e) => setItems((prev) => prev.map((row, i) => (i === idx ? { ...row, quantity: Number(e.target.value) } : row)))}
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 sm:text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-[10px] font-medium text-slate-500 whitespace-nowrap">{t('unit')}</label>
+                    <input
+                      type="text"
+                      value={unit}
+                      onChange={(e) => setItems((prev) => prev.map((row, i) => (i === idx ? { ...row, itemName: makeItemName(baseName, e.target.value) } : row)))}
+                      placeholder={t('unit')}
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 sm:text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-[10px] font-medium text-slate-500 whitespace-nowrap">{`${t('unitPrice')} (${getCurrencySymbol(currency)})`}</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={it.unitPrice}
+                      onChange={(e) => setItems((prev) => prev.map((row, i) => (i === idx ? { ...row, unitPrice: Number(e.target.value) } : row)))}
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 sm:text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-[10px] font-medium text-slate-500 whitespace-nowrap">{`${t('total')} (${getCurrencySymbol(currency)})`}</label>
+                    <div className="flex w-full items-center rounded-lg bg-slate-50 px-3 py-2 text-xs font-semibold sm:text-sm tabular-nums text-slate-700 overflow-hidden text-ellipsis whitespace-nowrap">
+                      {formatMoney(it.quantity * it.unitPrice, currency)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <div className="border-t border-slate-100 bg-slate-50/60 px-4 py-3 sm:px-6">
           <button
             type="button"
             onClick={() => setItems((prev) => [...prev, { ...defaultItem }])}
-            className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-50"
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
           >
             <Plus className="size-4" />
             {t('addItem')}
           </button>
-        </div>
-        <div className="space-y-3">
-          {items.map((it, idx) => (
-            <div key={idx} className="grid gap-2 sm:grid-cols-[1fr_120px_140px_auto]">
-              <input
-                placeholder={t('description')}
-                value={it.itemName}
-                onChange={(e) =>
-                  setItems((prev) => prev.map((row, i) => (i === idx ? { ...row, itemName: e.target.value } : row)))
-                }
-                className="rounded-xl border border-slate-300 px-3 py-2 text-sm"
-              />
-              <input
-                type="number"
-                step="0.01"
-                value={it.quantity}
-                onChange={(e) =>
-                  setItems((prev) =>
-                    prev.map((row, i) => (i === idx ? { ...row, quantity: Number(e.target.value) } : row))
-                  )
-                }
-                className="rounded-xl border border-slate-300 px-3 py-2 text-sm"
-              />
-              <input
-                type="number"
-                step="0.01"
-                value={it.unitPrice}
-                onChange={(e) =>
-                  setItems((prev) =>
-                    prev.map((row, i) => (i === idx ? { ...row, unitPrice: Number(e.target.value) } : row))
-                  )
-                }
-                className="rounded-xl border border-slate-300 px-3 py-2 text-sm"
-              />
-              <button
-                type="button"
-                onClick={() => setItems((prev) => (prev.length > 1 ? prev.filter((_, i) => i !== idx) : prev))}
-                className="inline-flex items-center justify-center rounded-xl border border-slate-300 px-3 py-2 text-slate-500 hover:bg-red-50 hover:text-red-600"
-                aria-label={t('delete')}
-              >
-                <Trash2 className="size-4" />
-              </button>
-            </div>
-          ))}
         </div>
       </section>
 
@@ -440,6 +525,68 @@ export function InvoiceEditorPage() {
           <div className="flex items-center justify-between font-semibold text-slate-900">
             <span>{t('total')}</span>
             <span>{total.toFixed(2)}</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="mt-6 w-full rounded-2xl border border-emerald-300 bg-emerald-50/90 p-5 shadow-md sm:p-6 lg:max-w-xl transition-transform transition-shadow duration-300 ease-out hover:-translate-y-1 hover:shadow-xl focus-within:-translate-y-1 focus-within:shadow-xl">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h3 className="text-sm font-semibold text-emerald-900 tracking-wide">{t('sendInvoiceTitle')}</h3>
+            <p className="mt-1 text-xs text-emerald-700">
+              <img src="/images/ew.png" alt="" className="h-10 sm:h-10 object-contain" />
+            </p>
+          </div>
+          <span className="inline-flex items-center justify-center px-2 py-1">
+            <img src="/images/send.png" alt="" className="h-25 w-auto object-contain" />
+          </span>
+        </div>
+        <div className="mt-4 border-t border-emerald-200/70 pt-4 space-y-4">
+          <div className="grid items-end gap-2 grid-cols-[minmax(0,1.8fr)_auto]">
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-slate-700">{t('emailAddress')}</label>
+              <input
+                type="email"
+                value={sendEmailTo}
+                onChange={(e) => setSendEmailTo(e.target.value)}
+                className="w-full rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs text-slate-900 shadow-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/30"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                const subject = `${t('invoiceNo')} ${invoiceNumber || ''} ${clientName || ''}`.trim();
+                const body = `${t('invoice')}: ${clientName || ''}\n${t('total')}: ${total.toFixed(2)} ${currency}`;
+                window.location.href = `mailto:${encodeURIComponent(sendEmailTo.trim())}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+              }}
+              disabled={!sendEmailTo.trim()}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs font-medium text-emerald-800 shadow-md transition hover:bg-emerald-50 disabled:opacity-60 w-28 sm:w-32"
+            >
+              {t('sendByEmail')}
+            </button>
+          </div>
+          <div className="grid items-end gap-2 grid-cols-[minmax(0,1.8fr)_auto]">
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-slate-700 whitespace-nowrap">{t('whatsappNumber')}</label>
+              <input
+                type="tel"
+                value={sendWhatsappTo}
+                onChange={(e) => setSendWhatsappTo(e.target.value)}
+                className="w-full rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs text-slate-900 shadow-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/30"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                const phone = sendWhatsappTo.trim().replace(/\D/g, '');
+                const msg = `${t('invoiceNo')} ${invoiceNumber || ''} ${clientName || ''}\n${t('total')}: ${total.toFixed(2)} ${currency}`;
+                window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener,noreferrer');
+              }}
+              disabled={!sendWhatsappTo.trim()}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs font-medium text-emerald-800 shadow-md transition hover:bg-emerald-50 disabled:opacity-60 w-28 sm:w-32"
+            >
+              <span className="text-[10px] sm:text-xs whitespace-nowrap">{t('sendByWhatsapp')}</span>
+            </button>
           </div>
         </div>
       </section>

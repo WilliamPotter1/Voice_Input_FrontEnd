@@ -187,6 +187,7 @@ export const translations = {
 
     // Send quote
     sendQuoteTitle: 'Angebot versenden',
+    sendInvoiceTitle: 'Rechnung versenden',
     sendByEmail: 'Per E-Mail',
     sendByWhatsapp: 'Per WhatsApp',
     emailAddress: 'An E-Mail-Adresse',
@@ -389,6 +390,7 @@ export const translations = {
     pdfFailed: 'Failed to generate PDF',
 
     sendQuoteTitle: 'Send quote',
+    sendInvoiceTitle: 'Send invoice',
     sendByEmail: 'By email',
     sendByWhatsapp: 'By WhatsApp',
     emailAddress: 'To email address',
@@ -591,6 +593,7 @@ export const translations = {
     pdfFailed: 'Generazione PDF non riuscita',
 
     sendQuoteTitle: 'Invia preventivo',
+    sendInvoiceTitle: 'Invia fattura',
     sendByEmail: 'Per e-mail',
     sendByWhatsapp: 'Via WhatsApp',
     emailAddress: 'A indirizzo e-mail',
@@ -793,6 +796,7 @@ export const translations = {
     pdfFailed: 'Échec de la génération du PDF',
 
     sendQuoteTitle: 'Envoyer le devis',
+    sendInvoiceTitle: 'Envoyer la facture',
     sendByEmail: 'Par e-mail',
     sendByWhatsapp: 'Par WhatsApp',
     emailAddress: 'À adresse e-mail',
@@ -995,6 +999,7 @@ export const translations = {
     pdfFailed: 'Error al generar el PDF',
 
     sendQuoteTitle: 'Enviar presupuesto',
+    sendInvoiceTitle: 'Enviar factura',
     sendByEmail: 'Por correo',
     sendByWhatsapp: 'Por WhatsApp',
     emailAddress: 'A dirección de correo',
