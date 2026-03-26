@@ -191,6 +191,7 @@ export function InvoiceEditorPage() {
       .filter((it) => it.itemName && it.quantity > 0);
     if (!cleanItems.length) throw new Error(t('addAtLeastOneItem'));
     return {
+      quoteId: !isEdit && fromQuoteId ? fromQuoteId : null,
       clientName: clientName.trim() || null,
       customerAddress: customerAddress.trim() || null,
       additionalInfo: additionalInfo.trim() || null,

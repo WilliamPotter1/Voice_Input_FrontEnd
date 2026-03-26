@@ -136,6 +136,7 @@ export interface InvoiceItemInput {
 }
 
 export interface InvoicePayload {
+  quoteId?: string | null;
   clientName?: string | null;
   customerAddress?: string | null;
   additionalInfo?: string | null;
