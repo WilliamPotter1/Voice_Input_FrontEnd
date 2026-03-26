@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { ArrowLeft, Download, Loader2, Plus, Trash2 } from 'lucide-react';
-import { createInvoice, downloadInvoicePdf, getInvoice, getInvoiceSendLinks, getNextInvoiceNumber, getProfile, getQuote, sendInvoice, updateInvoice } from '../api/client';
+import { createInvoice, deleteInvoiceAttachment, downloadInvoicePdf, getInvoice, getInvoiceSendLinks, getNextInvoiceNumber, getProfile, getQuote, listInvoiceAttachments, sendInvoice, updateInvoice, uploadInvoiceAttachment, type InvoiceAttachment } from '../api/client';
 import { useTranslation } from '../i18n/useTranslation';
 
 type InvoiceItemForm = {
@@ -54,6 +54,19 @@ function formatMoney(n: number, currency: string): string {
   }).format(n);
 }
 
+function markInvoiceSentLocally(invoiceId: string) {
+  if (typeof window === 'undefined') return;
+  try {
+    const key = 'sentInvoices';
+    const raw = window.localStorage.getItem(key);
+    const map: Record<string, { at: string }> = raw ? JSON.parse(raw) : {};
+    map[invoiceId] = { at: new Date().toISOString() };
+    window.localStorage.setItem(key, JSON.stringify(map));
+  } catch {
+    // ignore storage errors
+  }
+}
+
 export function InvoiceEditorPage() {
   const { t, lang } = useTranslation();
   const navigate = useNavigate();
@@ -73,6 +86,12 @@ export function InvoiceEditorPage() {
     queryFn: () => getQuote(fromQuoteId as string),
     enabled: !isEdit && Boolean(fromQuoteId),
   });
+  const attachmentsQuery = useQuery({
+    queryKey: ['invoiceAttachments', id],
+    queryFn: () => listInvoiceAttachments(id!),
+    enabled: isEdit && !!id,
+  });
+  const attachments: InvoiceAttachment[] = attachmentsQuery.data ?? [];
 
   const [clientName, setClientName] = useState('');
   const [customerAddress, setCustomerAddress] = useState('');
@@ -89,6 +108,13 @@ export function InvoiceEditorPage() {
   const [sendWhatsappTo, setSendWhatsappTo] = useState('');
   const [sendingEmail, setSendingEmail] = useState(false);
   const [initialized, setInitialized] = useState(false);
+
+  async function persistPendingAttachments(invoiceId: string) {
+    if (!pendingAttachments.length) return;
+    await Promise.all(pendingAttachments.map((file) => uploadInvoiceAttachment(invoiceId, file)));
+    setPendingAttachments([]);
+    queryClient.invalidateQueries({ queryKey: ['invoiceAttachments', invoiceId] });
+  }
 
   useEffect(() => {
     // When route mode changes (/invoices/new <-> /invoices/:id), allow form re-initialization.
@@ -186,10 +212,11 @@ export function InvoiceEditorPage() {
       return createInvoice(payload);
     },
     onSuccess: (saved) => {
+      persistPendingAttachments(saved.id).catch(() => {});
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
       queryClient.setQueryData(['invoice', saved.id], saved);
       toast.success(isEdit ? t('invoiceUpdated') : t('invoiceSaved'));
-      navigate(`/invoices/${saved.id}`);
+      navigate('/invoices');
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -233,6 +260,7 @@ export function InvoiceEditorPage() {
               try {
                 const payload = buildInvoicePayload();
                 const saved = isEdit && id ? await updateInvoice(id, payload) : await createInvoice(payload);
+                await persistPendingAttachments(saved.id);
                 const invoiceId = saved.id;
                 const num = Math.max(1, Number(saved.invoiceNumber) || 1);
                 await downloadInvoicePdf(
@@ -322,12 +350,60 @@ export function InvoiceEditorPage() {
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 if (!file) return;
-                setPendingAttachments((prev) => [...prev, file]);
+                if (id) {
+                  uploadInvoiceAttachment(id, file)
+                    .then(() => queryClient.invalidateQueries({ queryKey: ['invoiceAttachments', id] }))
+                    .catch((err) => toast.error(err instanceof Error ? err.message : 'Failed to upload attachment'));
+                } else {
+                  setPendingAttachments((prev) => [...prev, file]);
+                }
                 e.target.value = '';
               }}
             />
           </label>
         </div>
+        {attachments.length > 0 && (
+          <ul className="mt-3 space-y-2">
+            {attachments.map((att) => (
+              <li
+                key={att.id}
+                className="grid grid-cols-[minmax(0,1fr)_140px] items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs sm:text-sm text-slate-700"
+              >
+                <button
+                  type="button"
+                  onClick={() => window.open(att.url, '_blank', 'noopener,noreferrer')}
+                  className="truncate text-left text-emerald-700 hover:underline"
+                >
+                  {att.filename}
+                </button>
+                <div className="flex items-center justify-start gap-2 shrink-0 whitespace-nowrap">
+                  <button
+                    type="button"
+                    onClick={() => window.open(att.url, '_blank', 'noopener,noreferrer')}
+                    className="rounded-lg border border-slate-300 px-2 py-1 text-[11px] font-medium text-slate-600 hover:bg-slate-100"
+                  >
+                    {t('preview')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (!id) return;
+                      try {
+                        await deleteInvoiceAttachment(id, att.id);
+                        queryClient.invalidateQueries({ queryKey: ['invoiceAttachments', id] });
+                      } catch (e) {
+                        toast.error(e instanceof Error ? e.message : 'Failed to delete attachment');
+                      }
+                    }}
+                    className="rounded-lg border border-red-100 px-2 py-1 text-[11px] font-medium text-red-600 hover:bg-red-50"
+                  >
+                    {t('delete')}
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
         {pendingAttachments.length > 0 && (
           <ul className="mt-3 space-y-2">
             {pendingAttachments.map((file, idx) => (
@@ -603,6 +679,7 @@ export function InvoiceEditorPage() {
                 try {
                   const payload = buildInvoicePayload();
                   const saved = isEdit && id ? await updateInvoice(id, payload) : await createInvoice(payload);
+                  await persistPendingAttachments(saved.id);
                   await sendInvoice(
                     saved.id,
                     'email',
@@ -612,7 +689,9 @@ export function InvoiceEditorPage() {
                     Math.max(1, Number(saved.invoiceNumber) || 1),
                     lang as string,
                   );
+                  markInvoiceSentLocally(saved.id);
                   toast.success(t('quoteSent'));
+                  navigate('/invoices');
                 } catch (e) {
                   toast.error(e instanceof Error ? e.message : t('quoteSendFailed'));
                 } finally {
@@ -642,6 +721,7 @@ export function InvoiceEditorPage() {
                 try {
                   const payload = buildInvoicePayload();
                   const saved = isEdit && id ? await updateInvoice(id, payload) : await createInvoice(payload);
+                  await persistPendingAttachments(saved.id);
                   const num = Math.max(1, Number(saved.invoiceNumber) || 1);
                   const invoiceDateToUse = saved.invoiceDate?.slice(0, 10) || invoiceDate || new Date().toISOString().slice(0, 10);
                   const dueDateToUse = saved.dueDate?.slice(0, 10) || dueDate || '';
@@ -674,7 +754,9 @@ export function InvoiceEditorPage() {
                   const body = lines.join('\n');
                   const phone = sendWhatsappTo.trim().replace(/\D/g, '');
                   window.open(`https://wa.me/${phone}?text=${encodeURIComponent(body)}`, '_blank', 'noopener,noreferrer');
+                  markInvoiceSentLocally(saved.id);
                   toast.success(t('sendWhatsAppComposeOpened'));
+                  navigate('/invoices');
                 } catch (e) {
                   toast.error(e instanceof Error ? e.message : t('quoteSendFailed'));
                 }

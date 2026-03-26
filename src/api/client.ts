@@ -173,6 +173,15 @@ export interface InvoiceDetail extends InvoiceSummary {
   items: (InvoiceItemInput & { id: string; total: number })[];
 }
 
+export interface InvoiceAttachment {
+  id: string;
+  filename: string;
+  mimeType: string;
+  size: number;
+  url: string;
+  createdAt: string;
+}
+
 /** Full URL for viewing/downloading an attachment (uses /uploads, not /api). */
 export function getAttachmentDisplayUrl(att: QuoteAttachment): string {
   const path = att.url.startsWith('http')
@@ -435,6 +444,38 @@ export async function getInvoiceSendLinks(
     throw new Error((body as { error?: string }).error ?? 'Failed to get invoice send links');
   }
   return body as InvoiceSendLinks;
+}
+
+export async function listInvoiceAttachments(invoiceId: string): Promise<InvoiceAttachment[]> {
+  const res = await fetchApi(apiUrl(`/invoices/${invoiceId}/attachments`), {
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) throw new Error('Failed to load attachments');
+  return res.json();
+}
+
+export async function uploadInvoiceAttachment(invoiceId: string, file: File): Promise<InvoiceAttachment> {
+  const form = new FormData();
+  form.append('file', file);
+  const res = await fetchApi(apiUrl(`/invoices/${invoiceId}/attachments`), {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: form,
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error((data as { error?: string }).error ?? 'Failed to upload attachment');
+  return data as InvoiceAttachment;
+}
+
+export async function deleteInvoiceAttachment(invoiceId: string, attachmentId: string): Promise<void> {
+  const res = await fetchApi(apiUrl(`/invoices/${invoiceId}/attachments/${attachmentId}`), {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok && res.status !== 204) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error((data as { error?: string }).error ?? 'Failed to delete attachment');
+  }
 }
 
 export async function listQuoteAttachments(quoteId: string): Promise<QuoteAttachment[]> {
