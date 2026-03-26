@@ -5,7 +5,6 @@ import toast from 'react-hot-toast';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   createQuote,
-  createInvoiceFromQuote,
   updateQuote,
   getQuote,
   getProfile,
@@ -336,11 +335,9 @@ export function QuoteEditorPage() {
           unitPrice: i.unitPrice,
         })),
       });
-      const invoice = await createInvoiceFromQuote(id);
       queryClient.invalidateQueries({ queryKey: ['quotes'] });
       queryClient.invalidateQueries({ queryKey: ['quote', id] });
-      queryClient.invalidateQueries({ queryKey: ['invoices'] });
-      navigate(`/invoices/${invoice.id}`);
+      navigate('/invoices/new', { state: { fromQuoteId: id } });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : t('quoteSendFailed'));
     } finally {

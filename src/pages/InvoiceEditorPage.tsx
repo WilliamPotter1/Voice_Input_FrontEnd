@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { ArrowLeft, Loader2, Plus, Trash2 } from 'lucide-react';
-import { createInvoice, getInvoice, updateInvoice } from '../api/client';
+import { ArrowLeft, Download, Loader2, Plus, Trash2 } from 'lucide-react';
+import { createInvoice, getInvoice, getQuote, updateInvoice } from '../api/client';
 import { useTranslation } from '../i18n/useTranslation';
 
 type InvoiceItemForm = {
@@ -22,14 +22,21 @@ function toInputDate(iso: string | null | undefined): string {
 export function InvoiceEditorPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
   const { id } = useParams();
   const isEdit = Boolean(id);
+  const fromQuoteId = (location.state as { fromQuoteId?: string } | null)?.fromQuoteId;
 
   const { data, isLoading } = useQuery({
     queryKey: ['invoice', id],
     queryFn: () => getInvoice(id as string),
     enabled: isEdit,
+  });
+  const { data: sourceQuote } = useQuery({
+    queryKey: ['quote', fromQuoteId],
+    queryFn: () => getQuote(fromQuoteId as string),
+    enabled: !isEdit && Boolean(fromQuoteId),
   });
 
   const [clientName, setClientName] = useState('');
@@ -42,7 +49,15 @@ export function InvoiceEditorPage() {
   const [deliveryDate, setDeliveryDate] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [items, setItems] = useState<InvoiceItemForm[]>([defaultItem]);
+  const [pendingAttachments, setPendingAttachments] = useState<File[]>([]);
+  const [sendEmailTo, setSendEmailTo] = useState('');
+  const [sendWhatsappTo, setSendWhatsappTo] = useState('');
   const [initialized, setInitialized] = useState(false);
+
+  useEffect(() => {
+    // When route mode changes (/invoices/new <-> /invoices/:id), allow form re-initialization.
+    setInitialized(false);
+  }, [id, fromQuoteId]);
 
   useEffect(() => {
     if (!data || initialized) return;
@@ -66,6 +81,28 @@ export function InvoiceEditorPage() {
     );
     setInitialized(true);
   }, [data, initialized]);
+
+  useEffect(() => {
+    if (isEdit || initialized || !sourceQuote) return;
+    setClientName(sourceQuote.clientName ?? '');
+    setCustomerAddress(sourceQuote.customerAddress ?? '');
+    setAdditionalInfo('');
+    setCurrency((sourceQuote.currency ?? 'EUR').toUpperCase());
+    setVatRate(sourceQuote.vatRate ?? 0.19);
+    setInvoiceDate(new Date().toISOString().slice(0, 10));
+    setDeliveryDate(new Date().toISOString().slice(0, 10));
+    setDueDate(new Date().toISOString().slice(0, 10));
+    setItems(
+      sourceQuote.items.length
+        ? sourceQuote.items.map((i) => ({
+            itemName: i.itemName,
+            quantity: i.quantity,
+            unitPrice: i.unitPrice,
+          }))
+        : [defaultItem]
+    );
+    setInitialized(true);
+  }, [isEdit, initialized, sourceQuote]);
 
   const subtotal = useMemo(
     () => items.reduce((sum, it) => sum + (Number(it.quantity) || 0) * (Number(it.unitPrice) || 0), 0),
@@ -122,11 +159,37 @@ export function InvoiceEditorPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <Link to="/invoices" className="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900">
           <ArrowLeft className="size-4" />
           {t('backToInvoices')}
         </Link>
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <button
+            type="button"
+            onClick={() => navigate('/invoices')}
+            className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 sm:flex-none"
+          >
+            {t('cancel')}
+          </button>
+          <button
+            type="button"
+            onClick={() => saveMutation.mutate()}
+            disabled={saveMutation.isPending}
+            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700 disabled:opacity-70 sm:flex-none"
+          >
+            {saveMutation.isPending && <Loader2 className="size-4 animate-spin" />}
+            {!isEdit ? t('createInvoice') : t('saveInvoice')}
+          </button>
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 sm:flex-none"
+          >
+            <Download className="size-4" />
+            {t('exportPdf')}
+          </button>
+        </div>
       </div>
 
       <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
@@ -216,6 +279,97 @@ export function InvoiceEditorPage() {
       </section>
 
       <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
+        <label className="mb-2 block text-sm font-medium text-slate-700">{t('attachments')}</label>
+        <input
+          type="file"
+          multiple
+          onChange={(e) => {
+            const files = Array.from(e.target.files ?? []);
+            if (files.length) setPendingAttachments((prev) => [...prev, ...files]);
+            e.currentTarget.value = '';
+          }}
+          className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm"
+        />
+        {pendingAttachments.length > 0 && (
+          <ul className="mt-3 space-y-2">
+            {pendingAttachments.map((file, idx) => (
+              <li key={`${file.name}-${idx}`} className="flex items-center justify-between rounded-xl border border-dashed border-slate-200 px-3 py-2 text-xs sm:text-sm">
+                <span className="truncate">{file.name}</span>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => window.open(URL.createObjectURL(file), '_blank', 'noopener,noreferrer')}
+                    className="rounded-lg border border-slate-300 px-2 py-1 text-[11px]"
+                  >
+                    {t('preview')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPendingAttachments((prev) => prev.filter((_, i) => i !== idx))}
+                    className="rounded-lg border border-red-100 px-2 py-1 text-[11px] text-red-600 hover:bg-red-50"
+                  >
+                    {t('delete')}
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section className="w-full rounded-2xl border border-emerald-300 bg-emerald-50/90 p-5 shadow-md sm:p-6 lg:max-w-xl">
+        <h3 className="text-sm font-semibold text-emerald-900 tracking-wide">{t('sendQuoteTitle')}</h3>
+        <div className="mt-4 border-t border-emerald-200/70 pt-4 space-y-4">
+          <div className="grid items-end gap-2 grid-cols-[minmax(0,1.8fr)_auto]">
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-slate-700">{t('emailAddress')}</label>
+              <input
+                type="email"
+                value={sendEmailTo}
+                onChange={(e) => setSendEmailTo(e.target.value)}
+                className="w-full rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                const subject = `${t('invoiceNo')} ${invoiceNumber || ''} ${clientName || ''}`.trim();
+                const body = `${t('invoice')}: ${clientName || ''}\n${t('total')}: ${total.toFixed(2)} ${currency}`;
+                window.location.href = `mailto:${encodeURIComponent(sendEmailTo.trim())}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+              }}
+              disabled={!sendEmailTo.trim()}
+              className="inline-flex items-center justify-center rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs font-medium text-emerald-800 disabled:opacity-60 w-28 sm:w-32"
+            >
+              {t('sendByEmail')}
+            </button>
+          </div>
+          <div className="grid items-end gap-2 grid-cols-[minmax(0,1.8fr)_auto]">
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-slate-700 whitespace-nowrap">{t('whatsappNumber')}</label>
+              <input
+                type="tel"
+                value={sendWhatsappTo}
+                onChange={(e) => setSendWhatsappTo(e.target.value)}
+                className="w-full rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                const phone = sendWhatsappTo.trim().replace(/\D/g, '');
+                const msg = `${t('invoiceNo')} ${invoiceNumber || ''} ${clientName || ''}\n${t('total')}: ${total.toFixed(2)} ${currency}`;
+                window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener,noreferrer');
+              }}
+              disabled={!sendWhatsappTo.trim()}
+              className="inline-flex items-center justify-center rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs font-medium text-emerald-800 disabled:opacity-60 w-28 sm:w-32"
+            >
+              {t('sendByWhatsapp')}
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-base font-semibold text-slate-900">{t('item')}</h2>
           <button
@@ -287,17 +441,6 @@ export function InvoiceEditorPage() {
             <span>{t('total')}</span>
             <span>{total.toFixed(2)}</span>
           </div>
-        </div>
-        <div className="mt-4 flex justify-end">
-          <button
-            type="button"
-            onClick={() => saveMutation.mutate()}
-            disabled={saveMutation.isPending}
-            className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700 disabled:opacity-70"
-          >
-            {saveMutation.isPending && <Loader2 className="size-4 animate-spin" />}
-            {isEdit ? t('saveInvoice') : t('createInvoice')}
-          </button>
         </div>
       </section>
     </div>
