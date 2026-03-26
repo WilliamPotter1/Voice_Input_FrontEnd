@@ -355,6 +355,35 @@ export async function createInvoiceFromQuote(quoteId: string): Promise<InvoiceDe
   return data;
 }
 
+export async function downloadInvoicePdf(
+  invoiceId: string,
+  invoiceDate: string,
+  dueDate: string,
+  lang: string,
+  invoiceNumber: number,
+): Promise<string> {
+  const params = new URLSearchParams({ invoiceDate, dueDate, lang, invoiceNumber: String(invoiceNumber) });
+  const url = apiUrl(`/invoices/${invoiceId}/pdf?${params.toString()}`);
+  const res = await fetch(url, { headers: getAuthHeaders() });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: res.statusText }));
+    throw new Error((err as { error?: string }).error ?? 'Failed to generate invoice PDF');
+  }
+  const blob = await res.blob();
+  const disposition = res.headers.get('Content-Disposition') ?? '';
+  const filenameMatch = disposition.match(/filename="?([^"]+)"?/);
+  const filename = filenameMatch?.[1] ?? `Invoice-${invoiceId.slice(0, 8)}.pdf`;
+  const blobUrl = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = blobUrl;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(blobUrl);
+  return filename;
+}
+
 export async function listQuoteAttachments(quoteId: string): Promise<QuoteAttachment[]> {
   const res = await fetchApi(apiUrl(`/quotes/${quoteId}/attachments`), {
     headers: getAuthHeaders(),

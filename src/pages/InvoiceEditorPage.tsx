@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { ArrowLeft, Download, Loader2, Plus, Trash2 } from 'lucide-react';
-import { createInvoice, getInvoice, getQuote, updateInvoice } from '../api/client';
+import { createInvoice, downloadInvoicePdf, getInvoice, getQuote, updateInvoice } from '../api/client';
 import { useTranslation } from '../i18n/useTranslation';
 
 type InvoiceItemForm = {
@@ -55,7 +55,7 @@ function formatMoney(n: number, currency: string): string {
 }
 
 export function InvoiceEditorPage() {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
@@ -218,7 +218,25 @@ export function InvoiceEditorPage() {
           </button>
           <button
             type="button"
-            onClick={() => window.print()}
+            onClick={async () => {
+              try {
+                let invoiceId = id;
+                if (!invoiceId) {
+                  const saved = await saveMutation.mutateAsync();
+                  invoiceId = saved.id;
+                }
+                const num = Math.max(1, Number(invoiceNumber) || 1);
+                await downloadInvoicePdf(
+                  invoiceId!,
+                  invoiceDate || new Date().toISOString().slice(0, 10),
+                  dueDate || '',
+                  lang as string,
+                  num,
+                );
+              } catch (e) {
+                toast.error(e instanceof Error ? e.message : t('pdfFailed'));
+              }
+            }}
             className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 sm:flex-none"
           >
             <Download className="size-4" />
@@ -293,14 +311,6 @@ export function InvoiceEditorPage() {
               className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
             />
           </label>
-          <label className="space-y-1">
-            <span className="text-sm text-slate-700">{t('currency')}</span>
-            <input
-              value={currency}
-              onChange={(e) => setCurrency(e.target.value.toUpperCase())}
-              className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
-            />
-          </label>
         </div>
         <label className="mt-4 block space-y-1">
           <span className="text-sm text-slate-700">{t('quoteFreeText')}</span>
@@ -313,35 +323,49 @@ export function InvoiceEditorPage() {
         </label>
       </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
-        <label className="mb-2 block text-sm font-medium text-slate-700">{t('attachments')}</label>
-        <input
-          type="file"
-          multiple
-          onChange={(e) => {
-            const files = Array.from(e.target.files ?? []);
-            if (files.length) setPendingAttachments((prev) => [...prev, ...files]);
-            e.currentTarget.value = '';
-          }}
-          className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm"
-        />
+      <section className="mt-4 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500">{t('attachments')}</h2>
+            <p className="text-xs text-slate-500">{t('attachmentsHint')}</p>
+          </div>
+          <label className="inline-flex cursor-pointer items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100">
+            {t('addAttachment')}
+            <input
+              type="file"
+              className="sr-only"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                setPendingAttachments((prev) => [...prev, file]);
+                e.target.value = '';
+              }}
+            />
+          </label>
+        </div>
         {pendingAttachments.length > 0 && (
           <ul className="mt-3 space-y-2">
             {pendingAttachments.map((file, idx) => (
-              <li key={`${file.name}-${idx}`} className="flex items-center justify-between rounded-xl border border-dashed border-slate-200 px-3 py-2 text-xs sm:text-sm">
-                <span className="truncate">{file.name}</span>
-                <div className="flex gap-2">
+              <li
+                key={`${file.name}-${file.size}-${file.lastModified}-${idx}`}
+                className="grid grid-cols-[minmax(0,1fr)_140px] items-center gap-2 rounded-xl border border-dashed border-slate-200 bg-slate-50 px-3 py-2 text-xs sm:text-sm text-slate-700"
+              >
+                <span className="truncate text-left text-slate-700">
+                  {file.name}
+                  <span className="ml-1 text-[10px] text-slate-400">({t('pending') ?? 'pending'})</span>
+                </span>
+                <div className="flex items-center justify-start gap-2 shrink-0 whitespace-nowrap">
                   <button
                     type="button"
                     onClick={() => window.open(URL.createObjectURL(file), '_blank', 'noopener,noreferrer')}
-                    className="rounded-lg border border-slate-300 px-2 py-1 text-[11px]"
+                    className="rounded-lg border border-slate-300 px-2 py-1 text-[11px] font-medium text-slate-600 hover:bg-slate-100"
                   >
                     {t('preview')}
                   </button>
                   <button
                     type="button"
                     onClick={() => setPendingAttachments((prev) => prev.filter((_, i) => i !== idx))}
-                    className="rounded-lg border border-red-100 px-2 py-1 text-[11px] text-red-600 hover:bg-red-50"
+                    className="rounded-lg border border-red-100 px-2 py-1 text-[11px] font-medium text-red-600 hover:bg-red-50"
                   >
                     {t('delete')}
                   </button>
@@ -512,22 +536,24 @@ export function InvoiceEditorPage() {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
-        <div className="space-y-1 text-sm">
-          <div className="flex items-center justify-between">
-            <span>{t('subtotal')}</span>
-            <span>{subtotal.toFixed(2)}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span>{t('vat')}</span>
-            <span>{vat.toFixed(2)}</span>
-          </div>
-          <div className="flex items-center justify-between font-semibold text-slate-900">
-            <span>{t('total')}</span>
-            <span>{total.toFixed(2)}</span>
+      <div className="flex justify-end">
+        <div className="w-full rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:w-auto sm:min-w-[280px] sm:p-6">
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm text-slate-600">
+              <span>{t('subtotal')}</span>
+              <span className="tabular-nums font-medium">{formatMoney(subtotal, currency)}</span>
+            </div>
+            <div className="flex justify-between text-sm text-slate-600">
+              <span>{t('vat')} ({(vatRate * 100).toFixed(0)}%)</span>
+              <span className="tabular-nums font-medium">{formatMoney(vat, currency)}</span>
+            </div>
+            <div className="flex justify-between border-t border-slate-200 pt-3 text-base font-bold text-slate-900">
+              <span>{t('total')}</span>
+              <span className="tabular-nums">{formatMoney(total, currency)}</span>
+            </div>
           </div>
         </div>
-      </section>
+      </div>
 
       <section className="mt-6 w-full rounded-2xl border border-emerald-300 bg-emerald-50/90 p-5 shadow-md sm:p-6 lg:max-w-xl transition-transform transition-shadow duration-300 ease-out hover:-translate-y-1 hover:shadow-xl focus-within:-translate-y-1 focus-within:shadow-xl">
         <div className="flex items-center justify-between gap-3">
