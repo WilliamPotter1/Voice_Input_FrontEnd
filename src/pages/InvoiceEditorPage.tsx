@@ -249,6 +249,7 @@ export function InvoiceEditorPage() {
           >
             <Download className="size-4" />
             {t('exportPdf')}
+            
           </button>
         </div>
       </div>

@@ -33,12 +33,12 @@ export function Layout() {
             <Link
               to="/"
               onClick={() => setMobileOpen(false)}
-              className="flex items-center gap-2 text-lg font-semibold tracking-tight text-slate-900 transition hover:text-slate-700"
+              className="flex items-center gap-2 whitespace-nowrap text-lg font-semibold tracking-tight text-slate-900 transition hover:text-slate-700"
             >
-              <span className="flex size-8 items-center justify-center rounded-lg bg-emerald-500 text-white">
+              <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-emerald-500 text-white">
                 <Mic className="size-4" />
               </span>
-              <span className="hidden min-[400px]:inline">{t('appName')}</span>
+              <span className="hidden min-[400px]:inline whitespace-nowrap">{t('appName')}</span>
             </Link>
 
             {/* Desktop nav */}
