@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { ArrowLeft, Download, Loader2, Plus, Trash2 } from 'lucide-react';
-import { createInvoice, downloadInvoicePdf, getInvoice, getQuote, updateInvoice } from '../api/client';
+import { createInvoice, downloadInvoicePdf, getInvoice, getNextInvoiceNumber, getQuote, updateInvoice } from '../api/client';
 import { useTranslation } from '../i18n/useTranslation';
 
 type InvoiceItemForm = {
@@ -139,6 +139,14 @@ export function InvoiceEditorPage() {
     setInitialized(true);
   }, [isEdit, initialized, sourceQuote]);
 
+  useEffect(() => {
+    if (isEdit) return;
+    if (invoiceNumber.trim() !== '') return;
+    getNextInvoiceNumber()
+      .then((n) => setInvoiceNumber(String(n)))
+      .catch(() => setInvoiceNumber('1'));
+  }, [isEdit, invoiceNumber]);
+
   const subtotal = useMemo(
     () => items.reduce((sum, it) => sum + (Number(it.quantity) || 0) * (Number(it.unitPrice) || 0), 0),
     [items]
@@ -249,6 +257,14 @@ export function InvoiceEditorPage() {
         <h1 className="text-xl font-semibold text-slate-900">{isEdit ? t('editInvoice') : t('newInvoice')}</h1>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <label className="space-y-1">
+            <span className="text-sm text-slate-700">{t('invoiceNo')}</span>
+            <input
+              value={invoiceNumber}
+              onChange={(e) => setInvoiceNumber(e.target.value.replace(/[^\d]/g, ''))}
+              className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
+            />
+          </label>
+          <label className="space-y-1">
             <span className="text-sm text-slate-700">{t('clientName')}</span>
             <input
               value={clientName}
@@ -265,14 +281,6 @@ export function InvoiceEditorPage() {
             />
           </label>
           <label className="space-y-1">
-            <span className="text-sm text-slate-700">{t('invoiceNo')}</span>
-            <input
-              value={invoiceNumber}
-              onChange={(e) => setInvoiceNumber(e.target.value.replace(/[^\d]/g, ''))}
-              className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
-            />
-          </label>
-          <label className="space-y-1">
             <span className="text-sm text-slate-700">{t('vatRate')}</span>
             <input
               type="number"
@@ -281,33 +289,6 @@ export function InvoiceEditorPage() {
               max="1"
               value={vatRate}
               onChange={(e) => setVatRate(Number(e.target.value))}
-              className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
-            />
-          </label>
-          <label className="space-y-1">
-            <span className="text-sm text-slate-700">{t('invoiceDate')}</span>
-            <input
-              type="date"
-              value={invoiceDate}
-              onChange={(e) => setInvoiceDate(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
-            />
-          </label>
-          <label className="space-y-1">
-            <span className="text-sm text-slate-700">{t('deliveryDate')}</span>
-            <input
-              type="date"
-              value={deliveryDate}
-              onChange={(e) => setDeliveryDate(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
-            />
-          </label>
-          <label className="space-y-1">
-            <span className="text-sm text-slate-700">{t('dueDate')}</span>
-            <input
-              type="date"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
               className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
             />
           </label>
@@ -533,6 +514,38 @@ export function InvoiceEditorPage() {
             <Plus className="size-4" />
             {t('addItem')}
           </button>
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
+        <div className="grid gap-4 sm:grid-cols-3">
+          <label className="space-y-1">
+            <span className="text-sm text-slate-700">{t('invoiceDate')}</span>
+            <input
+              type="date"
+              value={invoiceDate}
+              onChange={(e) => setInvoiceDate(e.target.value)}
+              className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
+            />
+          </label>
+          <label className="space-y-1">
+            <span className="text-sm text-slate-700">{t('deliveryDate')}</span>
+            <input
+              type="date"
+              value={deliveryDate}
+              onChange={(e) => setDeliveryDate(e.target.value)}
+              className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
+            />
+          </label>
+          <label className="space-y-1">
+            <span className="text-sm text-slate-700">{t('dueDate')}</span>
+            <input
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
+            />
+          </label>
         </div>
       </section>
 

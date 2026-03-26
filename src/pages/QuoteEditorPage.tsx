@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   createQuote,
+  listInvoices,
   updateQuote,
   getQuote,
   getProfile,
@@ -335,6 +336,12 @@ export function QuoteEditorPage() {
           unitPrice: i.unitPrice,
         })),
       });
+      const invoices = await listInvoices();
+      const alreadyCreated = invoices.some((inv) => inv.quoteId === id);
+      if (alreadyCreated) {
+        toast.error(t('invoiceAlreadyExists'));
+        return;
+      }
       queryClient.invalidateQueries({ queryKey: ['quotes'] });
       queryClient.invalidateQueries({ queryKey: ['quote', id] });
       navigate('/invoices/new', { state: { fromQuoteId: id } });

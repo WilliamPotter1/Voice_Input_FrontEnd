@@ -302,6 +302,17 @@ export async function listInvoices(): Promise<InvoiceSummary[]> {
   return res.json();
 }
 
+export async function getNextInvoiceNumber(): Promise<number> {
+  const invoices = await listInvoices();
+  const max = invoices.reduce((acc, inv) => {
+    if (typeof inv.invoiceNumber === 'number' && Number.isFinite(inv.invoiceNumber) && inv.invoiceNumber > acc) {
+      return inv.invoiceNumber;
+    }
+    return acc;
+  }, 0);
+  return max + 1;
+}
+
 export async function getInvoice(id: string): Promise<InvoiceDetail> {
   const res = await fetchApi(apiUrl(`/invoices/${id}`), { headers: getAuthHeaders() });
   if (!res.ok) {
