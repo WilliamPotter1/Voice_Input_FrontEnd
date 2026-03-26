@@ -528,7 +528,7 @@ export function InvoiceEditorPage() {
           <button
             type="button"
             onClick={() => setItems((prev) => [...prev, { ...defaultItem }])}
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+            className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-200 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-100 sm:w-auto sm:px-6"
           >
             <Plus className="size-4" />
             {t('addItem')}
