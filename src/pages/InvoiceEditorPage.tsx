@@ -154,30 +154,32 @@ export function InvoiceEditorPage() {
   const vat = subtotal * vatRate;
   const total = subtotal + vat;
 
+  function buildInvoicePayload() {
+    const cleanItems = items
+      .map((it) => ({
+        itemName: it.itemName.trim(),
+        quantity: Number(it.quantity),
+        unitPrice: Number(it.unitPrice),
+      }))
+      .filter((it) => it.itemName && it.quantity > 0);
+    if (!cleanItems.length) throw new Error(t('addAtLeastOneItem'));
+    return {
+      clientName: clientName.trim() || null,
+      customerAddress: customerAddress.trim() || null,
+      additionalInfo: additionalInfo.trim() || null,
+      currency: currency.trim() || 'EUR',
+      vatRate,
+      invoiceNumber: invoiceNumber.trim() ? Number(invoiceNumber) : null,
+      invoiceDate: invoiceDate || null,
+      deliveryDate: deliveryDate || null,
+      dueDate: dueDate || null,
+      items: cleanItems,
+    };
+  }
+
   const saveMutation = useMutation({
     mutationFn: async () => {
-      const cleanItems = items
-        .map((it) => ({
-          itemName: it.itemName.trim(),
-          quantity: Number(it.quantity),
-          unitPrice: Number(it.unitPrice),
-        }))
-        .filter((it) => it.itemName && it.quantity > 0);
-
-      if (!cleanItems.length) throw new Error(t('addAtLeastOneItem'));
-
-      const payload = {
-        clientName: clientName.trim() || null,
-        customerAddress: customerAddress.trim() || null,
-        additionalInfo: additionalInfo.trim() || null,
-        currency: currency.trim() || 'EUR',
-        vatRate,
-        invoiceNumber: invoiceNumber.trim() ? Number(invoiceNumber) : null,
-        invoiceDate: invoiceDate || null,
-        deliveryDate: deliveryDate || null,
-        dueDate: dueDate || null,
-        items: cleanItems,
-      };
+      const payload = buildInvoicePayload();
 
       if (isEdit && id) return updateInvoice(id, payload);
       return createInvoice(payload);
@@ -228,19 +230,19 @@ export function InvoiceEditorPage() {
             type="button"
             onClick={async () => {
               try {
-                let invoiceId = id;
-                if (!invoiceId) {
-                  const saved = await saveMutation.mutateAsync();
-                  invoiceId = saved.id;
-                }
-                const num = Math.max(1, Number(invoiceNumber) || 1);
+                const payload = buildInvoicePayload();
+                const saved = isEdit && id ? await updateInvoice(id, payload) : await createInvoice(payload);
+                const invoiceId = saved.id;
+                const num = Math.max(1, Number(saved.invoiceNumber) || 1);
                 await downloadInvoicePdf(
-                  invoiceId!,
-                  invoiceDate || new Date().toISOString().slice(0, 10),
-                  dueDate || '',
+                  invoiceId,
+                  saved.invoiceDate?.slice(0, 10) || invoiceDate || new Date().toISOString().slice(0, 10),
+                  saved.dueDate?.slice(0, 10) || dueDate || '',
                   lang as string,
                   num,
                 );
+                queryClient.invalidateQueries({ queryKey: ['invoices'] });
+                queryClient.setQueryData(['invoice', invoiceId], saved);
               } catch (e) {
                 toast.error(e instanceof Error ? e.message : t('pdfFailed'));
               }
@@ -249,7 +251,7 @@ export function InvoiceEditorPage() {
           >
             <Download className="size-4" />
             {t('exportPdf')}
-            
+
           </button>
         </div>
       </div>
