@@ -129,6 +129,50 @@ export interface QuoteAttachment {
   createdAt: string;
 }
 
+export interface InvoiceItemInput {
+  itemName: string;
+  quantity: number;
+  unitPrice: number;
+}
+
+export interface InvoicePayload {
+  clientName?: string | null;
+  customerAddress?: string | null;
+  additionalInfo?: string | null;
+  currency?: string | null;
+  vatRate?: number;
+  invoiceNumber?: number | null;
+  invoiceDate?: string | null;
+  deliveryDate?: string | null;
+  dueDate?: string | null;
+  items: InvoiceItemInput[];
+}
+
+export interface InvoiceSummary {
+  id: string;
+  quoteId: string | null;
+  clientName: string | null;
+  customerAddress: string | null;
+  additionalInfo: string | null;
+  currency: string | null;
+  subtotal: number;
+  vat: number;
+  total: number;
+  invoiceNumber: number | null;
+  invoiceDate: string | null;
+  deliveryDate: string | null;
+  dueDate: string | null;
+  sentAt: string | null;
+  sentByEmail: boolean;
+  sentByWhats: boolean;
+  createdAt: string;
+}
+
+export interface InvoiceDetail extends InvoiceSummary {
+  vatRate: number;
+  items: (InvoiceItemInput & { id: string; total: number })[];
+}
+
 /** Full URL for viewing/downloading an attachment (uses /uploads, not /api). */
 export function getAttachmentDisplayUrl(att: QuoteAttachment): string {
   const path = att.url.startsWith('http')
@@ -247,6 +291,68 @@ export async function deleteQuote(id: string): Promise<void> {
     const data = await res.json().catch(() => ({}));
     throw new Error((data as { error?: string }).error ?? 'Failed to delete quote');
   }
+}
+
+export async function listInvoices(): Promise<InvoiceSummary[]> {
+  const res = await fetchApi(apiUrl('/invoices'), { headers: getAuthHeaders() });
+  if (!res.ok) {
+    if (res.status === 401) throw new Error('Unauthorized');
+    throw new Error('Failed to load invoices');
+  }
+  return res.json();
+}
+
+export async function getInvoice(id: string): Promise<InvoiceDetail> {
+  const res = await fetchApi(apiUrl(`/invoices/${id}`), { headers: getAuthHeaders() });
+  if (!res.ok) {
+    if (res.status === 404) throw new Error('Invoice not found');
+    if (res.status === 401) throw new Error('Unauthorized');
+    throw new Error('Failed to load invoice');
+  }
+  return res.json();
+}
+
+export async function createInvoice(payload: InvoicePayload): Promise<InvoiceDetail> {
+  const res = await fetchApi(apiUrl('/invoices'), {
+    method: 'POST',
+    headers: getAuthJsonHeaders(),
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error((data as { error?: string }).error ?? 'Failed to create invoice');
+  return data;
+}
+
+export async function updateInvoice(id: string, payload: Partial<InvoicePayload>): Promise<InvoiceDetail> {
+  const res = await fetchApi(apiUrl(`/invoices/${id}`), {
+    method: 'PATCH',
+    headers: getAuthJsonHeaders(),
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error((data as { error?: string }).error ?? 'Failed to update invoice');
+  return data;
+}
+
+export async function deleteInvoice(id: string): Promise<void> {
+  const res = await fetchApi(apiUrl(`/invoices/${id}`), {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok && res.status !== 204) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error((data as { error?: string }).error ?? 'Failed to delete invoice');
+  }
+}
+
+export async function createInvoiceFromQuote(quoteId: string): Promise<InvoiceDetail> {
+  const res = await fetchApi(apiUrl(`/invoices/from-quote/${quoteId}`), {
+    method: 'POST',
+    headers: getAuthHeaders(),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error((data as { error?: string }).error ?? 'Failed to create invoice from quote');
+  return data;
 }
 
 export async function listQuoteAttachments(quoteId: string): Promise<QuoteAttachment[]> {

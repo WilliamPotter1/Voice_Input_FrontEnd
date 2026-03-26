@@ -6,6 +6,8 @@ import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { QuoteListPage } from './pages/QuoteListPage';
 import { QuoteEditorPage } from './pages/QuoteEditorPage';
+import { InvoicesListPage } from './pages/InvoicesListPage';
+import { InvoiceEditorPage } from './pages/InvoiceEditorPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { TermsPage } from './pages/TermsPage';
 import { PrivacyPage } from './pages/PrivacyPage';
@@ -19,6 +21,30 @@ function App() {
         <Route path="register" element={<RegisterPage />} />
         <Route path="terms" element={<TermsPage />} />
         <Route path="privacy" element={<PrivacyPage />} />
+        <Route
+          path="invoices"
+          element={
+            <ProtectedRoute>
+              <InvoicesListPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="invoices/new"
+          element={
+            <ProtectedRoute>
+              <InvoiceEditorPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="invoices/:id"
+          element={
+            <ProtectedRoute>
+              <InvoiceEditorPage />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="profile"
           element={
