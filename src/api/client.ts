@@ -395,6 +395,48 @@ export async function downloadInvoicePdf(
   return filename;
 }
 
+export async function sendInvoice(
+  invoiceId: string,
+  channel: 'email' | 'whatsapp',
+  recipient: string,
+  invoiceDate: string,
+  dueDate: string,
+  invoiceNumber: number,
+  lang: string,
+): Promise<void> {
+  const res = await fetchApi(apiUrl(`/invoices/${invoiceId}/send`), {
+    method: 'POST',
+    headers: getAuthJsonHeaders(),
+    body: JSON.stringify({ channel, recipient, invoiceDate, dueDate, invoiceNumber, lang }),
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error((body as { error?: string }).error ?? 'Failed to send invoice');
+}
+
+export interface InvoiceSendLinks {
+  pdfUrl: string;
+  attachmentUrls: { filename: string; url: string }[];
+}
+
+export async function getInvoiceSendLinks(
+  invoiceId: string,
+  invoiceDate: string,
+  dueDate: string,
+  invoiceNumber: number,
+  lang: string,
+): Promise<InvoiceSendLinks> {
+  const res = await fetchApi(apiUrl(`/invoices/${invoiceId}/send-links`), {
+    method: 'POST',
+    headers: getAuthJsonHeaders(),
+    body: JSON.stringify({ invoiceDate, dueDate, invoiceNumber, lang }),
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error((body as { error?: string }).error ?? 'Failed to get invoice send links');
+  }
+  return body as InvoiceSendLinks;
+}
+
 export async function listQuoteAttachments(quoteId: string): Promise<QuoteAttachment[]> {
   const res = await fetchApi(apiUrl(`/quotes/${quoteId}/attachments`), {
     headers: getAuthHeaders(),

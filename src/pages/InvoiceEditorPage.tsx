@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { ArrowLeft, Download, Loader2, Plus, Trash2 } from 'lucide-react';
-import { createInvoice, downloadInvoicePdf, getInvoice, getNextInvoiceNumber, getQuote, updateInvoice } from '../api/client';
+import { createInvoice, downloadInvoicePdf, getInvoice, getInvoiceSendLinks, getNextInvoiceNumber, getProfile, getQuote, sendInvoice, updateInvoice } from '../api/client';
 import { useTranslation } from '../i18n/useTranslation';
 
 type InvoiceItemForm = {
@@ -87,6 +87,7 @@ export function InvoiceEditorPage() {
   const [pendingAttachments, setPendingAttachments] = useState<File[]>([]);
   const [sendEmailTo, setSendEmailTo] = useState('');
   const [sendWhatsappTo, setSendWhatsappTo] = useState('');
+  const [sendingEmail, setSendingEmail] = useState(false);
   const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
@@ -596,15 +597,32 @@ export function InvoiceEditorPage() {
             </div>
             <button
               type="button"
-              onClick={() => {
-                const subject = `${t('invoiceNo')} ${invoiceNumber || ''} ${clientName || ''}`.trim();
-                const body = `${t('invoice')}: ${clientName || ''}\n${t('total')}: ${total.toFixed(2)} ${currency}`;
-                window.location.href = `mailto:${encodeURIComponent(sendEmailTo.trim())}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+              onClick={async () => {
+                if (!sendEmailTo.trim()) return;
+                setSendingEmail(true);
+                try {
+                  const payload = buildInvoicePayload();
+                  const saved = isEdit && id ? await updateInvoice(id, payload) : await createInvoice(payload);
+                  await sendInvoice(
+                    saved.id,
+                    'email',
+                    sendEmailTo.trim(),
+                    saved.invoiceDate?.slice(0, 10) || invoiceDate || new Date().toISOString().slice(0, 10),
+                    saved.dueDate?.slice(0, 10) || dueDate || '',
+                    Math.max(1, Number(saved.invoiceNumber) || 1),
+                    lang as string,
+                  );
+                  toast.success(t('quoteSent'));
+                } catch (e) {
+                  toast.error(e instanceof Error ? e.message : t('quoteSendFailed'));
+                } finally {
+                  setSendingEmail(false);
+                }
               }}
-              disabled={!sendEmailTo.trim()}
+              disabled={!sendEmailTo.trim() || sendingEmail}
               className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs font-medium text-emerald-800 shadow-md transition hover:bg-emerald-50 disabled:opacity-60 w-28 sm:w-32"
             >
-              {t('sendByEmail')}
+              {sendingEmail ? <Loader2 className="size-3 animate-spin" /> : t('sendByEmail')}
             </button>
           </div>
           <div className="grid items-end gap-2 grid-cols-[minmax(0,1.8fr)_auto]">
@@ -619,10 +637,47 @@ export function InvoiceEditorPage() {
             </div>
             <button
               type="button"
-              onClick={() => {
-                const phone = sendWhatsappTo.trim().replace(/\D/g, '');
-                const msg = `${t('invoiceNo')} ${invoiceNumber || ''} ${clientName || ''}\n${t('total')}: ${total.toFixed(2)} ${currency}`;
-                window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener,noreferrer');
+              onClick={async () => {
+                if (!sendWhatsappTo.trim()) return;
+                try {
+                  const payload = buildInvoicePayload();
+                  const saved = isEdit && id ? await updateInvoice(id, payload) : await createInvoice(payload);
+                  const num = Math.max(1, Number(saved.invoiceNumber) || 1);
+                  const invoiceDateToUse = saved.invoiceDate?.slice(0, 10) || invoiceDate || new Date().toISOString().slice(0, 10);
+                  const dueDateToUse = saved.dueDate?.slice(0, 10) || dueDate || '';
+                  const { pdfUrl, attachmentUrls } = await getInvoiceSendLinks(
+                    saved.id,
+                    invoiceDateToUse,
+                    dueDateToUse,
+                    num,
+                    lang as string,
+                  );
+                  const profile = await getProfile();
+                  const companyLabel = (profile.companyName ?? 'Firma').trim();
+                  const clientLabel = (clientName ?? '').trim();
+                  const invoiceNrLabelByLang: Record<string, string> = {
+                    de: 'Rechnungs-Nr.:',
+                    en: 'Invoice No.',
+                    it: 'Fattura n.',
+                    fr: 'Facture n°',
+                    es: 'Factura n.°',
+                  };
+                  const invoiceNrLabel = invoiceNrLabelByLang[lang] ?? invoiceNrLabelByLang.de;
+                  const intro = `${companyLabel} - ${invoiceNrLabel} ${num} ${clientLabel}`.trim();
+                  const pdfLabel = t('sendEmailPdfLabel') as string;
+                  const attachmentsLabel = t('sendEmailAttachmentsLabel') as string;
+                  const lines: string[] = [intro, '', pdfLabel, pdfUrl];
+                  if (attachmentUrls.length > 0) {
+                    lines.push('', attachmentsLabel);
+                    attachmentUrls.forEach((a) => lines.push(`${a.filename}: ${a.url}`));
+                  }
+                  const body = lines.join('\n');
+                  const phone = sendWhatsappTo.trim().replace(/\D/g, '');
+                  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(body)}`, '_blank', 'noopener,noreferrer');
+                  toast.success(t('sendWhatsAppComposeOpened'));
+                } catch (e) {
+                  toast.error(e instanceof Error ? e.message : t('quoteSendFailed'));
+                }
               }}
               disabled={!sendWhatsappTo.trim()}
               className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs font-medium text-emerald-800 shadow-md transition hover:bg-emerald-50 disabled:opacity-60 w-28 sm:w-32"
