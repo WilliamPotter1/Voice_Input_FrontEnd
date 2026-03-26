@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   createQuote,
+  createInvoiceFromQuote,
   updateQuote,
   getQuote,
   getProfile,
@@ -140,6 +141,7 @@ export function QuoteEditorPage() {
   const [freeText, setFreeText] = useState('');
   const [sendingEmail, setSendingEmail] = useState(false);
   const [openingWhatsapp, setOpeningWhatsapp] = useState(false);
+  const [creatingInvoice, setCreatingInvoice] = useState(false);
 
   // For new quotes, prefill quote number as (max existing quoteNumber) + 1
   useEffect(() => {
@@ -315,6 +317,37 @@ export function QuoteEditorPage() {
     }
   }
 
+  async function handleCreateInvoice() {
+    if (!id) return;
+    setCreatingInvoice(true);
+    try {
+      const normalizedValidUntil = normalizeDateToInput(sendValidUntil);
+      await updateQuote(id, {
+        clientName: clientName.trim() || undefined,
+        customerAddress: customerAddressCombined || undefined,
+        freeText: freeText.trim() === '' ? null : freeText.trim(),
+        currency,
+        vatRate,
+        quoteNumber: sendQuoteNumber,
+        validUntil: normalizedValidUntil === '' ? null : normalizedValidUntil,
+        items: items.map((i: QuoteFormItem) => ({
+          itemName: i.itemName.trim() || 'Item',
+          quantity: i.quantity,
+          unitPrice: i.unitPrice,
+        })),
+      });
+      const invoice = await createInvoiceFromQuote(id);
+      queryClient.invalidateQueries({ queryKey: ['quotes'] });
+      queryClient.invalidateQueries({ queryKey: ['quote', id] });
+      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      navigate(`/invoices/${invoice.id}`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : t('quoteSendFailed'));
+    } finally {
+      setCreatingInvoice(false);
+    }
+  }
+
   const saving = createMutation.isPending || updateMutation.isPending;
   const loadingQuote = isEdit && quoteQuery.isLoading;
 
@@ -373,6 +406,23 @@ export function QuoteEditorPage() {
                 t('saveQuote')
               )}
             </button>
+            {isEdit && id && (
+              <button
+                type="button"
+                onClick={handleCreateInvoice}
+                disabled={creatingInvoice}
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-60 sm:flex-none"
+              >
+                {creatingInvoice ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" />
+                    {t('saving')}
+                  </>
+                ) : (
+                  t('createInvoice')
+                )}
+              </button>
+            )}
             {isEdit && id && (
               <button
                 type="button"
