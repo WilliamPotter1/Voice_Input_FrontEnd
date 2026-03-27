@@ -270,10 +270,10 @@ export function QuoteEditorPage() {
           setPendingAttachments([]);
           queryClient.invalidateQueries({ queryKey: ['quoteAttachments', created.id] });
         }
-        queryClient.invalidateQueries({ queryKey: ['quotes'] });
-        toast.success(t('quoteSaved'));
-        reset();
-        navigate('/quotes');
+      queryClient.invalidateQueries({ queryKey: ['quotes'] });
+      toast.success(t('quoteSaved'));
+      reset();
+      navigate('/quotes');
       } catch (e) {
         toast.error(e instanceof Error ? e.message : 'Failed to upload attachments');
       }
@@ -295,21 +295,21 @@ export function QuoteEditorPage() {
 
   function handleSave() {
           const normalizedValidUntil = normalizeDateToInput(sendValidUntil);
-          const payload = {
-            clientName: clientName.trim() || undefined,
+    const payload = {
+      clientName: clientName.trim() || undefined,
             customerAddress: customerAddressCombined || undefined,
             freeText: freeText.trim() === '' ? null : freeText.trim(),
             currency,
-            vatRate,
+      vatRate,
             quoteNumber: sendQuoteNumber,
             // quoteDate is no longer editable in UI; keep existing value on backend
             validUntil: normalizedValidUntil === '' ? null : normalizedValidUntil,
             items: items.map((i: QuoteFormItem) => ({
-              itemName: i.itemName.trim() || 'Item',
-              quantity: i.quantity,
-              unitPrice: i.unitPrice,
-            })),
-          };
+        itemName: i.itemName.trim() || 'Item',
+        quantity: i.quantity,
+        unitPrice: i.unitPrice,
+      })),
+    };
     if (isEdit && id) {
       updateMutation.mutate(payload);
     } else {
@@ -395,21 +395,21 @@ export function QuoteEditorPage() {
             {t('cancel')}
           </button>
           <div className="flex flex-1 flex-col gap-3 sm:flex-row">
-            <button
-              type="button"
-              onClick={handleSave}
-              disabled={saving}
-              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700 disabled:opacity-60 sm:flex-none"
-            >
-              {saving ? (
-                <>
-                  <Loader2 className="size-5 animate-spin" />
-                  {t('saving')}
-                </>
-              ) : (
-                t('saveQuote')
-              )}
-            </button>
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={saving}
+            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700 disabled:opacity-60 sm:flex-none"
+          >
+            {saving ? (
+              <>
+                <Loader2 className="size-5 animate-spin" />
+                {t('saving')}
+              </>
+            ) : (
+              t('saveQuote')
+            )}
+          </button>
             {isEdit && id && (
               <button
                 type="button"
@@ -728,34 +728,34 @@ export function QuoteEditorPage() {
             const unit = getUnitFromItemName(item.itemName);
             const baseName = getBaseNameFromItemName(item.itemName);
             return (
-              <div key={item.id} className="space-y-3 p-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    #{idx + 1}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => removeItem(item.id)}
-                    className="flex size-8 items-center justify-center rounded-lg text-slate-400 transition hover:bg-red-50 hover:text-red-600"
-                  >
-                    <Trash2 className="size-4" />
-                  </button>
-                </div>
-                <input
-                  type="text"
+            <div key={item.id} className="space-y-3 p-4">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  #{idx + 1}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => removeItem(item.id)}
+                  className="flex size-8 items-center justify-center rounded-lg text-slate-400 transition hover:bg-red-50 hover:text-red-600"
+                >
+                  <Trash2 className="size-4" />
+                </button>
+              </div>
+              <input
+                type="text"
                   value={baseName}
                   onChange={(e) =>
                     updateItem(item.id, { itemName: makeItemName(e.target.value, unit) })
                   }
-                  placeholder={t('description')}
+                placeholder={t('description')}
                   className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 sm:text-sm"
-                />
+              />
                 <div className="grid grid-cols-4 gap-2">
-                  <div>
+                <div>
                     <label className="mb-1 block text-[10px] font-medium text-slate-500 whitespace-nowrap">
                       {t('qty')}
                     </label>
-                    <input
+                  <input
                       type="text"
                       inputMode="decimal"
                       value={
@@ -778,23 +778,23 @@ export function QuoteEditorPage() {
                         }));
                       }}
                       className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 sm:text-sm"
-                    />
-                  </div>
-                  <div>
+                  />
+                </div>
+                <div>
                     <label className="mb-1 block text-[10px] font-medium text-slate-500 whitespace-nowrap">
                       {t('unit')}
                     </label>
-                    <input
+                  <input
                       type="text"
                       value={unit}
-                      onChange={(e) =>
+                    onChange={(e) =>
                         updateItem(item.id, { itemName: makeItemName(baseName, e.target.value) })
-                      }
+                    }
                       placeholder={t('unit')}
                       className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 sm:text-sm"
-                    />
-                  </div>
-                  <div>
+                  />
+                </div>
+                <div>
                     <label className="mb-1 block text-[10px] font-medium text-slate-500 whitespace-nowrap">
                       {`${t('unitPrice')} (${getCurrencySymbol(currency)})`}
                     </label>
@@ -829,9 +829,9 @@ export function QuoteEditorPage() {
                     </label>
                     <div className="flex w-full items-center rounded-lg bg-slate-50 px-3 py-2 text-xs font-semibold sm:text-sm tabular-nums text-slate-700 overflow-hidden text-ellipsis whitespace-nowrap">
                       {formatMoney(item.quantity * item.unitPrice, currency)}
-                    </div>
-                  </div>
                 </div>
+              </div>
+            </div>
               </div>
             );
           })}
@@ -936,7 +936,7 @@ export function QuoteEditorPage() {
               >
                 ×
               </button>
-            </div>
+    </div>
           </div>
         </div>
       </section>

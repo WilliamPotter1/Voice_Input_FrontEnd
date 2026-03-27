@@ -308,7 +308,7 @@ export function InvoiceEditorPage() {
           />
         </div>
         <div className="flex flex-col gap-4 sm:grid sm:grid-cols-2 sm:gap-6">
-          <div className="order-1">
+          <div className="sm:col-span-2">
             <label className="mb-2 block text-sm font-medium text-slate-700">{t('clientName')}</label>
             <input
               type="text"
@@ -318,32 +318,7 @@ export function InvoiceEditorPage() {
               className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
             />
           </div>
-          <div className="order-4 sm:order-2">
-            <label className="mb-2 block text-sm font-medium text-slate-700">{t('vatRate')}</label>
-            <div className="inline-flex items-center gap-[2px]">
-              <input
-                type="text"
-                inputMode="decimal"
-                value={
-                  vatRateInput ?? (Number.isFinite(vatRate) ? String(Number((vatRate * 100).toFixed(2))) : '')
-                }
-                onChange={(e) => setVatRateInput(e.target.value)}
-                onBlur={(e) => {
-                  const raw = e.target.value.replace(',', '.');
-                  const normalized = raw === '' ? '' : raw.startsWith('.') ? `0${raw}` : raw;
-                  const v = Number(normalized);
-                  const numeric = Number.isFinite(v) && v >= 0 ? v : 0;
-                  const clamped = Math.min(100, numeric);
-                  const rounded = Number(clamped.toFixed(2));
-                  setVatRate(rounded / 100);
-                  setVatRateInput(null);
-                }}
-                className="w-15 rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2.5 text-sm text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
-              />
-              <span className="text-xs text-slate-500">%</span>
-            </div>
-          </div>
-          <div className="order-2 sm:order-3">
+          <div>
             <label className="mb-2 block text-sm font-medium text-slate-700">{t('customerCity')}</label>
             <input
               type="text"
@@ -352,7 +327,7 @@ export function InvoiceEditorPage() {
               className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
             />
           </div>
-          <div className="order-3 sm:order-4">
+          <div>
             <label className="mb-2 block text-sm font-medium text-slate-700">{t('customerStreet')}</label>
             <input
               type="text"
@@ -390,6 +365,31 @@ export function InvoiceEditorPage() {
               className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2.5 text-sm text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
             />
           </label>
+        </div>
+        <div className="mt-6">
+          <label className="mb-2 block text-sm font-medium text-slate-700">{t('vatRate')}</label>
+          <div className="inline-flex items-center gap-[2px]">
+            <input
+              type="text"
+              inputMode="decimal"
+              value={
+                vatRateInput ?? (Number.isFinite(vatRate) ? String(Number((vatRate * 100).toFixed(2))) : '')
+              }
+              onChange={(e) => setVatRateInput(e.target.value)}
+              onBlur={(e) => {
+                const raw = e.target.value.replace(',', '.');
+                const normalized = raw === '' ? '' : raw.startsWith('.') ? `0${raw}` : raw;
+                const v = Number(normalized);
+                const numeric = Number.isFinite(v) && v >= 0 ? v : 0;
+                const clamped = Math.min(100, numeric);
+                const rounded = Number(clamped.toFixed(2));
+                setVatRate(rounded / 100);
+                setVatRateInput(null);
+              }}
+              className="w-15 rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2.5 text-sm text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+            />
+            <span className="text-xs text-slate-500">%</span>
+          </div>
         </div>
       </section>
 
