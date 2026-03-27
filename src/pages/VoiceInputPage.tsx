@@ -1,4 +1,4 @@
-import { Mic, Upload, Languages, Loader2, AlertTriangle } from 'lucide-react';
+import { Mic, Upload, Languages, Loader2, AlertTriangle, FileText, Receipt } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -25,8 +25,11 @@ const LANGUAGES = [
 const ALLOWED_ACCEPT = 'audio/mpeg,audio/mp3,audio/wav,audio/mp4,audio/x-m4a,audio/m4a,audio/webm';
 const MAX_FILE_MB = 5;
 
+type VoiceDocumentTarget = 'quote' | 'invoice';
+
 export function VoiceInputPage() {
   const { t } = useTranslation();
+  const [documentTarget, setDocumentTarget] = useState<VoiceDocumentTarget>('quote');
   const [recording, setRecording] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [elapsed, setElapsed] = useState(0);
@@ -64,17 +67,21 @@ export function VoiceInputPage() {
         setExtracting(true);
         const result = await extractQuoteItems(data.text, { language: selectedLanguage });
         if (result.items.length > 0) {
-          navigate('/quotes/new', {
-            state: {
-              extractedItems: result.items,
-              extractedCustomerName: result.customerName ?? '',
-              extractedCustomerAddress: result.customerAddress ?? '',
-              extractedVatRate: result.vatRate ?? undefined,
-              extractedCurrency: result.currency ?? undefined,
-              transcription: data.text,
-            },
-          });
-          toast.success(t('itemsExtracted'));
+          const state = {
+            extractedItems: result.items,
+            extractedCustomerName: result.customerName ?? '',
+            extractedCustomerAddress: result.customerAddress ?? '',
+            extractedVatRate: result.vatRate ?? undefined,
+            extractedCurrency: result.currency ?? undefined,
+            transcription: data.text,
+          };
+          if (documentTarget === 'quote') {
+            navigate('/quotes/new', { state });
+            toast.success(t('itemsExtracted'));
+          } else {
+            navigate('/invoices/new', { state });
+            toast.success(t('itemsExtractedInvoice'));
+          }
         } else {
           toast.error(t('noItemsExtracted'));
         }
@@ -197,6 +204,37 @@ export function VoiceInputPage() {
 
       {isAuthenticated ? (
         <section className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">
+          <div className="mb-5">
+            <p className="mb-2 text-sm font-medium text-slate-700">{t('voiceDocumentTypeLabel')}</p>
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+              <button
+                type="button"
+                onClick={() => setDocumentTarget('quote')}
+                disabled={isBusy || !profileComplete}
+                className={`flex flex-1 items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-medium transition sm:min-w-[140px] ${
+                  documentTarget === 'quote'
+                    ? 'border-emerald-500 bg-emerald-50 text-emerald-900'
+                    : 'border-slate-200 bg-slate-50/50 text-slate-700 hover:border-slate-300 hover:bg-slate-100'
+                } disabled:opacity-50`}
+              >
+                <FileText className="size-4 shrink-0" />
+                {t('voiceDocumentQuote')}
+              </button>
+              <button
+                type="button"
+                onClick={() => setDocumentTarget('invoice')}
+                disabled={isBusy || !profileComplete}
+                className={`flex flex-1 items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-medium transition sm:min-w-[140px] ${
+                  documentTarget === 'invoice'
+                    ? 'border-emerald-500 bg-emerald-50 text-emerald-900'
+                    : 'border-slate-200 bg-slate-50/50 text-slate-700 hover:border-slate-300 hover:bg-slate-100'
+                } disabled:opacity-50`}
+              >
+                <Receipt className="size-4 shrink-0" />
+                {t('voiceDocumentInvoice')}
+              </button>
+            </div>
+          </div>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-stretch">
             <button
               type="button"

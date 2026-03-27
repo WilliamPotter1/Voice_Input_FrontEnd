@@ -30,6 +30,10 @@ export const translations = {
     itemsExtracted: 'Angebotspositionen extrahiert — bearbeiten und speichern',
     noItemsExtracted: 'Keine Positionen konnten aus dem Text extrahiert werden',
     fileTooLarge: 'Datei zu groß. Max {max} MB.',
+    voiceDocumentTypeLabel: 'Erstellen als',
+    voiceDocumentQuote: 'Angebot',
+    voiceDocumentInvoice: 'Rechnung',
+    itemsExtractedInvoice: 'Rechnungspositionen extrahiert — bearbeiten und speichern',
 
     // LoginPage
     loginTitle: 'Anmelden',
@@ -241,6 +245,10 @@ export const translations = {
     itemsExtracted: 'Quote items extracted — edit and save',
     noItemsExtracted: 'No items could be extracted from the text',
     fileTooLarge: 'File too large. Max {max} MB.',
+    voiceDocumentTypeLabel: 'Create as',
+    voiceDocumentQuote: 'Quote',
+    voiceDocumentInvoice: 'Invoice',
+    itemsExtractedInvoice: 'Invoice line items extracted — review and save',
 
     loginTitle: 'Sign in',
     loginDesc: 'Enter your credentials to access your quotes.',
@@ -445,6 +453,10 @@ export const translations = {
     itemsExtracted: 'Voci del preventivo estratte — modifica e salva',
     noItemsExtracted: 'Nessuna voce è stata estratta dal testo',
     fileTooLarge: 'File troppo grande. Max {max} MB.',
+    voiceDocumentTypeLabel: 'Crea come',
+    voiceDocumentQuote: 'Preventivo',
+    voiceDocumentInvoice: 'Fattura',
+    itemsExtractedInvoice: 'Righe fattura estratte — modifica e salva',
 
     loginTitle: 'Accedi',
     loginDesc: 'Inserisci le tue credenziali per accedere ai tuoi preventivi.',
@@ -649,6 +661,10 @@ export const translations = {
     itemsExtracted: 'Lignes du devis extraites — modifiez et sauvegardez',
     noItemsExtracted: 'Aucune ligne n\'a pu être extraite du texte',
     fileTooLarge: 'Fichier trop volumineux. Max {max} Mo.',
+    voiceDocumentTypeLabel: 'Créer en tant que',
+    voiceDocumentQuote: 'Devis',
+    voiceDocumentInvoice: 'Facture',
+    itemsExtractedInvoice: 'Lignes de facture extraites — modifiez et enregistrez',
 
     loginTitle: 'Se connecter',
     loginDesc: 'Entrez vos identifiants pour accéder à vos devis.',
@@ -853,6 +869,10 @@ export const translations = {
     itemsExtracted: 'Líneas del presupuesto extraídas — edita y guarda',
     noItemsExtracted: 'No se pudieron extraer líneas del texto',
     fileTooLarge: 'Archivo demasiado grande. Máx {max} MB.',
+    voiceDocumentTypeLabel: 'Crear como',
+    voiceDocumentQuote: 'Presupuesto',
+    voiceDocumentInvoice: 'Factura',
+    itemsExtractedInvoice: 'Líneas de factura extraídas — revise y guarde',
 
     loginTitle: 'Iniciar sesión',
     loginDesc: 'Introduce tus credenciales para acceder a tus presupuestos.',

@@ -3,7 +3,22 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { ArrowLeft, Download, Loader2, Plus, Trash2 } from 'lucide-react';
-import { createInvoice, deleteInvoiceAttachment, downloadInvoicePdf, getInvoice, getInvoiceSendLinks, getNextInvoiceNumber, getProfile, getQuote, listInvoiceAttachments, sendInvoice, updateInvoice, uploadInvoiceAttachment, type InvoiceAttachment } from '../api/client';
+import {
+  createInvoice,
+  deleteInvoiceAttachment,
+  downloadInvoicePdf,
+  getInvoice,
+  getInvoiceSendLinks,
+  getNextInvoiceNumber,
+  getProfile,
+  getQuote,
+  listInvoiceAttachments,
+  sendInvoice,
+  updateInvoice,
+  uploadInvoiceAttachment,
+  type InvoiceAttachment,
+  type QuoteItemInput,
+} from '../api/client';
 import { splitCustomerAddress } from '../stores/quoteFormStore';
 import { useTranslation } from '../i18n/useTranslation';
 
@@ -75,7 +90,23 @@ export function InvoiceEditorPage() {
   const queryClient = useQueryClient();
   const { id } = useParams();
   const isEdit = Boolean(id);
-  const fromQuoteId = (location.state as { fromQuoteId?: string } | null)?.fromQuoteId;
+  const locationState = location.state as {
+    fromQuoteId?: string;
+    extractedItems?: QuoteItemInput[];
+    extractedCustomerName?: string;
+    extractedCustomerAddress?: string;
+    extractedVatRate?: number;
+    extractedCurrency?: string;
+    transcription?: string;
+  } | null;
+  const fromQuoteId = locationState?.fromQuoteId;
+  const extractedItems = locationState?.extractedItems;
+  const extractedCustomerName = locationState?.extractedCustomerName;
+  const extractedCustomerAddress = locationState?.extractedCustomerAddress;
+  const extractedVatRate = locationState?.extractedVatRate;
+  const extractedCurrency = locationState?.extractedCurrency;
+  const transcription = locationState?.transcription ?? '';
+  const [showFullTranscription, setShowFullTranscription] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ['invoice', id],
@@ -121,9 +152,9 @@ export function InvoiceEditorPage() {
   }
 
   useEffect(() => {
-    // When route mode changes (/invoices/new <-> /invoices/:id), allow form re-initialization.
+    // When route or navigation state changes, allow form re-initialization.
     setInitialized(false);
-  }, [id, fromQuoteId]);
+  }, [id, fromQuoteId, location.key]);
 
   useEffect(() => {
     if (!data || initialized) return;
@@ -174,6 +205,40 @@ export function InvoiceEditorPage() {
     );
     setInitialized(true);
   }, [isEdit, initialized, sourceQuote]);
+
+  useEffect(() => {
+    if (isEdit || initialized) return;
+    if (!extractedItems?.length || fromQuoteId) return;
+    setClientName(extractedCustomerName ?? '');
+    const addr = splitCustomerAddress(extractedCustomerAddress ?? '');
+    setCustomerStreet(addr.street);
+    setCustomerCity(addr.city);
+    setAdditionalInfo('');
+    setCurrency((extractedCurrency ?? 'EUR').toUpperCase());
+    setVatRate(extractedVatRate ?? 0.19);
+    setVatRateInput(null);
+    const today = new Date().toISOString().slice(0, 10);
+    setInvoiceDate(today);
+    setDeliveryDate(today);
+    setDueDate(today);
+    setItems(
+      extractedItems.map((i) => ({
+        itemName: i.itemName,
+        quantity: i.quantity,
+        unitPrice: i.unitPrice,
+      }))
+    );
+    setInitialized(true);
+  }, [
+    isEdit,
+    initialized,
+    fromQuoteId,
+    extractedItems,
+    extractedCustomerName,
+    extractedCustomerAddress,
+    extractedVatRate,
+    extractedCurrency,
+  ]);
 
   useEffect(() => {
     if (isEdit) return;
@@ -392,6 +457,36 @@ export function InvoiceEditorPage() {
           </div>
         </div>
       </section>
+
+      {!isEdit && transcription && (
+        <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6">
+          <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-slate-500">{t('transcription')}</h2>
+          {(() => {
+            const lines = transcription.split(/\r?\n/);
+            const MAX_LINES = 2;
+            const preview =
+              lines.length <= MAX_LINES ? transcription : lines.slice(0, MAX_LINES).join('\n');
+            const hasMore = lines.length > MAX_LINES;
+            return (
+              <>
+                <p className="whitespace-pre-wrap text-sm text-slate-700">
+                  {showFullTranscription ? transcription : preview}
+                  {!showFullTranscription && hasMore && ' …'}
+                </p>
+                {hasMore && (
+                  <button
+                    type="button"
+                    onClick={() => setShowFullTranscription((v) => !v)}
+                    className="mt-2 text-xs font-medium text-emerald-700 hover:text-emerald-800"
+                  >
+                    {showFullTranscription ? 'Show less' : 'Show more'}
+                  </button>
+                )}
+              </>
+            );
+          })()}
+        </section>
+      )}
 
       <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
         <div className="hidden sm:block">
