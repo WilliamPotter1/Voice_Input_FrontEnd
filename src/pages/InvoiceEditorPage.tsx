@@ -233,6 +233,7 @@ export function InvoiceEditorPage() {
     isEdit,
     initialized,
     fromQuoteId,
+    location.key,
     extractedItems,
     extractedCustomerName,
     extractedCustomerAddress,

@@ -9,10 +9,26 @@ function makeId() {
   return `item-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
+/** Remove comma-separated placeholder tokens models sometimes emit (e.g. "85386 Eching, null, null, null"). */
+export function stripNullAddressSegments(full: string | null | undefined): string {
+  if (!full) return '';
+  const segments = full
+    .split(',')
+    .map((p) => p.trim())
+    .filter(
+      (p) =>
+        p.length > 0 &&
+        !/^null$/i.test(p) &&
+        p.toLowerCase() !== 'undefined' &&
+        !/^n\/?a$/i.test(p),
+    );
+  return segments.join(', ').trim();
+}
+
 /** Split combined customer address into street and city for form display. Mirrors ProfilePage logic. */
 export function splitCustomerAddress(full: string | null | undefined): { street: string; city: string } {
   if (!full) return { street: '', city: '' };
-  const s = full.trim();
+  const s = stripNullAddressSegments(full);
   if (!s) return { street: '', city: '' };
 
   // Prefer "street, ZIP City" style.

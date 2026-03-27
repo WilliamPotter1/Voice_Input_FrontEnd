@@ -232,7 +232,16 @@ export function QuoteEditorPage() {
       reset();
     }
     return () => { reset(); };
-  }, [id, setQuoteId, reset, loadQuote, extractedItems, extractedCustomerName, extractedVatRate]);
+  }, [
+    id,
+    setQuoteId,
+    reset,
+    loadQuote,
+    extractedItems,
+    extractedCustomerName,
+    extractedCustomerAddress,
+    extractedVatRate,
+  ]);
 
   useEffect(() => {
     if (quoteQuery.data) {
