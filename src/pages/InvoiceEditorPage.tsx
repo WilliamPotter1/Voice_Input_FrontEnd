@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { ArrowLeft, Download, Loader2, Plus, Trash2 } from 'lucide-react';
 import { createInvoice, deleteInvoiceAttachment, downloadInvoicePdf, getInvoice, getInvoiceSendLinks, getNextInvoiceNumber, getProfile, getQuote, listInvoiceAttachments, sendInvoice, updateInvoice, uploadInvoiceAttachment, type InvoiceAttachment } from '../api/client';
+import { splitCustomerAddress } from '../stores/quoteFormStore';
 import { useTranslation } from '../i18n/useTranslation';
 
 type InvoiceItemForm = {
@@ -94,10 +95,13 @@ export function InvoiceEditorPage() {
   const attachments: InvoiceAttachment[] = attachmentsQuery.data ?? [];
 
   const [clientName, setClientName] = useState('');
-  const [customerAddress, setCustomerAddress] = useState('');
+  const [customerStreet, setCustomerStreet] = useState('');
+  const [customerCity, setCustomerCity] = useState('');
   const [additionalInfo, setAdditionalInfo] = useState('');
   const [currency, setCurrency] = useState('EUR');
   const [vatRate, setVatRate] = useState(0.19);
+  const [vatRateInput, setVatRateInput] = useState<string | null>(null);
+  const customerAddressCombined = [customerStreet, customerCity].map((s) => s.trim()).filter(Boolean).join(', ');
   const [invoiceNumber, setInvoiceNumber] = useState('');
   const [invoiceDate, setInvoiceDate] = useState('');
   const [deliveryDate, setDeliveryDate] = useState('');
@@ -124,10 +128,13 @@ export function InvoiceEditorPage() {
   useEffect(() => {
     if (!data || initialized) return;
     setClientName(data.clientName ?? '');
-    setCustomerAddress(data.customerAddress ?? '');
+    const addr = splitCustomerAddress(data.customerAddress);
+    setCustomerStreet(addr.street);
+    setCustomerCity(addr.city);
     setAdditionalInfo(data.additionalInfo ?? '');
     setCurrency((data.currency ?? 'EUR').toUpperCase());
     setVatRate(data.vatRate ?? 0.19);
+    setVatRateInput(null);
     setInvoiceNumber(data.invoiceNumber != null ? String(data.invoiceNumber) : '');
     setInvoiceDate(toInputDate(data.invoiceDate));
     setDeliveryDate(toInputDate(data.deliveryDate));
@@ -147,7 +154,9 @@ export function InvoiceEditorPage() {
   useEffect(() => {
     if (isEdit || initialized || !sourceQuote) return;
     setClientName(sourceQuote.clientName ?? '');
-    setCustomerAddress(sourceQuote.customerAddress ?? '');
+    const qAddr = splitCustomerAddress(sourceQuote.customerAddress);
+    setCustomerStreet(qAddr.street);
+    setCustomerCity(qAddr.city);
     setAdditionalInfo('');
     setCurrency((sourceQuote.currency ?? 'EUR').toUpperCase());
     setVatRate(sourceQuote.vatRate ?? 0.19);
@@ -193,7 +202,7 @@ export function InvoiceEditorPage() {
     return {
       quoteId: !isEdit && fromQuoteId ? fromQuoteId : null,
       clientName: clientName.trim() || null,
-      customerAddress: customerAddress.trim() || null,
+      customerAddress: customerAddressCombined.trim() || null,
       additionalInfo: additionalInfo.trim() || null,
       currency: currency.trim() || 'EUR',
       vatRate,
@@ -286,156 +295,102 @@ export function InvoiceEditorPage() {
         </div>
       </div>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
-        <h1 className="text-xl font-semibold text-slate-900">{isEdit ? t('editInvoice') : t('newInvoice')}</h1>
-        <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          <label className="space-y-1">
-            <span className="text-sm text-slate-700">{t('invoiceNo')}</span>
+      <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6">
+        {isEdit && <h1 className="mb-4 text-xl font-semibold text-slate-900">{t('editInvoice')}</h1>}
+        <div className="mb-4 w-full sm:w-64">
+          <label className="mb-2 block text-sm font-medium text-slate-700">{t('invoiceNo')}</label>
+          <input
+            type="text"
+            inputMode="numeric"
+            value={invoiceNumber}
+            onChange={(e) => setInvoiceNumber(e.target.value.replace(/[^\d]/g, ''))}
+            className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+          />
+        </div>
+        <div className="flex flex-col gap-4 sm:grid sm:grid-cols-2 sm:gap-6">
+          <div className="order-1">
+            <label className="mb-2 block text-sm font-medium text-slate-700">{t('clientName')}</label>
             <input
-              value={invoiceNumber}
-              onChange={(e) => setInvoiceNumber(e.target.value.replace(/[^\d]/g, ''))}
-              className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
-            />
-          </label>
-          <label className="space-y-1">
-            <span className="text-sm text-slate-700">{t('clientName')}</span>
-            <input
+              type="text"
               value={clientName}
               onChange={(e) => setClientName(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
+              placeholder={t('clientPlaceholder')}
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
             />
-          </label>
-          <label className="space-y-1">
-            <span className="text-sm text-slate-700">{t('customerAddress')}</span>
-            <input
-              value={customerAddress}
-              onChange={(e) => setCustomerAddress(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
-            />
-          </label>
-          <label className="space-y-1">
-            <span className="text-sm text-slate-700">{t('vatRate')}</span>
-            <input
-              type="number"
-              step="0.01"
-              min="0"
-              max="1"
-              value={vatRate}
-              onChange={(e) => setVatRate(Number(e.target.value))}
-              className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
-            />
-          </label>
-        </div>
-        <label className="mt-4 block space-y-1">
-          <span className="text-sm text-slate-700">{t('quoteFreeText')}</span>
-          <textarea
-            value={additionalInfo}
-            onChange={(e) => setAdditionalInfo(e.target.value)}
-            rows={3}
-            className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
-          />
-        </label>
-      </section>
-
-      <section className="mt-4 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500">{t('attachments')}</h2>
-            <p className="text-xs text-slate-500">{t('attachmentsHint')}</p>
           </div>
-          <label className="inline-flex cursor-pointer items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100">
-            {t('addAttachment')}
-            <input
-              type="file"
-              className="sr-only"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (!file) return;
-                if (id) {
-                  uploadInvoiceAttachment(id, file)
-                    .then(() => queryClient.invalidateQueries({ queryKey: ['invoiceAttachments', id] }))
-                    .catch((err) => toast.error(err instanceof Error ? err.message : 'Failed to upload attachment'));
-                } else {
-                  setPendingAttachments((prev) => [...prev, file]);
+          <div className="order-4 sm:order-2">
+            <label className="mb-2 block text-sm font-medium text-slate-700">{t('vatRate')}</label>
+            <div className="inline-flex items-center gap-[2px]">
+              <input
+                type="text"
+                inputMode="decimal"
+                value={
+                  vatRateInput ?? (Number.isFinite(vatRate) ? String(Number((vatRate * 100).toFixed(2))) : '')
                 }
-                e.target.value = '';
-              }}
+                onChange={(e) => setVatRateInput(e.target.value)}
+                onBlur={(e) => {
+                  const raw = e.target.value.replace(',', '.');
+                  const normalized = raw === '' ? '' : raw.startsWith('.') ? `0${raw}` : raw;
+                  const v = Number(normalized);
+                  const numeric = Number.isFinite(v) && v >= 0 ? v : 0;
+                  const clamped = Math.min(100, numeric);
+                  const rounded = Number(clamped.toFixed(2));
+                  setVatRate(rounded / 100);
+                  setVatRateInput(null);
+                }}
+                className="w-15 rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2.5 text-sm text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+              />
+              <span className="text-xs text-slate-500">%</span>
+            </div>
+          </div>
+          <div className="order-2 sm:order-3">
+            <label className="mb-2 block text-sm font-medium text-slate-700">{t('customerCity')}</label>
+            <input
+              type="text"
+              value={customerCity}
+              onChange={(e) => setCustomerCity(e.target.value)}
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+            />
+          </div>
+          <div className="order-3 sm:order-4">
+            <label className="mb-2 block text-sm font-medium text-slate-700">{t('customerStreet')}</label>
+            <input
+              type="text"
+              value={customerStreet}
+              onChange={(e) => setCustomerStreet(e.target.value)}
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+            />
+          </div>
+        </div>
+        <div className="mt-6 grid gap-4 sm:grid-cols-3">
+          <label className="space-y-1">
+            <span className="text-sm font-medium text-slate-700">{t('invoiceDate')}</span>
+            <input
+              type="date"
+              value={invoiceDate}
+              onChange={(e) => setInvoiceDate(e.target.value)}
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2.5 text-sm text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+            />
+          </label>
+          <label className="space-y-1">
+            <span className="text-sm font-medium text-slate-700">{t('deliveryDate')}</span>
+            <input
+              type="date"
+              value={deliveryDate}
+              onChange={(e) => setDeliveryDate(e.target.value)}
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2.5 text-sm text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+            />
+          </label>
+          <label className="space-y-1">
+            <span className="text-sm font-medium text-slate-700">{t('dueDate')}</span>
+            <input
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2.5 text-sm text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
             />
           </label>
         </div>
-        {attachments.length > 0 && (
-          <ul className="mt-3 space-y-2">
-            {attachments.map((att) => (
-              <li
-                key={att.id}
-                className="grid grid-cols-[minmax(0,1fr)_140px] items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs sm:text-sm text-slate-700"
-              >
-                <button
-                  type="button"
-                  onClick={() => window.open(att.url, '_blank', 'noopener,noreferrer')}
-                  className="truncate text-left text-emerald-700 hover:underline"
-                >
-                  {att.filename}
-                </button>
-                <div className="flex items-center justify-start gap-2 shrink-0 whitespace-nowrap">
-                  <button
-                    type="button"
-                    onClick={() => window.open(att.url, '_blank', 'noopener,noreferrer')}
-                    className="rounded-lg border border-slate-300 px-2 py-1 text-[11px] font-medium text-slate-600 hover:bg-slate-100"
-                  >
-                    {t('preview')}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      if (!id) return;
-                      try {
-                        await deleteInvoiceAttachment(id, att.id);
-                        queryClient.invalidateQueries({ queryKey: ['invoiceAttachments', id] });
-                      } catch (e) {
-                        toast.error(e instanceof Error ? e.message : 'Failed to delete attachment');
-                      }
-                    }}
-                    className="rounded-lg border border-red-100 px-2 py-1 text-[11px] font-medium text-red-600 hover:bg-red-50"
-                  >
-                    {t('delete')}
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-        {pendingAttachments.length > 0 && (
-          <ul className="mt-3 space-y-2">
-            {pendingAttachments.map((file, idx) => (
-              <li
-                key={`${file.name}-${file.size}-${file.lastModified}-${idx}`}
-                className="grid grid-cols-[minmax(0,1fr)_140px] items-center gap-2 rounded-xl border border-dashed border-slate-200 bg-slate-50 px-3 py-2 text-xs sm:text-sm text-slate-700"
-              >
-                <span className="truncate text-left text-slate-700">
-                  {file.name}
-                  <span className="ml-1 text-[10px] text-slate-400">({t('pending') ?? 'pending'})</span>
-                </span>
-                <div className="flex items-center justify-start gap-2 shrink-0 whitespace-nowrap">
-                  <button
-                    type="button"
-                    onClick={() => window.open(URL.createObjectURL(file), '_blank', 'noopener,noreferrer')}
-                    className="rounded-lg border border-slate-300 px-2 py-1 text-[11px] font-medium text-slate-600 hover:bg-slate-100"
-                  >
-                    {t('preview')}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPendingAttachments((prev) => prev.filter((_, i) => i !== idx))}
-                    className="rounded-lg border border-red-100 px-2 py-1 text-[11px] font-medium text-red-600 hover:bg-red-50"
-                  >
-                    {t('delete')}
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
       </section>
 
       <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
@@ -598,38 +553,6 @@ export function InvoiceEditorPage() {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
-        <div className="grid gap-4 sm:grid-cols-3">
-          <label className="space-y-1">
-            <span className="text-sm text-slate-700">{t('invoiceDate')}</span>
-            <input
-              type="date"
-              value={invoiceDate}
-              onChange={(e) => setInvoiceDate(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
-            />
-          </label>
-          <label className="space-y-1">
-            <span className="text-sm text-slate-700">{t('deliveryDate')}</span>
-            <input
-              type="date"
-              value={deliveryDate}
-              onChange={(e) => setDeliveryDate(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
-            />
-          </label>
-          <label className="space-y-1">
-            <span className="text-sm text-slate-700">{t('dueDate')}</span>
-            <input
-              type="date"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
-            />
-          </label>
-        </div>
-      </section>
-
       <div className="flex justify-end">
         <div className="w-full rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:w-auto sm:min-w-[280px] sm:p-6">
           <div className="space-y-2">
@@ -648,6 +571,119 @@ export function InvoiceEditorPage() {
           </div>
         </div>
       </div>
+
+      <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6">
+        <label className="block space-y-1">
+          <span className="text-sm font-medium text-slate-700">{t('quoteFreeText')}</span>
+          <textarea
+            value={additionalInfo}
+            onChange={(e) => setAdditionalInfo(e.target.value)}
+            rows={3}
+            className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+          />
+        </label>
+      </section>
+
+      <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500">{t('attachments')}</h2>
+            <p className="text-xs text-slate-500">{t('attachmentsHint')}</p>
+          </div>
+          <label className="inline-flex cursor-pointer items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100">
+            {t('addAttachment')}
+            <input
+              type="file"
+              className="sr-only"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                if (id) {
+                  uploadInvoiceAttachment(id, file)
+                    .then(() => queryClient.invalidateQueries({ queryKey: ['invoiceAttachments', id] }))
+                    .catch((err) => toast.error(err instanceof Error ? err.message : 'Failed to upload attachment'));
+                } else {
+                  setPendingAttachments((prev) => [...prev, file]);
+                }
+                e.target.value = '';
+              }}
+            />
+          </label>
+        </div>
+        {attachments.length > 0 && (
+          <ul className="mt-3 space-y-2">
+            {attachments.map((att) => (
+              <li
+                key={att.id}
+                className="grid grid-cols-[minmax(0,1fr)_140px] items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs sm:text-sm text-slate-700"
+              >
+                <button
+                  type="button"
+                  onClick={() => window.open(att.url, '_blank', 'noopener,noreferrer')}
+                  className="truncate text-left text-emerald-700 hover:underline"
+                >
+                  {att.filename}
+                </button>
+                <div className="flex items-center justify-start gap-2 shrink-0 whitespace-nowrap">
+                  <button
+                    type="button"
+                    onClick={() => window.open(att.url, '_blank', 'noopener,noreferrer')}
+                    className="rounded-lg border border-slate-300 px-2 py-1 text-[11px] font-medium text-slate-600 hover:bg-slate-100"
+                  >
+                    {t('preview')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (!id) return;
+                      try {
+                        await deleteInvoiceAttachment(id, att.id);
+                        queryClient.invalidateQueries({ queryKey: ['invoiceAttachments', id] });
+                      } catch (e) {
+                        toast.error(e instanceof Error ? e.message : 'Failed to delete attachment');
+                      }
+                    }}
+                    className="rounded-lg border border-red-100 px-2 py-1 text-[11px] font-medium text-red-600 hover:bg-red-50"
+                  >
+                    {t('delete')}
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+        {pendingAttachments.length > 0 && (
+          <ul className="mt-3 space-y-2">
+            {pendingAttachments.map((file, idx) => (
+              <li
+                key={`${file.name}-${file.size}-${file.lastModified}-${idx}`}
+                className="grid grid-cols-[minmax(0,1fr)_140px] items-center gap-2 rounded-xl border border-dashed border-slate-200 bg-slate-50 px-3 py-2 text-xs sm:text-sm text-slate-700"
+              >
+                <span className="truncate text-left text-slate-700">
+                  {file.name}
+                  <span className="ml-1 text-[10px] text-slate-400">({t('pending') ?? 'pending'})</span>
+                </span>
+                <div className="flex items-center justify-start gap-2 shrink-0 whitespace-nowrap">
+                  <button
+                    type="button"
+                    onClick={() => window.open(URL.createObjectURL(file), '_blank', 'noopener,noreferrer')}
+                    className="rounded-lg border border-slate-300 px-2 py-1 text-[11px] font-medium text-slate-600 hover:bg-slate-100"
+                  >
+                    {t('preview')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPendingAttachments((prev) => prev.filter((_, i) => i !== idx))}
+                    className="rounded-lg border border-red-100 px-2 py-1 text-[11px] font-medium text-red-600 hover:bg-red-50"
+                  >
+                    {t('delete')}
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       <section className="mt-6 w-full rounded-2xl border border-emerald-300 bg-emerald-50/90 p-5 shadow-md sm:p-6 lg:max-w-xl transition-transform transition-shadow duration-300 ease-out hover:-translate-y-1 hover:shadow-xl focus-within:-translate-y-1 focus-within:shadow-xl">
         <div className="flex items-center justify-between gap-3">
