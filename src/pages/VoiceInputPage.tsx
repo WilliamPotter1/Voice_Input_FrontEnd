@@ -93,7 +93,10 @@ export function VoiceInputPage() {
       }
     },
     onError: (err: Error) => {
-      toast.error(err.message || t('transcribing'));
+      toast.error(
+        err.message ||
+          (documentTarget === 'invoice' ? t('transcribingInvoice') : t('transcribing')),
+      );
     },
   });
 
@@ -294,7 +297,9 @@ export function VoiceInputPage() {
       {isBusy && (
         <div className="flex items-center gap-3 rounded-2xl border border-emerald-200/80 bg-emerald-50/50 px-5 py-4">
           <Loader2 className="size-5 shrink-0 animate-spin text-emerald-600" />
-          <p className="text-sm font-medium text-emerald-800">{t('transcribing')}</p>
+          <p className="text-sm font-medium text-emerald-800">
+            {documentTarget === 'invoice' ? t('transcribingInvoice') : t('transcribing')}
+          </p>
         </div>
       )}
 
