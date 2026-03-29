@@ -231,9 +231,10 @@ export function InvoiceEditorPage() {
     setAdditionalInfo('');
     setCurrency((sourceQuote.currency ?? 'EUR').toUpperCase());
     setVatRate(sourceQuote.vatRate ?? 0.19);
-    setInvoiceDate(new Date().toISOString().slice(0, 10));
-    setDeliveryDate(new Date().toISOString().slice(0, 10));
-    setDueDate(new Date().toISOString().slice(0, 10));
+    const today = localYmd(new Date());
+    setInvoiceDate(today);
+    setDeliveryDate(today);
+    setDueDate(defaultDueDateYmd());
     setItems(
       sourceQuote.items.length
         ? sourceQuote.items.map((i) => ({
