@@ -75,6 +75,14 @@ function makeItemName(base: string, unit: string): string {
   return cleanUnit ? `${cleanBase} (${cleanUnit})` : cleanBase;
 }
 
+/** Draft string while typing; when no draft, show non-zero numerics only so 0 does not flash in empty fields. */
+function invoiceDecimalInputValue(draft: Record<string, string>, rowId: string, numeric: number): string {
+  const s = draft[rowId];
+  if (s !== undefined) return s;
+  if (Number.isFinite(numeric) && numeric !== 0) return String(numeric);
+  return '';
+}
+
 function getCurrencySymbol(code: string | null | undefined): string {
   const c = (code || 'EUR').toUpperCase();
   if (c === 'EUR') return '€';
@@ -175,8 +183,10 @@ export function InvoiceEditorPage() {
     const qtyNext: Record<string, string> = {};
     const priceNext: Record<string, string> = {};
     for (const it of items) {
-      qtyNext[it.id] = Number.isFinite(it.quantity) ? String(it.quantity) : '';
-      priceNext[it.id] = Number.isFinite(it.unitPrice) ? String(it.unitPrice) : '';
+      qtyNext[it.id] =
+        Number.isFinite(it.quantity) && it.quantity !== 0 ? String(it.quantity) : '';
+      priceNext[it.id] =
+        Number.isFinite(it.unitPrice) && it.unitPrice !== 0 ? String(it.unitPrice) : '';
     }
     setQuantityInputs(qtyNext);
     setUnitPriceInputs(priceNext);
@@ -634,10 +644,7 @@ export function InvoiceEditorPage() {
                       <input
                         type="text"
                         inputMode="decimal"
-                        value={
-                          unitPriceInputs[it.id] ??
-                          (Number.isFinite(it.unitPrice) ? String(it.unitPrice) : '')
-                        }
+                        value={invoiceDecimalInputValue(unitPriceInputs, it.id, it.unitPrice)}
                         onChange={(e) => {
                           const value = e.target.value;
                           setUnitPriceInputs((prev) => ({ ...prev, [it.id]: value }));
@@ -685,12 +692,14 @@ export function InvoiceEditorPage() {
             const unit = getUnitFromItemName(it.itemName);
             const baseName = getBaseNameFromItemName(it.itemName);
             return (
-              <div key={idx} className="space-y-3 p-4">
+              <div key={it.id} className="space-y-3 p-4">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">#{idx + 1}</span>
                   <button
                     type="button"
-                    onClick={() => setItems((prev) => (prev.length > 1 ? prev.filter((_, i) => i !== idx) : prev))}
+                    onClick={() =>
+                      setItems((prev) => (prev.length > 1 ? prev.filter((row) => row.id !== it.id) : prev))
+                    }
                     className="flex size-8 items-center justify-center rounded-lg text-slate-400 transition hover:bg-red-50 hover:text-red-600"
                   >
                     <Trash2 className="size-4" />
@@ -699,7 +708,13 @@ export function InvoiceEditorPage() {
                 <input
                   type="text"
                   value={baseName}
-                  onChange={(e) => setItems((prev) => prev.map((row, i) => (i === idx ? { ...row, itemName: makeItemName(e.target.value, unit) } : row)))}
+                  onChange={(e) =>
+                    setItems((prev) =>
+                      prev.map((row) =>
+                        row.id === it.id ? { ...row, itemName: makeItemName(e.target.value, unit) } : row,
+                      ),
+                    )
+                  }
                   placeholder={t('description')}
                   className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 sm:text-sm"
                 />
@@ -707,10 +722,26 @@ export function InvoiceEditorPage() {
                   <div>
                     <label className="mb-1 block text-[10px] font-medium text-slate-500 whitespace-nowrap">{t('qty')}</label>
                     <input
-                      type="number"
-                      step="0.01"
-                      value={it.quantity}
-                      onChange={(e) => setItems((prev) => prev.map((row, i) => (i === idx ? { ...row, quantity: Number(e.target.value) } : row)))}
+                      type="text"
+                      inputMode="decimal"
+                      value={invoiceDecimalInputValue(quantityInputs, it.id, it.quantity)}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setQuantityInputs((prev) => ({ ...prev, [it.id]: value }));
+                      }}
+                      onBlur={(e) => {
+                        const raw = e.target.value.replace(',', '.');
+                        const normalized = raw === '' ? '' : raw.startsWith('.') ? `0${raw}` : raw;
+                        const v = Number(normalized);
+                        const numeric = Number.isFinite(v) && v >= 0 ? v : 0;
+                        setItems((prev) =>
+                          prev.map((row) => (row.id === it.id ? { ...row, quantity: numeric } : row)),
+                        );
+                        setQuantityInputs((prev) => ({
+                          ...prev,
+                          [it.id]: numeric === 0 ? '' : String(numeric),
+                        }));
+                      }}
                       className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 sm:text-sm"
                     />
                   </div>
@@ -719,7 +750,13 @@ export function InvoiceEditorPage() {
                     <input
                       type="text"
                       value={unit}
-                      onChange={(e) => setItems((prev) => prev.map((row, i) => (i === idx ? { ...row, itemName: makeItemName(baseName, e.target.value) } : row)))}
+                      onChange={(e) =>
+                        setItems((prev) =>
+                          prev.map((row) =>
+                            row.id === it.id ? { ...row, itemName: makeItemName(baseName, e.target.value) } : row,
+                          ),
+                        )
+                      }
                       placeholder={t('unit')}
                       className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 sm:text-sm"
                     />
@@ -727,10 +764,26 @@ export function InvoiceEditorPage() {
                   <div>
                     <label className="mb-1 block text-[10px] font-medium text-slate-500 whitespace-nowrap">{`${t('unitPrice')} (${getCurrencySymbol(currency)})`}</label>
                     <input
-                      type="number"
-                      step="0.01"
-                      value={it.unitPrice}
-                      onChange={(e) => setItems((prev) => prev.map((row, i) => (i === idx ? { ...row, unitPrice: Number(e.target.value) } : row)))}
+                      type="text"
+                      inputMode="decimal"
+                      value={invoiceDecimalInputValue(unitPriceInputs, it.id, it.unitPrice)}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setUnitPriceInputs((prev) => ({ ...prev, [it.id]: value }));
+                      }}
+                      onBlur={(e) => {
+                        const raw = e.target.value.replace(',', '.');
+                        const normalized = raw === '' ? '' : raw.startsWith('.') ? `0${raw}` : raw;
+                        const v = Number(normalized);
+                        const numeric = Number.isFinite(v) && v >= 0 ? v : 0;
+                        setItems((prev) =>
+                          prev.map((row) => (row.id === it.id ? { ...row, unitPrice: numeric } : row)),
+                        );
+                        setUnitPriceInputs((prev) => ({
+                          ...prev,
+                          [it.id]: numeric === 0 ? '' : String(numeric),
+                        }));
+                      }}
                       className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 sm:text-sm"
                     />
                   </div>
