@@ -35,6 +35,20 @@ function toInputDate(iso: string | null | undefined): string {
   return iso.slice(0, 10);
 }
 
+function localYmd(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+/** Calendar default for new invoices: due 14 days from today (local), still editable. */
+function defaultDueDateYmd(): string {
+  const d = new Date();
+  d.setDate(d.getDate() + 14);
+  return localYmd(d);
+}
+
 function getUnitFromItemName(name: string): string {
   const match = name.match(/\(([^)]+)\)\s*$/);
   return match ? match[1].trim() : '';
@@ -217,10 +231,10 @@ export function InvoiceEditorPage() {
     setCurrency((extractedCurrency ?? 'EUR').toUpperCase());
     setVatRate(extractedVatRate ?? 0.19);
     setVatRateInput(null);
-    const today = new Date().toISOString().slice(0, 10);
+    const today = localYmd(new Date());
     setInvoiceDate(today);
     setDeliveryDate(today);
-    setDueDate(today);
+    setDueDate(defaultDueDateYmd());
     setItems(
       extractedItems.map((i) => ({
         itemName: i.itemName,
@@ -240,6 +254,17 @@ export function InvoiceEditorPage() {
     extractedVatRate,
     extractedCurrency,
   ]);
+
+  useEffect(() => {
+    if (isEdit || initialized) return;
+    if (fromQuoteId) return;
+    if (extractedItems?.length) return;
+    const today = localYmd(new Date());
+    setInvoiceDate(today);
+    setDeliveryDate(today);
+    setDueDate(defaultDueDateYmd());
+    setInitialized(true);
+  }, [isEdit, initialized, fromQuoteId, extractedItems, location.key]);
 
   useEffect(() => {
     if (isEdit) return;
