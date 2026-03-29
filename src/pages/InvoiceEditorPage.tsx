@@ -1038,7 +1038,7 @@ export function InvoiceEditorPage() {
                   };
                   const invoiceNrLabel = invoiceNrLabelByLang[lang] ?? invoiceNrLabelByLang.de;
                   const intro = `${companyLabel} - ${invoiceNrLabel} ${num} ${clientLabel}`.trim();
-                  const pdfLabel = t('sendEmailPdfLabel') as string;
+                  const pdfLabel = t('sendInvoicePdfLabel') as string;
                   const attachmentsLabel = t('sendEmailAttachmentsLabel') as string;
                   const lines: string[] = [intro, '', pdfLabel, pdfUrl];
                   if (attachmentUrls.length > 0) {
