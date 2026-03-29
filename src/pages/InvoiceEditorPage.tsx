@@ -403,34 +403,34 @@ export function InvoiceEditorPage() {
             />
           </div>
         </div>
-        <div className="mt-6 grid gap-4 sm:grid-cols-3">
-          <label className="space-y-1">
-            <span className="text-sm font-medium text-slate-700">{t('invoiceDate')}</span>
+        <div className="mt-6 flex flex-col gap-4 sm:grid sm:grid-cols-3 sm:gap-6">
+          <div className="min-w-0">
+            <label className="mb-2 block text-sm font-medium text-slate-700">{t('invoiceDate')}</label>
             <input
               type="date"
               value={invoiceDate}
               onChange={(e) => setInvoiceDate(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2.5 text-sm text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
             />
-          </label>
-          <label className="space-y-1">
-            <span className="text-sm font-medium text-slate-700">{t('deliveryDate')}</span>
+          </div>
+          <div className="min-w-0">
+            <label className="mb-2 block text-sm font-medium text-slate-700">{t('deliveryDate')}</label>
             <input
               type="date"
               value={deliveryDate}
               onChange={(e) => setDeliveryDate(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2.5 text-sm text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
             />
-          </label>
-          <label className="space-y-1">
-            <span className="text-sm font-medium text-slate-700">{t('dueDate')}</span>
+          </div>
+          <div className="min-w-0">
+            <label className="mb-2 block text-sm font-medium text-slate-700">{t('dueDate')}</label>
             <input
               type="date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2.5 text-sm text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
             />
-          </label>
+          </div>
         </div>
         <div className="mt-6">
           <label className="mb-2 block text-sm font-medium text-slate-700">{t('vatRate')}</label>
