@@ -23,12 +23,22 @@ import { splitCustomerAddress } from '../stores/quoteFormStore';
 import { useTranslation } from '../i18n/useTranslation';
 
 type InvoiceItemForm = {
+  id: string;
   itemName: string;
   quantity: number;
   unitPrice: number;
 };
 
-const defaultItem: InvoiceItemForm = { itemName: '', quantity: 1, unitPrice: 0 };
+function newInvoiceRowId(): string {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+    return crypto.randomUUID();
+  }
+  return `inv-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+}
+
+function newInvoiceRow(): InvoiceItemForm {
+  return { id: newInvoiceRowId(), itemName: '', quantity: 1, unitPrice: 0 };
+}
 
 function toInputDate(iso: string | null | undefined): string {
   if (!iso) return '';
@@ -151,12 +161,27 @@ export function InvoiceEditorPage() {
   const [invoiceDate, setInvoiceDate] = useState('');
   const [deliveryDate, setDeliveryDate] = useState('');
   const [dueDate, setDueDate] = useState('');
-  const [items, setItems] = useState<InvoiceItemForm[]>([defaultItem]);
+  const [items, setItems] = useState<InvoiceItemForm[]>([newInvoiceRow()]);
+  const [quantityInputs, setQuantityInputs] = useState<Record<string, string>>({});
+  const [unitPriceInputs, setUnitPriceInputs] = useState<Record<string, string>>({});
   const [pendingAttachments, setPendingAttachments] = useState<File[]>([]);
   const [sendEmailTo, setSendEmailTo] = useState('');
   const [sendWhatsappTo, setSendWhatsappTo] = useState('');
   const [sendingEmail, setSendingEmail] = useState(false);
   const [initialized, setInitialized] = useState(false);
+
+  const itemIds = items.map((it) => it.id).join(',');
+  useEffect(() => {
+    const qtyNext: Record<string, string> = {};
+    const priceNext: Record<string, string> = {};
+    for (const it of items) {
+      qtyNext[it.id] = Number.isFinite(it.quantity) ? String(it.quantity) : '';
+      priceNext[it.id] = Number.isFinite(it.unitPrice) ? String(it.unitPrice) : '';
+    }
+    setQuantityInputs(qtyNext);
+    setUnitPriceInputs(priceNext);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [itemIds]);
 
   async function persistPendingAttachments(invoiceId: string) {
     if (!pendingAttachments.length) return;
@@ -187,11 +212,12 @@ export function InvoiceEditorPage() {
     setItems(
       data.items.length
         ? data.items.map((i) => ({
+            id: newInvoiceRowId(),
             itemName: i.itemName,
             quantity: i.quantity,
             unitPrice: i.unitPrice,
           }))
-        : [defaultItem]
+        : [newInvoiceRow()]
     );
     setInitialized(true);
   }, [data, initialized]);
@@ -211,11 +237,12 @@ export function InvoiceEditorPage() {
     setItems(
       sourceQuote.items.length
         ? sourceQuote.items.map((i) => ({
+            id: newInvoiceRowId(),
             itemName: i.itemName,
             quantity: i.quantity,
             unitPrice: i.unitPrice,
           }))
-        : [defaultItem]
+        : [newInvoiceRow()]
     );
     setInitialized(true);
   }, [isEdit, initialized, sourceQuote]);
@@ -237,6 +264,7 @@ export function InvoiceEditorPage() {
     setDueDate(defaultDueDateYmd());
     setItems(
       extractedItems.map((i) => ({
+        id: newInvoiceRowId(),
         itemName: i.itemName,
         quantity: i.quantity,
         unitPrice: i.unitPrice,
@@ -519,26 +547,40 @@ export function InvoiceEditorPage() {
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50/80">
-                <th className="px-4 py-3.5 text-xs font-semibold leading-tight text-slate-700">{t('item')}</th>
-                <th className="w-28 px-4 py-3.5 text-xs font-semibold leading-tight text-slate-700">{t('unit')}</th>
-                <th className="w-24 px-4 py-3.5 text-xs font-semibold leading-tight text-slate-700">{t('qty')}</th>
-                <th className="w-32 px-4 py-3.5 text-xs font-semibold leading-tight text-slate-700">{`${t('unitPrice')} (${getCurrencySymbol(currency)})`}</th>
-                <th className="w-32 px-4 py-3.5 text-xs font-semibold leading-tight text-slate-700">{`${t('total')} (${getCurrencySymbol(currency)})`}</th>
+                <th className="px-4 py-3.5 text-xs font-semibold leading-tight text-slate-700 whitespace-normal break-words">
+                  {t('item')}
+                </th>
+                <th className="w-28 px-4 py-3.5 text-xs font-semibold leading-tight text-slate-700 whitespace-normal break-words">
+                  {t('unit')}
+                </th>
+                <th className="w-24 px-4 py-3.5 text-xs font-semibold leading-tight text-slate-700 whitespace-normal break-words">
+                  {t('qty')}
+                </th>
+                <th className="w-32 px-4 py-3.5 text-xs font-semibold leading-tight text-slate-700 whitespace-normal break-words">
+                  {`${t('unitPrice')} (${getCurrencySymbol(currency)})`}
+                </th>
+                <th className="w-32 px-4 py-3.5 text-xs font-semibold leading-tight text-slate-700 whitespace-normal break-words">
+                  {`${t('total')} (${getCurrencySymbol(currency)})`}
+                </th>
                 <th className="w-14 px-4 py-3.5" />
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {items.map((it, idx) => {
+              {items.map((it) => {
                 const unit = getUnitFromItemName(it.itemName);
                 const baseName = getBaseNameFromItemName(it.itemName);
                 return (
-                  <tr key={idx} className="transition hover:bg-slate-50/50">
+                  <tr key={it.id} className="transition hover:bg-slate-50/50">
                     <td className="px-4 py-3">
                       <input
                         type="text"
                         value={baseName}
                         onChange={(e) =>
-                          setItems((prev) => prev.map((row, i) => (i === idx ? { ...row, itemName: makeItemName(e.target.value, unit) } : row)))
+                          setItems((prev) =>
+                            prev.map((row) =>
+                              row.id === it.id ? { ...row, itemName: makeItemName(e.target.value, unit) } : row,
+                            ),
+                          )
                         }
                         placeholder={t('description')}
                         className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 sm:text-sm"
@@ -549,7 +591,11 @@ export function InvoiceEditorPage() {
                         type="text"
                         value={unit}
                         onChange={(e) =>
-                          setItems((prev) => prev.map((row, i) => (i === idx ? { ...row, itemName: makeItemName(baseName, e.target.value) } : row)))
+                          setItems((prev) =>
+                            prev.map((row) =>
+                              row.id === it.id ? { ...row, itemName: makeItemName(baseName, e.target.value) } : row,
+                            ),
+                          )
                         }
                         placeholder={t('unit')}
                         className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 sm:text-sm"
@@ -557,23 +603,57 @@ export function InvoiceEditorPage() {
                     </td>
                     <td className="px-4 py-3">
                       <input
-                        type="number"
-                        step="0.01"
-                        value={it.quantity}
-                        onChange={(e) =>
-                          setItems((prev) => prev.map((row, i) => (i === idx ? { ...row, quantity: Number(e.target.value) } : row)))
+                        type="text"
+                        inputMode="decimal"
+                        value={
+                          quantityInputs[it.id] ??
+                          (Number.isFinite(it.quantity) ? String(it.quantity) : '')
                         }
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setQuantityInputs((prev) => ({ ...prev, [it.id]: value }));
+                        }}
+                        onBlur={(e) => {
+                          const raw = e.target.value.replace(',', '.');
+                          const normalized = raw === '' ? '' : raw.startsWith('.') ? `0${raw}` : raw;
+                          const v = Number(normalized);
+                          const numeric = Number.isFinite(v) && v >= 0 ? v : 0;
+                          setItems((prev) =>
+                            prev.map((row) => (row.id === it.id ? { ...row, quantity: numeric } : row)),
+                          );
+                          setQuantityInputs((prev) => ({
+                            ...prev,
+                            [it.id]: numeric === 0 ? '' : String(numeric),
+                          }));
+                        }}
                         className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 sm:text-sm"
                       />
                     </td>
                     <td className="px-4 py-3">
                       <input
-                        type="number"
-                        step="0.01"
-                        value={it.unitPrice}
-                        onChange={(e) =>
-                          setItems((prev) => prev.map((row, i) => (i === idx ? { ...row, unitPrice: Number(e.target.value) } : row)))
+                        type="text"
+                        inputMode="decimal"
+                        value={
+                          unitPriceInputs[it.id] ??
+                          (Number.isFinite(it.unitPrice) ? String(it.unitPrice) : '')
                         }
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setUnitPriceInputs((prev) => ({ ...prev, [it.id]: value }));
+                        }}
+                        onBlur={(e) => {
+                          const raw = e.target.value.replace(',', '.');
+                          const normalized = raw === '' ? '' : raw.startsWith('.') ? `0${raw}` : raw;
+                          const v = Number(normalized);
+                          const numeric = Number.isFinite(v) && v >= 0 ? v : 0;
+                          setItems((prev) =>
+                            prev.map((row) => (row.id === it.id ? { ...row, unitPrice: numeric } : row)),
+                          );
+                          setUnitPriceInputs((prev) => ({
+                            ...prev,
+                            [it.id]: numeric === 0 ? '' : String(numeric),
+                          }));
+                        }}
                         className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 sm:text-sm"
                       />
                     </td>
@@ -585,7 +665,9 @@ export function InvoiceEditorPage() {
                     <td className="px-4 py-3">
                       <button
                         type="button"
-                        onClick={() => setItems((prev) => (prev.length > 1 ? prev.filter((_, i) => i !== idx) : prev))}
+                        onClick={() =>
+                          setItems((prev) => (prev.length > 1 ? prev.filter((row) => row.id !== it.id) : prev))
+                        }
                         className="flex size-9 items-center justify-center rounded-lg text-slate-400 transition hover:bg-red-50 hover:text-red-600"
                       >
                         <Trash2 className="size-4" />
@@ -665,7 +747,7 @@ export function InvoiceEditorPage() {
         <div className="border-t border-slate-100 bg-slate-50/60 px-4 py-3 sm:px-6">
           <button
             type="button"
-            onClick={() => setItems((prev) => [...prev, { ...defaultItem }])}
+            onClick={() => setItems((prev) => [...prev, newInvoiceRow()])}
             className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-200 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-100 sm:w-auto sm:px-6"
           >
             <Plus className="size-4" />
